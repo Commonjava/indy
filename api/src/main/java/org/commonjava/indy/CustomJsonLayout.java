@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,10 +48,10 @@ public class CustomJsonLayout
     {
         this.environmentMappings = environmentMappings;
 
-        String[] mappings = environmentMappings == null ? new String[0] : environmentMappings.split( "\\s*,\\s*" );
+        String[] mappings = environmentMappings == null ? new String[0] : environmentMappings.split( "," );
         envars = new HashMap<>();
         Stream.of(mappings).forEach( kv ->{
-            String[] keyAlias = kv.split( "\\s*=\\s*" );
+            String[] keyAlias = kv.trim().split( "=" );
             if ( keyAlias.length > 1 )
             {
                 String value = System.getenv( keyAlias[0].trim() );

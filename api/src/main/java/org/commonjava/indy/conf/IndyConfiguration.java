@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,6 +99,13 @@ public interface IndyConfiguration
      * @since 2.0.0
      */
     Boolean isStandalone();
+
+    /**
+     * Is for PartyLine Cache Timeout Processing
+     * @return
+     * @since 2.7.5
+     */
+    Boolean isTimeoutProcessing();
 
     /**
      * Decide storeDataManager to run as standalone mode or cassandra mode

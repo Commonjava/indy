@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import java.util.stream.Stream;
  */
 public interface ArtifactStoreQuery<T extends ArtifactStore>
 {
-    ArtifactStoreQuery<T> rewrap( StoreDataManager manager );
 
     <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( Class<C> storeCls );
 
@@ -53,23 +52,12 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
 
     ArtifactStoreQuery<T> enabledState( Boolean enabled );
 
-    boolean isEmpty();
+//    boolean isEmpty();
 
     List<T> getAll()
             throws IndyDataException;
 
-    Stream<T> stream()
-            throws IndyDataException;
-
-    Stream<T> stream( Predicate<ArtifactStore> filter )
-            throws IndyDataException;
-
-    Stream<StoreKey> keyStream()
-            throws IndyDataException;
-
-    Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-            throws IndyDataException;
-
+    @Deprecated
     List<T> getAll( Predicate<ArtifactStore> filter )
             throws IndyDataException;
 
@@ -77,9 +65,6 @@ public interface ArtifactStoreQuery<T extends ArtifactStore>
             throws IndyDataException;
 
     T getByName( String name )
-            throws IndyDataException;
-
-    boolean containsByName( String name )
             throws IndyDataException;
 
     Set<Group> getGroupsContaining( StoreKey storeKey )

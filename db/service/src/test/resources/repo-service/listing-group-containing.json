@@ -1,0 +1,43 @@
+{
+  "items": [
+    {
+      "type": "group",
+      "key": "maven:group:test1",
+      "description": "test group containing 1.",
+      "metadata": {
+        "changelog": ""
+      },
+      "disabled": false,
+      "constituents": [
+        "maven:remote:abc"
+      ],
+      "name": "test1",
+      "packageType": "maven",
+      "disable_timeout": -1,
+      "path_style": "plain",
+      "authoritative_index": false,
+      "create_time": "2019-12-12 21:06:58 +0000",
+      "prepend_constituent": false
+    },
+    {
+      "type": "group",
+      "key": "maven:group:test2",
+      "description": "test group containing 2.",
+      "metadata": {
+        "changelog": ""
+      },
+      "disabled": false,
+      "constituents": [
+        "maven:remote:abc",
+        "maven:remote:def"
+      ],
+      "name": "test2",
+      "packageType": "maven",
+      "disable_timeout": -1,
+      "path_style": "plain",
+      "authoritative_index": false,
+      "create_time": "2019-12-12 21:06:58 +0000",
+      "prepend_constituent": false
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package org.commonjava.indy.schedule;
 
 import org.cassandraunit.utils.EmbeddedCassandraServerHelper;
-import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
-import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.conf.DefaultIndyConfiguration;
 import org.commonjava.indy.schedule.conf.ScheduleDBConfig;
 import org.commonjava.indy.schedule.datastax.JobType;
@@ -32,11 +30,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collection;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class ScheduleTest
 {

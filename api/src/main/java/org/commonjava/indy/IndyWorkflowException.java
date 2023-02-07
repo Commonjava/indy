@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import org.commonjava.maven.galley.TransferLocationException;
  * the default: HTTP 500).
  */
 public class IndyWorkflowException
-    extends Exception
+    extends IndyException
 {
     private Object[] params;
 
@@ -89,13 +89,7 @@ public class IndyWorkflowException
                 {
                     formattedMessage = String.format( format.replaceAll( "\\{\\}", "%s" ), params );
                 }
-                catch ( final Error e )
-                {
-                }
-                catch ( final RuntimeException e )
-                {
-                }
-                catch ( final Exception e )
+                catch ( final Error | Exception e )
                 {
                 }
 

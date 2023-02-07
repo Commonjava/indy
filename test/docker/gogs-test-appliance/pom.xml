@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -23,7 +24,7 @@
     <artifactId>indy-test-docker-appliances</artifactId>
     <version>2.6.0-SNAPSHOT</version>
   </parent>
-  
+
   <artifactId>indy-docker-gogs-test-appliance</artifactId>
   <packaging>docker</packaging>
 
@@ -54,7 +55,7 @@
                     </fileSets>
                   </inline>
                 </assembly>
-                
+
                 <tags>
                   <tag>latest</tag>
                 </tags>
@@ -85,7 +86,8 @@
                   <run>yum -y install git</run>
                 </runCmds>
                 <workdir>/checkout</workdir>
-                <cmd><![CDATA[git clone http://gogs-test-appliance:3000/commonjava/indy-config.git && (cd indy-config && pwd)]]></cmd>
+                <cmd>
+                  <![CDATA[git clone http://gogs-test-appliance:3000/commonjava/indy-config.git && (cd indy-config && pwd)]]></cmd>
               </build>
               <run>
                 <links>
@@ -109,5 +111,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>

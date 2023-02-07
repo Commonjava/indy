@@ -1,0 +1,63 @@
+{
+  "items": [
+    {
+      "type": "group",
+      "key": "maven:group:affected1",
+      "description": "test group affected 1.",
+      "metadata": {
+        "changelog": ""
+      },
+      "disabled": false,
+      "constituents": [
+        "maven:remote:abc"
+      ],
+      "name": "affected1",
+      "packageType": "maven",
+      "disable_timeout": -1,
+      "path_style": "plain",
+      "authoritative_index": false,
+      "create_time": "2019-12-12 21:06:58 +0000",
+      "prepend_constituent": false
+    },
+    {
+      "type": "group",
+      "key": "maven:group:affected2",
+      "description": "test group affected 2.",
+      "metadata": {
+        "changelog": ""
+      },
+      "disabled": false,
+      "constituents": [
+        "maven:remote:abc",
+        "maven:remote:def"
+      ],
+      "name": "affected2",
+      "packageType": "maven",
+      "disable_timeout": -1,
+      "path_style": "plain",
+      "authoritative_index": false,
+      "create_time": "2019-12-12 21:06:58 +0000",
+      "prepend_constituent": false
+    },
+    {
+      "type": "group",
+      "key": "maven:group:affected3",
+      "description": "test group affected 3.",
+      "metadata": {
+        "changelog": ""
+      },
+      "disabled": false,
+      "constituents": [
+        "maven:remote:abc",
+        "maven:remote:def"
+      ],
+      "name": "affected3",
+      "packageType": "maven",
+      "disable_timeout": -1,
+      "path_style": "plain",
+      "authoritative_index": false,
+      "create_time": "2019-12-12 21:06:58 +0000",
+      "prepend_constituent": false
+    }
+  ]
+}

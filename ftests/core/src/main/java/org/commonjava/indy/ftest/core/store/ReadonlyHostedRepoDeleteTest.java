@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,10 +19,11 @@ import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case test if the readonly hosted repo can be deleted
@@ -39,6 +40,7 @@ import static org.junit.Assert.assertThat;
  *     <li>the hosted repo can be deleted successfully with no error second time</li>
  * </ul>
  */
+@Ignore("Need to think how to integrate with repo-service")
 public class ReadonlyHostedRepoDeleteTest
     extends AbstractStoreManagementTest
 {

@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,21 +21,21 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-deployments</artifactId>
-    <version>2.7.3</version>
+    <version>3.0.1</version>
   </parent>
-  
+
   <groupId>org.commonjava.indy.launch</groupId>
   <artifactId>indy-launcher</artifactId>
 
   <name>Indy :: Launcher</name>
-  
+
   <properties>
     <!-- defaults for assembly -->
     <distName>${project.artifactId}</distName>
     <disableLauncher>false</disableLauncher>
     <enforcer.skip>true</enforcer.skip>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy.ui</groupId>
@@ -165,6 +165,12 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-kafka</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
@@ -178,6 +184,12 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-cassandra</artifactId>
+      <type>tar.gz</type>
+      <classifier>confset</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-service</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
@@ -224,7 +236,7 @@
       <type>tar.gz</type>
     </dependency>
   </dependencies>
-  
+
   <build>
     <resources>
       <resource>
@@ -271,5 +283,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>

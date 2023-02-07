@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -141,7 +142,7 @@ public class HostedByArchiveManager
         logger.trace( "Processed path is {}", path );
         if ( StringUtils.isNotBlank( ignoredPrefix ) && path.startsWith( ignoredPrefix ) )
         {
-            path = path.replaceFirst( ignoredPrefix, "" );
+            path = path.replaceFirst( Pattern.quote(ignoredPrefix), "" );
         }
         contentManager.store( repo, path, input, TransferOperation.UPLOAD );
     }

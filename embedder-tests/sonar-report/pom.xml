@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@
   <parent>
     <artifactId>indy-embedder-tests</artifactId>
     <groupId>org.commonjava.indy.embed.test</groupId>
-    <version>2.6.0-SNAPSHOT</version>
+    <version>2.7.4-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -51,11 +51,23 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-model-core-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-client-core-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-groovy</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-infinispan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-cassandra</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -71,11 +83,51 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-cpool</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-flatfile</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-http</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-subsys-git</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-filer-default</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-db-flat</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-metrics</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-infinispan</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-cassandra</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-db-memory</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
@@ -118,6 +170,14 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-pkg-npm-jaxrs</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-pkg-npm-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-pkg-npm-model-java</artifactId>
+    </dependency>
 
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -133,15 +193,27 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-koji-jaxrs</artifactId>
+      <artifactId>indy-folo-client-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy.boot</groupId>
-      <artifactId>indy-booter-jaxrs</artifactId>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-folo-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-jaxrs</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-koji-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-koji-client-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -153,8 +225,11 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-promote-common</artifactId>
-      <classifier>dataset</classifier>
+      <artifactId>indy-promote-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-promote-model-java</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -180,8 +255,104 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-content-browse-jaxrs</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-db</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-fixtures-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-providers-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-test-utils</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-path-mapped-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-path-mapped-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-path-mapped-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.auditquery</groupId>
+      <artifactId>auditquery-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.auditquery</groupId>
+      <artifactId>auditquery-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-event-audit-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-repo-proxy-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-repo-proxy-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-schedule-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-schedule-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-changelog-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-changelog-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-changelog-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-implied-repos-model-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-implied-repos-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-diagnostics-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-sli</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-dot-maven-common</artifactId>
+    </dependency>
 
-
+    <!--
     <dependency>
       <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-identities</artifactId>
@@ -190,7 +361,6 @@
       <groupId>org.commonjava.atlas</groupId>
       <artifactId>atlas-relationships-api</artifactId>
     </dependency>
-
     <dependency>
       <groupId>org.infinispan</groupId>
       <artifactId>infinispan-commons</artifactId>
@@ -216,8 +386,6 @@
       <groupId>javax.cache</groupId>
       <artifactId>cache-api</artifactId>
     </dependency>
-
-
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-undertow-adapter</artifactId>
@@ -237,8 +405,8 @@
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se</artifactId>
-      <scope>compile</scope>
     </dependency>
+    -->
 
     <!-- Tests -->
     <dependency>
@@ -247,48 +415,39 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-dot-maven</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-httprox</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-diagnostics</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-pkg-maven</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-pkg-npm</artifactId>
-      <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-ftests-metrics</artifactId>
-    </dependency>
-
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-folo</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-implied-repos</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-promote</artifactId>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -298,6 +457,15 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-content-browse</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-changelog</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-repo-proxy</artifactId>
+    </dependency>
+    <!-- Tests -->
   </dependencies>
 
   <build>
@@ -388,11 +556,12 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
                 indy-ftests-koji,
                 indy-ftests-content-browse
+                indy-ftests-repo-proxy
+                indy-ftests-changelog
               </excludeArtifactIds>
               <classifier>sources</classifier>
               <includes>**/*.java</includes>
@@ -425,11 +594,12 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
                 indy-ftests-koji,
                 indy-ftests-content-browse
+                indy-ftests-repo-proxy
+                indy-ftests-changelog
               </excludeArtifactIds>
               <includes>**/*.class</includes>
               <overWriteReleases>false</overWriteReleases>
@@ -493,11 +663,12 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
                 indy-ftests-koji,
                 indy-ftests-content-browse
+                indy-ftests-repo-proxy
+                indy-ftests-changelog
               </includeArtifactIds>
               <classifier>sources</classifier>
               <includes>**/*.java</includes>
@@ -524,11 +695,12 @@
                 indy-ftests-promote,
                 indy-ftests-diagnostics,
                 indy-ftests-pkg-maven,
-                indy-ftests-metrics,
                 indy-ftests-pkg-npm,
                 indy-ftests-hosted-by-archive,
                 indy-ftests-koji,
                 indy-ftests-content-browse
+                indy-ftests-repo-proxy
+                indy-ftests-changelog
               </includeArtifactIds>
               <includes>**/*.class</includes>
             </configuration>
@@ -571,7 +743,8 @@
         <sonar.skip>false</sonar.skip>
         <sonar.projectKey>${project.groupId}:indy-sonar-report</sonar.projectKey>
         <sonar.projectName>Indy :: Overall Test coverage :: Sonar Report</sonar.projectName>
-        <sonar.projectDescription>Assemble all Indy unit test and ftest against all codes, and do sonar reporting</sonar.projectDescription>
+        <sonar.projectDescription>Assemble all Indy unit test and ftest against all codes, and do sonar reporting
+        </sonar.projectDescription>
         <sonar.projectVersion>${project.version}</sonar.projectVersion>
         <sonar.links.homepage>http://github.com/Commonjava/indy</sonar.links.homepage>
         <sonar.links.scm>scm:git:https://github.com/Commonjava/indy.git</sonar.links.scm>

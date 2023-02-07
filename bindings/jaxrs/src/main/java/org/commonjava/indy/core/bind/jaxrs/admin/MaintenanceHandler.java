@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -188,7 +188,7 @@ public class MaintenanceHandler
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
+            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", path, e.getMessage() ), e );
             response = responseHelper.formatResponse( e );
         }
         return response;
@@ -209,7 +209,7 @@ public class MaintenanceHandler
         }
         catch ( final IndyWorkflowException e )
         {
-            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", e.getMessage() ), e );
+            logger.error( String.format( "Failed to delete: %s in: ALL. Reason: %s", path, e.getMessage() ), e );
             response = responseHelper.formatResponse( e );
         }
         return response;

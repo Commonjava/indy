@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,23 +16,41 @@
 package org.commonjava.indy.subsys.kafka.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.propulsor.config.ConfigurationException;
+import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
-import org.commonjava.propulsor.config.section.MapSectionListener;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @SectionName( "kafka" )
 @ApplicationScoped
-public class KafkaConfig extends MapSectionListener
-        implements IndyConfigInfo
+public class KafkaConfig
+                implements IndyConfigInfo
 {
 
-    private static final boolean DEFAULT_ENABLED = false;
+    private static final String DEFAULT_BOOTSTRP_SERVERS = "127.0.0.1:9092";
+
+    private static final String DEFAULT_GROUP = "kstreams-group";
+
+    private static final Integer DEFAULT_RECORDS_PER_PARTITION = 1000;
+
+    private static final boolean DEFAULT_ENABLED = true;
 
     private Boolean enabled;
+
+    private String bootstrapServers;
+
+    private List<String> topics;
+
+    private String group;
+
+    private Integer recordsPerPartition;
 
     public KafkaConfig()
     {
@@ -43,14 +61,61 @@ public class KafkaConfig extends MapSectionListener
         return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
-    @Override
-    public void sectionComplete(String name) throws ConfigurationException
+    public Boolean getEnabled()
     {
-        String s = getConfiguration().get( "enabled" );
-        if ( s != null)
-        {
-            this.enabled = Boolean.parseBoolean( s );
-        }
+        return enabled;
+    }
+
+    @ConfigName( "enabled" )
+    public void setEnabled( final boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
+    public String getBootstrapServers()
+    {
+        return bootstrapServers == null ? DEFAULT_BOOTSTRP_SERVERS : bootstrapServers;
+    }
+
+    @ConfigName( "kafka.bootstrap.servers" )
+    public void setBootstrapServers( final String bootstrapServers )
+    {
+        this.bootstrapServers = bootstrapServers;
+    }
+
+    public List<String> getTopics()
+    {
+        return topics;
+    }
+
+    @ConfigName( "kafka.topics" )
+    public void setTopics( final String topic )
+    {
+        String[] topicArray = topic.split( "," );
+        this.topics = new ArrayList<>();
+        this.topics.addAll( Arrays.asList( topicArray ) );
+    }
+
+    public String getGroup()
+    {
+        String group = System.getenv( "POD_NAME" );
+        return isBlank( group ) ? DEFAULT_GROUP : group;
+    }
+
+    public void setGroup( final String group )
+    {
+        this.group = group;
+    }
+
+    public Integer getRecordsPerPartition()
+    {
+        return recordsPerPartition == null ? DEFAULT_RECORDS_PER_PARTITION : recordsPerPartition;
+    }
+
+    @ConfigName( "kafka.records.per.partition" )
+    public void setRecordsPerPartition( Integer recordsPerPartition )
+    {
+        this.recordsPerPartition = recordsPerPartition;
     }
 
     @Override

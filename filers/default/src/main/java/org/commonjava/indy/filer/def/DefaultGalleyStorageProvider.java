@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -87,6 +87,7 @@ import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvis
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.*;
 
+@SuppressWarnings( "unused" )
 @ApplicationScoped
 public class DefaultGalleyStorageProvider
 {
@@ -198,7 +199,7 @@ public class DefaultGalleyStorageProvider
             // Only work for local debug mode.
             ScheduledExecutorService debugDeleteExecutor = Executors.newScheduledThreadPool( 5, new NamedThreadFactory(
                     "debug-galley-delete-executor", new ThreadGroup( "debug-galley-delete-executor" ), true, 2 ) );
-            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, debugDeleteExecutor );
+            cacheProviderFactory = new PartyLineCacheProviderFactory( storeRoot, indyConfiguration.isTimeoutProcessing(), debugDeleteExecutor );
             return;
         }
 
@@ -222,17 +223,13 @@ public class DefaultGalleyStorageProvider
             if ( metricsConfig.isPathDBMetricsEnabled() )
             {
                 final String operations = metricsConfig.getPathDBMetricsOperations();
-                logger.info( "Create measured PathDB, operations: {}" );
+                logger.info( "Create measured PathDB, operations: {}", operations );
                 pathDB = new MeasuredPathDB( pathDB, metricsManager, getSupername( "pathDB" ) )
                 {
                     @Override
                     protected boolean isMetricEnabled( String metricName )
                     {
-                        if ( isBlank( operations ) || operations.contains( metricName ) )
-                        {
-                            return true;
-                        }
-                        return false;
+                        return isBlank( operations ) || operations.contains( metricName );
                     }
                 };
             }

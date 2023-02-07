@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class StoreContentListener
         Set<StoreKey> added = diffMembers[0];
         Set<StoreKey> removed = diffMembers[1];
 
-        logger.debug( "Diff members, added: {}, removed: {}", added, removed );
+        logger.info( "Diff members, added: {}, removed: {}", added, removed );
 
         Set<Group> groups = new HashSet<>();
         groups.add( group );
@@ -151,7 +151,7 @@ public class StoreContentListener
             logger.error( "Failed to retrieve groups affected by: {}", group.getKey(), e );
         }
 
-        logger.debug( "Affected groups: {}", groups );
+        logger.info( "Affected groups: {}", groups );
 
         final boolean deleteOriginPath = false;
 

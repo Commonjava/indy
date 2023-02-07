@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class ApiVersioningFilter
         String reqApiVersion = httpServletRequest.getHeader( HEADER_INDY_API_VERSION );
 
         // Insert 3 headers into outgoing responses
-        httpServletResponse.addHeader( HEADER_INDY_API_VERSION, reqApiVersion );
+        // httpServletResponse.addHeader( HEADER_INDY_API_VERSION, reqApiVersion );
         httpServletResponse.addHeader( HEADER_INDY_CUR_API_VERSION, indyVersioning.getApiVersion() );
         httpServletResponse.addHeader( HEADER_INDY_MIN_API_VERSION, indyDeprecatedApis.getMinApiVersion() );
 

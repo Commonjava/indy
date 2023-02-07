@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.commonjava.indy.rest.apigen;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -30,10 +29,11 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
@@ -64,12 +64,11 @@ public class SwaggerExportTest
             {
                 assertThat( response.getStatusLine().getStatusCode(), equalTo( 200 ) );
 
-                String content = IOUtils.toString( response.getEntity().getContent() );
-                FileUtils.write( new File( "target/classes/indy-rest-api." + ext ), content );
+                String content = IOUtils.toString( response.getEntity().getContent(), Charset.defaultCharset() );
+                FileUtils.write( new File( "target/classes/indy-rest-api." + ext ), content, Charset.defaultCharset() );
             }
             catch ( IOException e )
             {
-                e.printStackTrace();
                 fail( "failed to retrieve swagger." + ext );
             }
         } );
