@@ -27,14 +27,14 @@ module.exports =
         "filename": "indy.bundle.js"
     },
     plugins: [
-      new CopyWebpackPlugin(
-        Assets.map(asset => {
+      new CopyWebpackPlugin({
+        patterns: Assets.map(asset => {
           return {
             from: path.resolve(__dirname, `./${asset.from?asset.from:asset}`),
             to: path.resolve(__dirname, `./dist/${asset.to?asset.to:asset}`)
           };
         })
-      )
+      })
     ],
     devServer: {
       port: 3000,
