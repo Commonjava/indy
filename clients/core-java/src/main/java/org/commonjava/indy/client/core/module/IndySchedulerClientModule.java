@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,16 +81,16 @@ public class IndySchedulerClientModule
         Map<StoreKey, Date> result = new HashMap<>();
         expSet.forEach( ( exp ) -> {
             logger.debug( "Mapping expiration for group: {} (parts: {})", exp.getGroup(),
-                          Arrays.asList( exp.getGroup().split( "\\s*#\\s*" ) ) );
+                          Arrays.asList( exp.getGroup().split( "#" ) ) );
 
-            String[] parts = exp.getGroup().split( "\\s*#\\s*" );
+            String[] parts = exp.getGroup().split( "#" );
             if ( parts.length < 2 )
             {
                 logger.warn( "Skipping invalid store-disabled timeout group: '{}'", exp.getGroup() );
             }
             else
             {
-                StoreKey key = StoreKey.fromString( parts[0] );
+                StoreKey key = StoreKey.fromString( parts[0].trim() );
                 logger.debug( "{} -> {}", key, exp.getExpiration() );
 
                 result.put( key, exp.getExpiration() );

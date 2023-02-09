@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class IspnRegistrySetProvider
         List<String> list = null;
         if ( gauges != null )
         {
-            list = Arrays.asList( gauges.trim().split( "\\s*,\\s*" ) );
+            list = Arrays.asList( gauges.trim().split( "," ) );
         }
 
         for ( IspnCacheRegistry cacheRegistry : cacheRegistrySet )
@@ -79,5 +79,11 @@ public class IspnRegistrySetProvider
     public boolean isEnabled()
     {
         return metricsConfig.isIspnMetricsEnabled();
+    }
+
+    @Override
+    public void reset()
+    {
+        getMetricSet().reset();
     }
 }

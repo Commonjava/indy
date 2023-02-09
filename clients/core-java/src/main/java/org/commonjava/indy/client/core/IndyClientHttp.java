@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -322,6 +322,8 @@ public class IndyClientHttp
             client = newClient();
             addLoggingMDCToHeaders(request);
             response = client.execute( request, newContext() );
+            logger.trace( "Get request url path: {}, url host: {}", request.getURI().getPath(),
+                          request.getURI().getHost() );
             final StatusLine sl = response.getStatusLine();
             if ( sl.getStatusCode() != 200 )
             {

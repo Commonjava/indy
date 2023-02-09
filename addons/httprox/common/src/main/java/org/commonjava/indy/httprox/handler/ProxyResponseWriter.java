@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -268,7 +268,7 @@ public final class ProxyResponseWriter
                                      PROXY_AUTHENTICATION_REQUIRED, proxy_authenticate, realmInfo );
 
                         http.writeStatus( PROXY_AUTHENTICATION_REQUIRED );
-                        http.writeHeader( proxy_authenticate, realmInfo );
+                        http.writeHeader( proxy_authenticate, String.format( "%s\n", realmInfo ) );
                     }
                     else
                     {

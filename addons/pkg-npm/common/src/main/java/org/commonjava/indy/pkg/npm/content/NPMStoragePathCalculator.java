@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,6 +83,11 @@ public class NPMStoragePathCalculator
             if ( extension != null )
             {
                 pkg = path.substring( 0, path.indexOf( extension ) );
+            }
+
+            if ( pkg.startsWith( "/" ) )
+            {
+                pkg = pkg.substring( 1 );
             }
 
             // This is considering the single path for npm standard like "/jquery"

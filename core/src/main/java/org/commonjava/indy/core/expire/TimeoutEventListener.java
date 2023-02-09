@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -155,7 +155,7 @@ public class TimeoutEventListener
                 }
                 catch ( final IndySchedulerException e )
                 {
-                    logger.error( "Failed to clean up metadata / set snapshot timeouts related to: " + transfer, e );
+                    logger.error( "Failed to clean up metadata / set snapshot timeouts related to: {}. Reason: {} ", transfer, e );
                 }
 
                 break;
@@ -168,7 +168,7 @@ public class TimeoutEventListener
                 }
                 catch ( final IndySchedulerException e )
                 {
-                    logger.error( "Failed to clean up metadata / set proxy-cache timeouts related to: " + transfer, e );
+                    logger.error( "Failed to clean up metadata / set proxy-cache timeouts related to: {}. Reason: {}", transfer, e );
                 }
 
                 break;
@@ -202,7 +202,7 @@ public class TimeoutEventListener
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to set snapshot timeouts related to: " + transfer, e );
+                        logger.error( "Failed to set snapshot timeouts related to: {}. Reason: {}", transfer, e );
                     }
                 }
                 else if ( type == StoreType.remote )
@@ -217,7 +217,7 @@ public class TimeoutEventListener
                         }
                         catch ( final IndySchedulerException e )
                         {
-                            logger.error( "Failed to set proxy-cache timeouts related to: " + transfer, e );
+                            logger.error( "Failed to set proxy-cache timeouts related to: {}. Reason: {}", transfer, e );
                         }
                     }
                     else
@@ -274,7 +274,7 @@ public class TimeoutEventListener
                     }
                     catch ( final IndySchedulerException e )
                     {
-                        logger.error( "Failed to update proxy-cache timeouts in: " + store.getKey(), e );
+                        logger.error( "Failed to update proxy-cache timeouts in: {}. Reason: {}", store.getKey(), e );
                     }
                 }
             }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class ValidationRuleParser
                                          e.getMessage() ), e );
         }
 
-        if ( !spec.contains( "import " ) && !spec.contains( "package " ) )
+        if ( spec != null && !spec.contains( "import " ) && !spec.contains( "package " ) )
         {
             spec = STANDARD_IMPORTS + spec;
         }

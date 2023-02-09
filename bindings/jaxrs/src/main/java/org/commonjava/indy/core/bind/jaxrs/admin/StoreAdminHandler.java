@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.annotations.Tag;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.indy.IndyWorkflowException;
@@ -81,10 +83,15 @@ import org.commonjava.indy.util.ApplicationContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-
-@Api( description = "Resource for accessing and managing artifact store definitions", value = "Store Administration" )
+/**
+ * @deprecated In new service-oriented architecture, the repository admin functions will be served as a separated service,
+ * so this REST resource will be deprecated and removed in the future.
+ */
+@Api( tags = { "Store Administration" } )
+@SwaggerDefinition( tags = { @Tag( name = "Store Administration",
+                                   description = "Resource for accessing and managing artifact store definitions" ) } )
 @Path( "/api/admin/stores/{packageType}/{type: (hosted|group|remote)}" )
+@Deprecated
 @ApplicationScoped
 @REST
 public class StoreAdminHandler

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
+import org.commonjava.indy.db.common.inject.Clustered;
 import org.commonjava.indy.model.core.AbstractRepository;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -54,8 +55,12 @@ import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.group;
 import static org.commonjava.indy.model.core.StoreType.remote;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
 @ApplicationScoped
-@ClusterStoreDataManager
+@Clustered
+@Deprecated
 public class CassandraStoreDataManager extends AbstractStoreDataManager
 {
 
@@ -265,6 +270,13 @@ public class CassandraStoreDataManager extends AbstractStoreDataManager
                         if ( !processed.contains( gKey ) && !toProcess.contains( gKey ) )
                         {
                             ArtifactStore store = getArtifactStoreInternal( gKey );
+
+                            if ( store == null )
+                            {
+                                logger.error( "Error: the group {} does not exist as affected by for store {}", gKey, key );
+                                processed.add( gKey );
+                                continue;
+                            }
 
                             // if this group is disabled, we don't want to keep loading it again and again.
                             if ( store.isDisabled() )

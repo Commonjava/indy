@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -207,7 +207,8 @@ public class PromotionValidationTools
         }
         else
         {
-            List<StoreKey> extras = Stream.of( verifyStores.split( "\\s*,\\s*" ) )
+            List<StoreKey> extras = Stream.of( verifyStores.split( "," ) )
+                                          .map( String::trim )
                                           .map( StoreKey::fromString )
                                           .filter( item -> item != null )
                                           .collect( Collectors.toList() );
@@ -612,6 +613,10 @@ public class PromotionValidationTools
         return storeDataManager.getArtifactStore( key );
     }
 
+    /**
+     * @deprecated This method is not used anywhere, so may be removed later
+     */
+    @Deprecated
     public Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException
     {

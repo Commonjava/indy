@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,22 +15,23 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-koji</artifactId>
     <version>1.6.1-SNAPSHOT</version>
   </parent>
-  
+
   <artifactId>indy-ftests-koji</artifactId>
   <name>Indy :: Koji Integration :: Functional Tests</name>
 
   <properties>
     <maven.javadoc.skip>true</maven.javadoc.skip>
   </properties>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

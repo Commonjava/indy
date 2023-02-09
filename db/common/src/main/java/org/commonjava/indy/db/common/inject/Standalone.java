@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.repo.proxy.jaxrs;
+package org.commonjava.indy.db.common.inject;
 
-import io.swagger.annotations.Api;
-import org.commonjava.indy.bind.jaxrs.IndyResources;
-import org.commonjava.indy.bind.jaxrs.util.REST;
+import javax.inject.Qualifier;
+import java.lang.annotation.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.Path;
-
-@Api( value = "Repository Proxy administration REST interface" )
-@Path( "/api/repoproxy/admin" )
-@ApplicationScoped
-@REST
-public class RepoProxyAdminResource implements IndyResources
+/**
+ * Qualifier used to supply the storeDataManager in standalone mode.
+ */
+@Qualifier
+@Target( { ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
+@Retention( RetentionPolicy.RUNTIME)
+@Documented
+public @interface Standalone
 {
 }

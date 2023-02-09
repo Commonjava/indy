@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -93,12 +93,11 @@ public class SchedulerController
             ExpirationSet expirations = scheduleManager.findMatchingExpirations( StoreEnablementManager.DISABLE_TIMEOUT );
 
             // TODO: This seems REALLY inefficient...
-            storeDataManager.getAllArtifactStores().forEach( (store)->{
-                if ( store.isDisabled() )
-                {
-                    expirations.getItems().add( indefiniteDisable( store ) );
-                }
-            });
+            storeDataManager.query()
+                            .enabledState( false )
+                            .noPackageType()
+                            .getAll()
+                            .forEach( s -> expirations.getItems().add( indefiniteDisable( s ) ) );
 
             return expirations;
         }

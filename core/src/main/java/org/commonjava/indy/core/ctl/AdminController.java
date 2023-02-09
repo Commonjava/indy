@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,9 +125,7 @@ public class AdminController
         {
             if ( !ALL_PACKAGE_TYPES.equals( packageType ) )
             {
-                return storeManager.getArtifactStoresByPkgAndType( packageType, type )
-                                   .stream()
-                                   .collect( Collectors.toList() );
+                return new ArrayList<>( storeManager.getArtifactStoresByPkgAndType( packageType, type ) );
             }
             else
             {
@@ -232,7 +230,7 @@ public class AdminController
             }
             return disabledArtifactStores;
         } catch (IndyDataException e) {
-            e.printStackTrace();
+            logger.error( "Get disabled remote repositories error: {}", e.getMessage(), e );
         }
         return disabledArtifactStores;
     }

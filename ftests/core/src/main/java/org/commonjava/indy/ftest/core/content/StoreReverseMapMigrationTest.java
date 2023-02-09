@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -251,7 +251,7 @@ public class StoreReverseMapMigrationTest
         }
         catch ( SAXException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Downloaded XML not equal to expected XML" );
         }
     }

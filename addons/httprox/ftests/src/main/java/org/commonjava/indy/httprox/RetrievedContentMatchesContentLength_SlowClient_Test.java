@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,11 +24,12 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class RetrievedContentMatchesContentLength_SlowClient_Test
                 extends AbstractHttproxFunctionalTest
@@ -46,7 +47,7 @@ public class RetrievedContentMatchesContentLength_SlowClient_Test
 
     private static final String PASS = "password";
 
-    private Random rand = new Random();
+    private SecureRandom rand = new SecureRandom();
 
     @Test
     public void run()

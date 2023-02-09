@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import javax.enterprise.inject.spi.CDI;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -173,7 +174,7 @@ public abstract class AbstractIndyFunctionalTest
         }
         catch ( InterruptedException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
             fail( "Thread interrupted while waiting for server events to propagate." );
         }
 
@@ -241,7 +242,7 @@ public abstract class AbstractIndyFunctionalTest
         }
         catch ( InterruptedException e )
         {
-            e.printStackTrace();
+            logger.error( e.getMessage(), e );
         }
         CacheProvider cacheProvider = CDI.current().select( CacheProvider.class).get();
         cacheProvider.asAdminView().gc();
@@ -304,6 +305,12 @@ public abstract class AbstractIndyFunctionalTest
                         + "folo.storage=infinispan\n"
                         + "store.storage=infinispan\n"
                         + "schedule.storage=infinispan");
+
+        writeConfigFile( "conf.d/kafka.conf", "[kafka]\n"
+                        + "enabled=true\n"
+                        + "kafka.bootstrap.servers=127.0.0.1:9092\n"
+                        + "kafka.topics=store-event\n"
+                        + "kafka.group=kstreams-group");
 
         writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true"+ "\nfolo.cassandra.keyspace=folo" + "\ntrack.group.content=True");
 
@@ -399,7 +406,7 @@ public abstract class AbstractIndyFunctionalTest
 
     protected String newName()
     {
-        final Random rand = new Random();
+        final SecureRandom rand = new SecureRandom();
         final StringBuilder sb = new StringBuilder();
         for ( int i = 0; i < NAME_LEN; i++ )
         {

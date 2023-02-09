@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.db.common;
 
-import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.data.ArtifactStoreQuery;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -62,13 +61,14 @@ import static org.commonjava.indy.model.core.StoreType.group;
  * Created by jdcasey on 5/10/17.
  */
 // TODO: Eventually, it should probably be an error if packageType isn't set explicitly
+@SuppressWarnings( "unchecked" )
 public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         implements ArtifactStoreQuery<T>
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    private StoreDataManager dataManager;
+    private final StoreDataManager dataManager;
 
     private String packageType = MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
@@ -82,6 +82,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         this.dataManager = dataManager;
     }
 
+    @SuppressWarnings( "unused" )
     private DefaultArtifactStoreQuery( final StoreDataManager dataManager, final String packageType,
                                        final Boolean enabled, final Class<T> storeCls )
     {
@@ -93,12 +94,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         storeType( storeCls );
     }
 
-    @Override
-    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
-    {
-        this.dataManager = manager;
-        return this;
-    }
+//    @Override
+//    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
+//    {
+//        this.dataManager = manager;
+//        return this;
+//    }
 
     @Override
     public <C extends ArtifactStore> DefaultArtifactStoreQuery<C> storeType( Class<C> storeCls )
@@ -139,11 +140,11 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-    @Override
-    public boolean isEmpty()
-    {
-        return this.dataManager.isEmpty();
-    }
+//    @Override
+//    public boolean isEmpty()
+//    {
+//        return this.dataManager.isEmpty();
+//    }
 
     @Override
     @Measure
@@ -153,17 +154,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return stream().collect( Collectors.toList() );
     }
 
-    @Override
     @Measure
-    public Stream<T> stream()
+    private Stream<T> stream()
             throws IndyDataException
     {
         return stream( store -> true );
     }
 
-    @Override
     @Measure
-    public Stream<T> stream( Predicate<ArtifactStore> filter )
+    private Stream<T> stream( Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
         /* @formatter:off */
@@ -235,17 +234,16 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return stream( store -> name.equals( store.getName() ) ).findFirst().orElse( null );
     }
 
-    @Override
-    public boolean containsByName( String name )
-            throws IndyDataException
-    {
-        return getByName( name ) != null;
-    }
+//    @Override
+//    public boolean containsByName( String name )
+//            throws IndyDataException
+//    {
+//        return getByName( name ) != null;
+//    }
 
     @Override
     @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey )
-            throws IndyDataException
     {
         return getGroupsContaining( storeKey, Boolean.TRUE );
     }
@@ -253,7 +251,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey, Boolean enabled )
-                    throws IndyDataException
     {
         return getAllGroups( storeKey.getPackageType(), enabled ).stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
@@ -261,7 +258,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url )
-                    throws IndyDataException
     {
         return getRemoteRepositoryByUrl( packageType, url, Boolean.TRUE );
     }
@@ -269,7 +265,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     @Override
     @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url, Boolean enabled )
-            throws IndyDataException
     {
         /*
            This filter does these things:
@@ -307,15 +302,12 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                 return false;
             }
 
-            if ( targetUrlInfo != null )
+            if ( urlInfo.getUrlWithNoSchemeAndLastSlash().equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
+                    && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ) )
             {
-                if ( urlInfo.getUrlWithNoSchemeAndLastSlash().equals( targetUrlInfo.getUrlWithNoSchemeAndLastSlash() )
-                                && urlInfo.getProtocol().equals( targetUrlInfo.getProtocol() ) )
-                {
-                    logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
-                                  store.getKey() );
-                    return true;
-                }
+                logger.debug( "Repository found because of same host, url is {}, store key is {}", url,
+                              store.getKey() );
+                return true;
             }
 
             return false;
@@ -339,32 +331,28 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     return false;
                 }
 
-                if (  targetUrlInfo != null )
+                String ipForUrl = null;
+                String ipForTargetUrl = null;
+                try
                 {
-                    String ipForUrl = null;
-                    String ipForTargetUrl = null;
-                    try
+                    ipForUrl = urlInfo.getIpForUrl();
+                    ipForTargetUrl = targetUrlInfo.getIpForUrl();
+                    if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
+                            && urlInfo.getPort() == targetUrlInfo.getPort()
+                            && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
                     {
-                        ipForUrl = urlInfo.getIpForUrl();
-                        ipForTargetUrl = targetUrlInfo.getIpForUrl();
-                        if ( ipForUrl != null && ipForUrl.equals( ipForTargetUrl )
-                                && urlInfo.getPort() == targetUrlInfo.getPort()
-                                && urlInfo.getFileWithNoLastSlash().equals( targetUrlInfo.getFileWithNoLastSlash() ) )
-                        {
-                            logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
-                                          store.getKey() );
-                            return true;
-                        }
+                        logger.debug( "Repository found because of same ip, url is {}, store key is {}", url,
+                                      store.getKey() );
+                        return true;
                     }
-                    catch ( UnknownHostException ue )
-                    {
-                        logger.warn( "Failed to filter remote: {}, ip fetch error: {}.", store.getKey(), ue.getMessage() );
-                    }
-
-                    logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
-                                  store.getKey(), ipForTargetUrl );
+                }
+                catch ( UnknownHostException ue )
+                {
+                    logger.warn( "Failed to filter remote: {}, ip fetch error: {}.", store.getKey(), ue.getMessage() );
                 }
 
+                logger.debug( "ip not same: ip for url:{}-{}; ip for searching repo: {}-{}", url, ipForUrl,
+                              store.getKey(), ipForTargetUrl );
 
             return false;
         } ).collect(Collectors.toList());
@@ -428,32 +416,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
             throws IndyDataException
     {
         return dataManager.affectedBy( keys );
-    }
-
-    public Stream<StoreKey> keyStream()
-    {
-        return keyStream( null );
-    }
-
-    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-    {
-        final Stream<StoreKey> storeKeys;
-        if ( StringUtils.isNotBlank( this.packageType ) )
-        {
-            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
-        }
-        else
-        {
-            storeKeys = dataManager.streamArtifactStoreKeys();
-        }
-        return storeKeys.filter(key -> {
-            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
-            {
-                return false;
-            }
-
-            return filterPredicate == null || filterPredicate.test(key);
-        });
     }
 
     @Override
@@ -557,7 +519,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                                                    final boolean includeGroups, final boolean recurseGroups) throws IndyDataException
     {
 
-        if ( groupRepo == null || groupRepo.isDisabled() && Boolean.TRUE.equals(this.enabled) )
+        if ( groupRepo == null || groupRepo.isDisabled() && enabled )
         {
             return result;
         }
@@ -588,7 +550,7 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
                     else
                     {
                         final ArtifactStore store = dataManager.getArtifactStore( key );
-                        if (store != null && !(store.isDisabled() && Boolean.TRUE.equals( this.enabled )))
+                        if ( store != null && ( store.isDisabled() != enabled ) )
                         {
                             result.add( store );
                         }

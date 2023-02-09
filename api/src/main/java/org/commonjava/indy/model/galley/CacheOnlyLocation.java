@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,11 @@ import org.commonjava.indy.content.IndyLocationExpander;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.model.Location;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +32,7 @@ import java.util.Map;
  * store-related {@link KeyedLocation} types, assuming it's not referencing a {@link HostedRepository}, via the {@link IndyLocationExpander} component.
  */
 public class CacheOnlyLocation
-    implements KeyedLocation
+                implements KeyedLocation
 {
 
     private final Map<String, Object> attributes = new HashMap<String, Object>();
@@ -150,7 +154,47 @@ public class CacheOnlyLocation
     public <T> T getAttribute( final String key, final Class<T> type, final T defaultValue )
     {
         final Object value = attributes.get( key );
-        return value == null ? defaultValue : type.cast( value );
+        if ( value == null )
+        {
+            return defaultValue;
+        }
+        else if ( type.isAssignableFrom( value.getClass() ) )
+        {
+            return type.cast( value );
+        }
+        else if ( value.getClass() == String.class && Number.class.isAssignableFrom( type ) )
+        {
+            Number n = null;
+            try
+            {
+                n = NumberFormat.getInstance().parse( (String) value );
+            }
+            catch ( ParseException e )
+            {
+                Logger logger = LoggerFactory.getLogger( getClass() );
+                logger.error( "Failed to get attribute, key: {}, value: {}", key, value, e );
+            }
+            // convert, e.g., n might be Long while the T is Integer
+            Object ret;
+            if ( type == Long.TYPE )
+            {
+                ret = new Long( n.longValue() );
+            }
+            else if ( type == Float.TYPE )
+            {
+                ret = new Float( n.floatValue() );
+            }
+            else if ( type == Double.TYPE )
+            {
+                ret = new Double( n.doubleValue() );
+            }
+            else
+            {
+                ret = new Integer( n.intValue() ); // default int
+            }
+            return (T) ret;
+        }
+        return defaultValue;
     }
 
     @Override

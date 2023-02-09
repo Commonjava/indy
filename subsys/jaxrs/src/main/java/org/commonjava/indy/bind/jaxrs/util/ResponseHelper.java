@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -201,6 +201,10 @@ public class ResponseHelper
                 logger.debug( "Adding Content-Length header: {}", item.length() );
 
                 builder.header( ApplicationHeader.content_length.key(), item.length() );
+
+                logger.debug( "Removing Transfer-Encoding header if Content-Length header already set." );
+
+                builder.header( ApplicationHeader.transfer_encoding.key(), null );
             }
 
             if ( !conTypeSet )

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!--
 
-    Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,12 +21,12 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-bindings</artifactId>
-    <version>2.7.3</version>
+    <version>3.0.1</version>
   </parent>
-  
+
   <artifactId>indy-bindings-jaxrs</artifactId>
   <name>Indy :: Bindings :: JAX-RS</name>
-  
+
   <dependencies>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -54,5 +54,5 @@
       <artifactId>indy-db-flat</artifactId>
     </dependency>
   </dependencies>
-  
+
 </project>

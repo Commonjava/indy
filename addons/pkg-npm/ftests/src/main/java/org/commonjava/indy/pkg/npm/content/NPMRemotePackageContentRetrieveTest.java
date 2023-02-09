@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,13 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.security.SecureRandom;
 import java.util.Random;
 
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * This case tests if package.tgz can be retrieved correctly in a remote repo
@@ -49,7 +50,7 @@ public class NPMRemotePackageContentRetrieveTest
     public void test() throws Exception
     {
         byte[] tgz = new byte[32];
-        new Random().nextBytes( tgz );
+        new SecureRandom().nextBytes( tgz );
 
         final String tarballPath = "jquery/-/jquery-1.1.0.tgz";
 

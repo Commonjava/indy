@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,7 +71,6 @@ public class TestProvider
         }
         catch ( final IOException e )
         {
-            e.printStackTrace();
             Assert.fail( "Failed to setup temporary directory structures: " + e.getMessage() );
         }
 

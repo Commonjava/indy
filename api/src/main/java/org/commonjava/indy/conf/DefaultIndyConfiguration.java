@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2020 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,6 +60,8 @@ public class DefaultIndyConfiguration
 
     public static final Boolean DEFAULT_STANDALONE = false;
 
+    public static final Boolean DEFAULT_TIMEOUT_PROCESSING = false;
+
     public static final Boolean DEFAULT_STORE_MANAGER_STANDALONE = false;
 
     public static final String DEFAULT_DISPOSABLE_STORE_PATTERN = ".*test.*";
@@ -109,6 +111,8 @@ public class DefaultIndyConfiguration
     private String disposableStorePattern;
 
     private Integer keyspaceReplicas;
+
+    private Boolean timeoutProcessing;
 
     public DefaultIndyConfiguration()
     {
@@ -392,6 +396,11 @@ public class DefaultIndyConfiguration
         return repositoryFilterEnabled;
     }
 
+    public Boolean isTimeoutProcessing()
+    {
+        return this.timeoutProcessing == null ? DEFAULT_TIMEOUT_PROCESSING : this.timeoutProcessing;
+    }
+
     @ConfigName( "ga-cache.store.pattern" )
     public void getGACacheStorePattern( String gaCacheStorePattern )
     {
@@ -425,6 +434,12 @@ public class DefaultIndyConfiguration
     public void setKeyspaceReplicas( final int keyspaceReplicas )
     {
         this.keyspaceReplicas = keyspaceReplicas;
+    }
+
+    @ConfigName( "timeout.processing.enabled" )
+    public void setTimeoutProcessing( Boolean timeoutProcessing )
+    {
+        this.timeoutProcessing = timeoutProcessing;
     }
 
     @Override
