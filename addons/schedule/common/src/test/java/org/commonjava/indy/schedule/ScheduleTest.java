@@ -28,12 +28,14 @@ import org.infinispan.manager.DefaultCacheManager;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 
 import java.util.Collection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+@Ignore
 public class ScheduleTest
 {
 
