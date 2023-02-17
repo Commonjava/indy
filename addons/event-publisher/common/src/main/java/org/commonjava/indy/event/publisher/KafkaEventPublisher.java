@@ -1,5 +1,6 @@
 package org.commonjava.indy.event.publisher;
 
+import org.commonjava.event.common.EventMetadata;
 import org.commonjava.event.file.FileEvent;
 import org.commonjava.event.file.FileEventType;
 import org.commonjava.indy.IndyWorkflowException;
@@ -16,7 +17,6 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.kafka.IndyKafkaProducer;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
-import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
@@ -30,10 +30,12 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 
 @ApplicationScoped
 public class KafkaEventPublisher
-                implements FileEventPublisher
+        implements FileEventPublisher
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -62,7 +64,7 @@ public class KafkaEventPublisher
     public void onFileDelete( @Observes final FileDeletionEvent event )
     {
 
-        if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ))
+        if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ) )
         {
             return;
         }
@@ -75,7 +77,7 @@ public class KafkaEventPublisher
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
 
-        if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ))
+        if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ) )
         {
             return;
         }
@@ -85,9 +87,9 @@ public class KafkaEventPublisher
         publishFileEvent( fileEvent );
     }
 
-    private void transformFileEvent( org.commonjava.maven.galley.event.FileEvent event, FileEvent fileEvent )
+    private void transformFileEvent( org.commonjava.maven.galley.event.FileEvent galleyEvent, FileEvent fileEvent )
     {
-        Transfer transfer = event.getTransfer();
+        Transfer transfer = galleyEvent.getTransfer();
         if ( transfer == null )
         {
             logger.trace( "No transfer." );
@@ -111,22 +113,35 @@ public class KafkaEventPublisher
             fileEvent.setTargetPath( path );
             fileEvent.setNodeId( indyConfig.getNodeId() );
 
-            EventMetadata metadata = event.getEventMetadata();
-            final TrackingKey trackingKey = (TrackingKey) metadata.get( "tracking-id" );
-            if ( trackingKey != null )
+            org.commonjava.maven.galley.event.EventMetadata galleyMetadata = galleyEvent.getEventMetadata();
+            if ( galleyMetadata != null )
             {
-                fileEvent.setSessionId( trackingKey.getId() );
+                EventMetadata fileMetadata = fileEvent.getEventMetadata();
+                if ( fileMetadata == null )
+                {
+                    fileMetadata = new EventMetadata();
+                }
+                for ( Map.Entry<Object, Object> galleyMetaItem : galleyMetadata )
+                {
+                    fileMetadata.set( galleyMetaItem.getKey(), galleyMetaItem.getValue() );
+                }
+                final TrackingKey trackingKey = (TrackingKey) galleyMetadata.get( "tracking-id" );
+                if ( trackingKey != null )
+                {
+                    fileEvent.setSessionId( trackingKey.getId() );
+                }
             }
+
             fileEvent.setTimestamp( new Date() );
 
-            TransferMetadata artifactData = contentDigester.digest( affectedStore, path, metadata );
+            TransferMetadata artifactData = contentDigester.digest( affectedStore, path, galleyMetadata );
             fileEvent.setMd5( artifactData.getDigests().get( ContentDigest.MD5 ) );
             fileEvent.setSha1( artifactData.getDigests().get( ContentDigest.SHA_1 ) );
             fileEvent.setChecksum( artifactData.getDigests().get( ContentDigest.SHA_256 ) );
             fileEvent.setSize( artifactData.getSize() );
             fileEvent.setStoreKey( affectedStore.toString() );
 
-            if ( StoreType.remote == affectedStore.getType())
+            if ( StoreType.remote == affectedStore.getType() )
             {
                 final RemoteRepository repo = (RemoteRepository) storeManager.getArtifactStore( affectedStore );
                 if ( repo != null )
