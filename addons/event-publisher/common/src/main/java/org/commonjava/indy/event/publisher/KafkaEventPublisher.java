@@ -17,6 +17,7 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.kafka.IndyKafkaProducer;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
+import org.commonjava.maven.galley.event.FileAccessEvent;
 import org.commonjava.maven.galley.event.FileDeletionEvent;
 import org.commonjava.maven.galley.event.FileStorageEvent;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
@@ -83,6 +84,19 @@ public class KafkaEventPublisher
         }
 
         FileEvent fileEvent = new FileEvent( FileEventType.STORAGE );
+        transformFileEvent( event, fileEvent );
+        publishFileEvent( fileEvent );
+    }
+
+    public void onFileAccess( @Observes final FileAccessEvent event )
+    {
+
+        if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ) )
+        {
+            return;
+        }
+
+        FileEvent fileEvent = new FileEvent( FileEventType.ACCESS );
         transformFileEvent( event, fileEvent );
         publishFileEvent( fileEvent );
     }
