@@ -30,7 +30,6 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Map;
 
 @ApplicationScoped
@@ -61,29 +60,25 @@ public class KafkaEventPublisher
     @Inject
     IndyObjectMapper objectMapper;
 
+    @SuppressWarnings( "unused" )
     public void onFileDelete( @Observes final FileDeletionEvent event )
     {
-
-        if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ) )
-        {
-            return;
-        }
-        FileEvent fileEvent = new FileEvent( FileEventType.DELETE );
-        transformFileEvent( event, fileEvent );
-        publishFileEvent( fileEvent );
-
+        handleEvent( event, new FileEvent( FileEventType.DELETE ) );
     }
 
+    @SuppressWarnings( "unused" )
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
+        handleEvent( event, new FileEvent( FileEventType.STORAGE ) );
+    }
 
+    private void handleEvent( final org.commonjava.maven.galley.event.FileEvent galleyFileEvent, final FileEvent fileEvent )
+    {
         if ( !IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler() ) )
         {
             return;
         }
-
-        FileEvent fileEvent = new FileEvent( FileEventType.STORAGE );
-        transformFileEvent( event, fileEvent );
+        transformFileEvent( galleyFileEvent, fileEvent );
         publishFileEvent( fileEvent );
     }
 
