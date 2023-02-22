@@ -1,0 +1,121 @@
+/**
+ * Copyright (C) 2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.commonjava.indy.folo.bind.jaxrs;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import org.apache.commons.lang.StringUtils;
+import org.commonjava.indy.IndyWorkflowException;
+import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.REST;
+import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
+import org.commonjava.indy.folo.ctl.FoloAdminController;
+import org.commonjava.indy.folo.dto.TrackedContentDTO;
+import org.commonjava.indy.folo.model.TrackedContentEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+@Api( value = "Tracking Record Admin Content Access", description = "Manages Content tracking records." )
+@Path( "/api/admin/content" )
+@ApplicationScoped
+@REST
+public class TrackingAdminResource
+                implements IndyResources
+{
+
+    private final Logger logger = LoggerFactory.getLogger( getClass() );
+
+    @Inject
+    private FoloAdminController controller;
+
+    @Inject
+    private ResponseHelper responseHelper;
+
+    @ApiOperation( "Recalculate sizes and checksums for every file listed in a tracking record." )
+    @ApiResponses( {
+                    @ApiResponse( code = 200, response = TrackedContentDTO.class, message = "Recalculated tracking report" ),
+                    @ApiResponse( code = 404, message = "No such tracking record can be found" ),
+                    @ApiResponse( code = 400, message = "All entries must belong to the same tracking Id" ) } )
+    @POST
+    @Path( "/tracking/recalculate" )
+    public Response recalculateEntrySet( @Context final UriInfo uriInfo, final Set<TrackedContentEntry> entries )
+    {
+        if ( entries == null )
+        {
+            return Response.status( Status.NOT_FOUND ).build();
+        }
+        String id = "";
+        String another_id = "";
+        for ( TrackedContentEntry entry : entries )
+        {
+            // Just get an id from an entry since all entries should belong to the same tracking id
+            id = entry.getTrackingKey().getId();
+            if ( !StringUtils.isNotBlank( another_id ) )
+            {
+                another_id = id;
+            }
+            else
+            {
+                if ( !another_id.equals( id ) )
+                {
+                    return Response.status( Status.BAD_REQUEST ).build();
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        Response response;
+        try
+        {
+            final Set<TrackedContentEntry> newEntries =
+                            controller.recalculateEntrySet( entries, id, new AtomicBoolean() );
+
+            if ( newEntries == null )
+            {
+                response = Response.status( Status.NOT_FOUND ).build();
+            }
+            else
+            {
+                response = responseHelper.formatOkResponseWithJsonEntity( newEntries );
+            }
+        }
+        catch ( final IndyWorkflowException e )
+        {
+            logger.error( String.format( "Failed to serialize tracking report for: %s. Reason: %s", id,
+                                         e.getMessage() ), e );
+
+            response = responseHelper.formatResponse( e );
+        }
+
+        return response;
+    }
+
+}

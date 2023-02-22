@@ -409,7 +409,7 @@ public class FoloAdminController
         return constructContentDTO( recalculated, baseUrl );
     }
 
-    private Set<TrackedContentEntry> recalculateEntrySet( final Set<TrackedContentEntry> entries,
+    public Set<TrackedContentEntry> recalculateEntrySet( final Set<TrackedContentEntry> entries,
                                                           final String id, final AtomicBoolean failed )
             throws IndyWorkflowException
     {
