@@ -24,7 +24,8 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
-import org.commonjava.indy.core.bind.jaxrs.util.TrackingContentController;
+import org.commonjava.indy.core.bind.jaxrs.util.ContentAdminController;
+import org.commonjava.indy.core.model.dto.TrackedContentDTO;
 import org.commonjava.indy.core.model.TrackedContentEntry;
 import org.commonjava.indy.core.model.dto.ContentTransferDTO;
 import org.slf4j.Logger;
@@ -34,12 +35,16 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import java.io.File;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.commonjava.indy.util.ApplicationContent.application_zip;
 
 @Api( value = "Tracking Record Admin Content Access", description = "Manages Content tracking records." )
 @Path( "/api/admin/content" )
@@ -52,10 +57,31 @@ public class ContentAdminResource
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private TrackingContentController controller;
+    private ContentAdminController controller;
 
     @Inject
     private ResponseHelper responseHelper;
+
+    // TODO need to disable folo {id}/repo/zip endpoint
+    @ApiOperation( "Retrieve the content referenced in a tracking record as a ZIP-compressed Maven repository directory." )
+    @ApiResponses( { @ApiResponse( code = 200, response = File.class, message = "ZIP repository content" ),
+                    @ApiResponse( code = 404, message = "No such tracking record" ) } )
+    @Path( "/repo/zip" )
+    @POST
+    @Produces( application_zip )
+    public File getZipRepository( @Context final UriInfo uriInfo, final TrackedContentDTO record )
+    {
+        try
+        {
+            return controller.renderRepositoryZip( record );
+        }
+        catch ( IndyWorkflowException e )
+        {
+            responseHelper.throwError( e );
+        }
+
+        return null;
+    }
 
     // TODO need to disable folo recalculate endpoint
     @ApiOperation( "Recalculate sizes and checksums for every file listed in a tracking record." )
