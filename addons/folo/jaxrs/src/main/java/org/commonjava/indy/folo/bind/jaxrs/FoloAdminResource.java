@@ -325,6 +325,24 @@ public class FoloAdminResource
         return Response.created( uriInfo.getRequestUri() ).build();
     }
 
+    @ApiOperation( "Store record for single folo content artifact." )
+    @ApiResponses( { @ApiResponse( code = 201, message = "Store entry content" ) } )
+    @Path( "/report/recordArtifact" )
+    @PUT
+    public Response recordArtifact( final @Context UriInfo uriInfo, final @Context HttpServletRequest request )
+    {
+        try
+        {
+            controller.recordArtifact( request.getInputStream() );
+        }
+        catch ( IOException e )
+        {
+            responseHelper.throwError( new IndyWorkflowException( "IO error", e ) );
+        }
+
+        return Response.created( uriInfo.getRequestUri() ).build();
+    }
+
     private Set<FoloConstants.TRACKING_TYPE> getRequiredTypes( String type )
     {
         Set<FoloConstants.TRACKING_TYPE> types = new HashSet<>();

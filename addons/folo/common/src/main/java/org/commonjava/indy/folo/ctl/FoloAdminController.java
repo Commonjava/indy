@@ -34,6 +34,7 @@ import org.commonjava.indy.folo.model.TrackedContentEntry;
 import org.commonjava.indy.folo.model.TrackingKey;
 import org.commonjava.indy.model.core.AccessChannel;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.checksum.ContentDigest;
@@ -96,6 +97,9 @@ public class FoloAdminController
     private ContentDigester contentDigester;
 
     @Inject
+    private IndyObjectMapper objectMapper;
+
+    @Inject
     @WeftManaged
     @ExecutorConfig( threads = 50, priority = 4, named = "folo-recalculator", maxLoadFactor = 100, loadSensitive = ExecutorConfig.BooleanLiteral.TRUE )
     private WeftExecutorService recalculationExecutor;
@@ -113,6 +117,29 @@ public class FoloAdminController
         this.contentManager = contentManager;
         this.contentDigester = contentDigester;
         this.recalculationExecutor = new SingleThreadedExecutorService( "folo-recalculator" );
+    }
+
+    public boolean recordArtifact( InputStream stream )
+    {
+        TrackedContentEntry entry;
+        boolean isRecorded = false;
+        try
+        {
+            entry = objectMapper.readValue( stream, TrackedContentEntry.class );
+            if ( entry != null )
+            {
+                isRecorded = recordManager.recordArtifact( entry );
+            }
+        }
+        catch ( IOException e )
+        {
+            logger.error( String.format( "Failed to record tracked entry. Reason: %s", e.getMessage() ), e );
+        }
+        catch ( final FoloContentException | IndyWorkflowException e )
+        {
+            logger.error( "Failed to read TrackedContentEntry from event payload.", e );
+        }
+        return isRecorded;
     }
 
     public TrackedContentDTO seal( final String id, final String baseUrl )
