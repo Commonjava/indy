@@ -29,7 +29,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.Ignore;
 
 import java.util.Collection;
 
