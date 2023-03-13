@@ -37,7 +37,7 @@
     <connection>scm:git:https://github.com/CommonJava/indy</connection>
     <developerConnection>scm:git:https://github.com/CommonJava/indy</developerConnection>
     <url>http://github.com/Commonjava/indy</url>
-    <tag>indy-parent-3.0.0</tag>
+    <tag>indy-parent-3.0.2</tag>
   </scm>
 
   <repositories>
@@ -91,7 +91,7 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.11</galleyVersion>
+    <galleyVersion>1.13</galleyVersion>
     <weftVersion>1.21</weftVersion>
     <bomVersion>28</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
