@@ -141,7 +141,9 @@
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
 
+    <!--
     <skipNpmConfig>true</skipNpmConfig>
+    -->
 
   </properties>
 
@@ -2108,7 +2110,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config set strict-ssl false</arguments>
               </configuration>
             </execution>
@@ -2120,7 +2122,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config set registry ${env.NPMREGISTRY}</arguments>
               </configuration>
             </execution>
@@ -2154,7 +2156,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config delete strict-ssl</arguments>
               </configuration>
             </execution>
@@ -2166,7 +2168,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config delete registry</arguments>
               </configuration>
             </execution>
