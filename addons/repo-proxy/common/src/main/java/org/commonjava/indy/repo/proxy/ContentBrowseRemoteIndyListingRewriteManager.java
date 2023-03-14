@@ -83,8 +83,12 @@ public class ContentBrowseRemoteIndyListingRewriteManager
             try
             {
                 //FIXME: Here we used a MemPassMgr for simple. Maybe some changes in future for more complex cases.
-                indyClient = new Indy( siteConfig, new MemoryPasswordManager(), mapper,
-                                       new IndyContentBrowseClientModule() );
+                indyClient = Indy.builder()
+                                 .setLocation( siteConfig )
+                                 .setPasswordManager( new MemoryPasswordManager() )
+                                 .setObjectMapper( mapper )
+                                 .setModules( new IndyContentBrowseClientModule() )
+                                 .build();
             }
             catch ( IndyClientException e )
             {

@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
   </parent>
 
   <artifactId>indy-core</artifactId>
@@ -90,7 +90,7 @@
 
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se-core</artifactId>
+      <artifactId>weld-se-shaded</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -140,7 +140,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.spec.javax.servlet</groupId>
-      <artifactId>jboss-servlet-api_3.0_spec</artifactId>
+      <artifactId>jboss-servlet-api_4.0_spec</artifactId>
     </dependency>
 
     <dependency>

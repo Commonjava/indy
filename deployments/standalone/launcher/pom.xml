@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-standalone</artifactId>
-    <version>2.6.0-SNAPSHOT</version>
+    <version>3.1.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>indy-standalone-launcher</artifactId>
@@ -172,7 +172,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se</artifactId>
+      <artifactId>weld-se-shaded</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>

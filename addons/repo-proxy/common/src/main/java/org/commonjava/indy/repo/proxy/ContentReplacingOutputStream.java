@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import java.io.IOException;
 import java.util.Map;
 
@@ -78,6 +79,18 @@ class ContentReplacingOutputStream
             throws IOException
     {
         flush();
-        IOUtils.closeQuietly( originalStream );
+        IOUtils.closeQuietly( originalStream, null );
+    }
+
+    @Override
+    public boolean isReady()
+    {
+        return originalStream.isReady();
+    }
+
+    @Override
+    public void setWriteListener( WriteListener writeListener )
+    {
+        originalStream.setWriteListener( writeListener );
     }
 }

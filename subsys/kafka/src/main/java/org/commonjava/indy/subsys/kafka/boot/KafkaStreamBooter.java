@@ -26,10 +26,13 @@ import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
 import org.commonjava.indy.subsys.kafka.handler.ServiceEventHandler;
+import org.commonjava.indy.subsys.kafka.trace.TracingKafkaClientSupplier;
+import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.util.Properties;
 
@@ -41,10 +44,13 @@ public class KafkaStreamBooter
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    ServiceEventHandler serviceEventHandler;
+    Instance<ServiceEventHandler> serviceEventHandlers;
 
     @Inject
-    private KafkaConfig config;
+    KafkaConfig config;
+    
+    @Inject
+    IndyTraceConfiguration traceConfig;
 
     @Override
     public void init() throws IndyLifecycleException
@@ -68,17 +74,40 @@ public class KafkaStreamBooter
         for ( String topic : config.getTopics() )
         {
             KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
-            serviceEventHandler.dispatchEvent( stream, topic );
+            for (ServiceEventHandler handler : serviceEventHandlers)
+            {
+                if ( handler.canHandle(topic) )
+                {
+                    handler.dispatchEvent( stream, topic );
+                }
+            }
         }
+
         Properties props = setKafkaProps();
 
-        try (final KafkaStreams streams = new KafkaStreams( builder.build(), props ))
+        if ( traceConfig.isEnabled() )
         {
-            streams.start();
+            logger.info("The trace is enabled for Kafka client, so inject otel instrumentation to Kafka client.");
+            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props,
+                                                                new TracingKafkaClientSupplier() ))
+            {
+                streams.start();
+            }
+            catch ( final Throwable e )
+            {
+                throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
+            }
         }
-        catch ( final Throwable e )
+        else
         {
-            throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
+            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props ))
+            {
+                streams.start();
+            }
+            catch ( final Throwable e )
+            {
+                throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
+            }
         }
     }
 

@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-deployments</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
   </parent>
 
   <groupId>org.commonjava.indy.launch</groupId>
@@ -51,6 +51,7 @@
       <type>tar.gz</type>
       <classifier>dataset</classifier>
     </dependency>
+    <!--
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-revisions-common</artifactId>
@@ -63,6 +64,7 @@
       <type>tar.gz</type>
       <classifier>uiset</classifier>
     </dependency>
+    -->
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-folo-common</artifactId>
@@ -195,7 +197,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se</artifactId>
+      <artifactId>weld-se-shaded</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>

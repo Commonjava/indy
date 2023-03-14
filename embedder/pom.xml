@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
   </parent>
 
   <groupId>org.commonjava.indy.embed</groupId>
@@ -123,6 +123,7 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-dot-maven-jaxrs</artifactId>
     </dependency>
+    <!--
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-revisions-jaxrs</artifactId>
@@ -131,6 +132,7 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-revisions-common</artifactId>
     </dependency>
+    -->
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-diagnostics-jaxrs</artifactId>
@@ -237,7 +239,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-event-audit-common</artifactId>
     </dependency>
-
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-event-publisher-common</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-repo-proxy-common</artifactId>
@@ -306,7 +311,7 @@
     </dependency>
     <dependency>
       <groupId>org.jboss.weld.se</groupId>
-      <artifactId>weld-se</artifactId>
+      <artifactId>weld-se-shaded</artifactId>
       <scope>compile</scope>
     </dependency>
 

@@ -19,6 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.commonjava.indy.client.core.Indy;
+import org.commonjava.indy.client.core.IndyClientHttp;
 import org.junit.Test;
 
 public class IndyPromoteClientModuleUrlsTest
@@ -28,22 +29,32 @@ public class IndyPromoteClientModuleUrlsTest
 
     @Test
     public void promoteUrl()
-        throws Exception
+            throws Exception
     {
-        final String url = new Indy( BASE, new IndyPromoteClientModule() ).module( IndyPromoteClientModule.class )
-                                                                            .promoteUrl();
+        try (final Indy indy = Indy.builder()
+                                   .setLocation( IndyClientHttp.defaultSiteConfig( BASE ) )
+                                   .setModules( new IndyPromoteClientModule() )
+                                   .build())
+        {
+            final String url = indy.module( IndyPromoteClientModule.class ).promoteUrl();
+            assertThat( url, equalTo( BASE + "/" + IndyPromoteClientModule.PATHS_PROMOTE_PATH ) );
+        }
 
-        assertThat( url, equalTo( BASE + "/" + IndyPromoteClientModule.PATHS_PROMOTE_PATH ) );
     }
 
     @Test
     public void rollbackUrl()
-        throws Exception
+            throws Exception
     {
-        final String url = new Indy( BASE, new IndyPromoteClientModule() ).module( IndyPromoteClientModule.class )
-                                                                            .rollbackUrl();
+        try (final Indy indy = Indy.builder()
+                                   .setLocation( IndyClientHttp.defaultSiteConfig( BASE ) )
+                                   .setModules( new IndyPromoteClientModule() )
+                                   .build())
+        {
+            final String url = indy.module( IndyPromoteClientModule.class ).rollbackUrl();
+            assertThat( url, equalTo( BASE + "/" + IndyPromoteClientModule.PATHS_ROLLBACK_PATH ) );
+        }
 
-        assertThat( url, equalTo( BASE + "/" + IndyPromoteClientModule.PATHS_ROLLBACK_PATH ) );
     }
 
 }

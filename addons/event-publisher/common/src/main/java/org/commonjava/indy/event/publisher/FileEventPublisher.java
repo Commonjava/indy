@@ -13,9 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.subsys.honeycomb;
+package org.commonjava.indy.event.publisher;
 
-public enum TracerPlugin
+import org.commonjava.event.file.FileEvent;
+
+public interface FileEventPublisher
 {
-    opentelemetry, honeycomb;
+    void publishFileEvent( FileEvent fileEvent );
 }

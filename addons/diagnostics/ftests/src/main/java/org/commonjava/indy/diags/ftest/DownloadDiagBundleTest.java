@@ -65,14 +65,14 @@ public class DownloadDiagBundleTest
         try (ZipInputStream in = module.getDiagnosticBundle())
         {
             ZipEntry entry = null;
-            while( ( entry = in.getNextEntry() ) != null )
+            while ( ( entry = in.getNextEntry() ) != null )
             {
                 if ( entry.getName().equals( DiagnosticsManager.THREAD_DUMP_FILE ) )
                 {
                     logger.debug( "\n\nGot thread dump:\n\n{}\n\n", IOUtils.toString( in ) );
                     foundThreadDump = true;
                 }
-                else if ( entry.getName().startsWith( DiagnosticsManager.LOGS_DIR+ "/" ) )
+                else if ( entry.getName().startsWith( DiagnosticsManager.LOGS_DIR + "/" ) )
                 {
                     logger.debug( "\n\nGot log file: '{}'\n\n", entry.getName() );
                     logCount++;
@@ -95,8 +95,12 @@ public class DownloadDiagBundleTest
         SiteConfig config = new SiteConfigBuilder( "indy", fixture.getUrl() ).withRequestTimeoutSeconds( 120 ).build();
         Collection<IndyClientModule> modules = getAdditionalClientModules();
 
-        return new Indy( config, new MemoryPasswordManager(), new IndyObjectMapper( getAdditionalMapperModules() ),
-                         modules.toArray(new IndyClientModule[modules.size()]) );
+        return Indy.builder()
+                   .setLocation( config )
+                   .setPasswordManager( new MemoryPasswordManager() )
+                   .setObjectMapper( new IndyObjectMapper( getAdditionalMapperModules() ) )
+                   .setModules( modules.toArray( new IndyClientModule[0] ) )
+                   .build();
     }
 
     @Override

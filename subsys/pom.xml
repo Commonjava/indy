@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.0.1</version>
+    <version>3.1.0</version>
   </parent>
 
   <artifactId>indy-subsystems</artifactId>
@@ -32,7 +32,6 @@
   <modules>
     <module>cassandra</module>
     <module>flatfile</module>
-    <module>git</module>
     <module>groovy</module>
     <module>trace</module>
     <module>http</module>
@@ -44,6 +43,9 @@
     <module>kafka</module>
     <module>cpool</module>
     <module>service</module>
+    <!--
+    <module>git</module>
+    -->
   </modules>
 
 </project>

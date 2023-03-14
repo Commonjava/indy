@@ -17,13 +17,11 @@ package org.commonjava.indy.folo.ftest.report;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.client.core.util.UrlUtils;
 import org.commonjava.indy.folo.client.IndyFoloAdminClientModule;
 import org.commonjava.indy.folo.client.IndyFoloContentClientModule;
 import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.ftest.core.category.BytemanTest;
-import org.commonjava.indy.ftest.core.category.TimingDependent;
 import org.commonjava.indy.model.core.RemoteRepository;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.test.http.expect.ExpectationServer;
@@ -49,10 +47,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 @RunWith( BMUnitRunner.class )
 @BMUnitConfig( debug = true )
 @Category( BytemanTest.class )
+//@Ignore(
+//        "Warning: this test always fails in integration testing env with docker+ocp, but can pass in local with IT mode. "
+//                + "So ignore now and check the reason in future." )
 public class RecalculateMissingChecksumForTrackingRecordTest
         extends AbstractTrackingReportTest
 {
-
+    //TODO: Warning: this test always fails in integration testing env with docker+ocp, but can pass in local with IT mode.
+    //               So ignore now and check the reason in future.
     @Rule
     public ExpectationServer server = new ExpectationServer();
 
@@ -118,8 +120,7 @@ public class RecalculateMissingChecksumForTrackingRecordTest
         assertThat( entry, notNullValue() );
         assertThat( entry.getStoreKey(), equalTo( new StoreKey( remote, repoId ) ) );
         assertThat( entry.getPath(), equalTo( path ) );
-        assertThat( entry.getLocalUrl(),
-                    equalTo( client.content().contentUrl( remote, repoId, path ) ) );
+        assertThat( entry.getLocalUrl(), equalTo( client.content().contentUrl( remote, repoId, path ) ) );
         assertThat( entry.getOriginUrl(), equalTo( server.formatUrl( repoId, path ) ) );
         assertThat( entry.getMd5(), equalTo( md5 ) );
         assertThat( entry.getSha256(), equalTo( sha256 ) );
