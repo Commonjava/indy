@@ -2045,13 +2045,14 @@
             <excludes>
               <exclude>bin/**</exclude>
               <exclude>**/*.log</exclude>
+              <exclude>**/*.txt</exclude>
               <exclude>**/*.pyc</exclude>
               <exclude>scratch/**</exclude>
               <exclude>scripts/**</exclude>
               <exclude>**/.venv/*</exclude>
               <exclude>**/venv/*</exclude>
               <exclude>**/README</exclude>
-              <exclude>**/*LICENSE*</exclude>
+              <exclude>**/LICENSE*</exclude>
               <exclude>src/test/resources/**</exclude>
               <exclude>src/main/resources/**</exclude>
               <exclude>**/*.egg-info/**</exclude>
