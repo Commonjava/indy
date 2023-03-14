@@ -2051,7 +2051,7 @@
               <exclude>**/.venv/*</exclude>
               <exclude>**/venv/*</exclude>
               <exclude>**/README</exclude>
-              <exclude>**/LICENSE*</exclude>
+              <exclude>**/*LICENSE*</exclude>
               <exclude>src/test/resources/**</exclude>
               <exclude>src/main/resources/**</exclude>
               <exclude>**/*.egg-info/**</exclude>
