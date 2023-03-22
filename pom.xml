@@ -37,7 +37,7 @@
     <connection>scm:git:https://github.com/CommonJava/indy</connection>
     <developerConnection>scm:git:https://github.com/CommonJava/indy</developerConnection>
     <url>http://github.com/Commonjava/indy</url>
-    <tag>indy-parent-3.0.2</tag>
+    <tag>indy-parent-3.1.0</tag>
   </scm>
 
   <repositories>
@@ -141,7 +141,9 @@
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
 
+    <!--
     <skipNpmConfig>true</skipNpmConfig>
+    -->
 
   </properties>
 
@@ -289,34 +291,6 @@
         <scope>provided</scope>
       </dependency>
 
-      <!--
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-revisions-jaxrs</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-revisions-common</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-revisions-common</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>confset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-revisions-common</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
-        <type>tar.gz</type>
-        <classifier>uiset</classifier>
-        <scope>provided</scope>
-      </dependency>
-      -->
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-common</artifactId>
@@ -451,13 +425,6 @@
         <artifactId>indy-subsys-http</artifactId>
         <version>3.2.0-SNAPSHOT</version>
       </dependency>
-      <!--
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-subsys-git</artifactId>
-        <version>3.1.0-SNAPSHOT</version>
-      </dependency>
-      -->
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-groovy</artifactId>
@@ -858,7 +825,7 @@
       <dependency>
         <groupId>org.commonjava.indy.service</groupId>
         <artifactId>indy-event-model</artifactId>
-        <version>1.2-SNAPSHOT</version>
+        <version>1.2</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.slf4j</groupId>
@@ -1331,13 +1298,6 @@
         <version>${webdavVersion}</version>
       </dependency>
 
-      <!--
-      <dependency>
-        <groupId>org.eclipse.jgit</groupId>
-        <artifactId>org.eclipse.jgit</artifactId>
-        <version>3.4.1.201406201815-r</version>
-      </dependency>
-      -->
 
       <dependency>
         <groupId>org.apache.commons</groupId>
@@ -1522,14 +1482,6 @@
         <version>1.15.3</version>
       </dependency>
 
-      <!--
-      <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-core</artifactId>
-        <version>${luceneVersion}</version>
-      </dependency>
-      -->
-
       <!-- Define Keycloak deps -->
       <dependency>
         <groupId>org.keycloak</groupId>
@@ -1644,13 +1596,6 @@
         <artifactId>logback-core</artifactId>
         <version>${logbackVersion}</version>
       </dependency>
-      <!--
-      <dependency>
-        <groupId>com.github.danielwegener</groupId>
-        <artifactId>logback-kafka-appender</artifactId>
-        <version>0.2.0-RC2</version>
-      </dependency>
-      -->
       <dependency>
         <groupId>ch.qos.logback.contrib</groupId>
         <artifactId>logback-json-classic</artifactId>
@@ -1799,12 +1744,6 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
     </dependency>
-    <!--
-    <dependency>
-      <groupId>com.github.danielwegener</groupId>
-      <artifactId>logback-kafka-appender</artifactId>
-    </dependency>
-    -->
     <dependency>
       <groupId>ch.qos.logback.contrib</groupId>
       <artifactId>logback-json-classic</artifactId>
@@ -2043,6 +1982,7 @@
             <excludes>
               <exclude>bin/**</exclude>
               <exclude>**/*.log</exclude>
+              <exclude>**/*.txt</exclude>
               <exclude>**/*.pyc</exclude>
               <exclude>scratch/**</exclude>
               <exclude>scripts/**</exclude>
@@ -2096,7 +2036,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <nodeVersion>v18.12.1</nodeVersion>
+                <nodeVersion>v16.19.1</nodeVersion>
                 <npmVersion>9.4.0</npmVersion>
               </configuration>
             </execution>
@@ -2108,7 +2048,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config set strict-ssl false</arguments>
               </configuration>
             </execution>
@@ -2120,7 +2060,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config set registry ${env.NPMREGISTRY}</arguments>
               </configuration>
             </execution>
@@ -2154,7 +2094,7 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config delete strict-ssl</arguments>
               </configuration>
             </execution>
@@ -2166,37 +2106,12 @@
               </goals>
               <phase>generate-resources</phase>
               <configuration>
-                <skip>${skipNpmConfig}</skip>
+                <skip>${env.SKIP_NPM_CONFIG}</skip>
                 <arguments>config delete registry</arguments>
               </configuration>
             </execution>
           </executions>
         </plugin>
-
-        <!-- <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>generate-restdoc</id>
-              <phase>generate-resources</phase>
-              <goals>
-                <goal>compile</goal>
-              </goals>
-              <configuration>
-                <annotationProcessors>
-                  <processor>org.rhq.helpers.rest_docs_generator.ClassLevelProcessor</processor>
-                </annotationProcessors>
-                <proc>only</proc>
-                <compilerArguments>
-                  <AtargetDirectory>${project.build.directory}/classes/META-INF/rest-docs</AtargetDirectory>
-                  <AmodelPkg>org.commonjava.indy.model</AmodelPkg>
-                  <Averbose>true</Averbose>
-                </compilerArguments>
-                <verbose>false</verbose>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin> -->
 
       </plugins>
     </pluginManagement>
