@@ -30,8 +30,22 @@ public abstract class AbstractPromoteRequest<T extends PromoteRequest> implement
     @ApiModelProperty( "Optional promotion Id" )
     protected String promotionId = UUID.randomUUID().toString(); // default
 
+    @ApiModelProperty( "Optional tracking Id" )
+    protected String trackingId;
+
     @ApiModelProperty( value="Callback which is used to send the promotion result." )
     protected CallbackTarget callback;
+
+    public String getTrackingId()
+    {
+        return trackingId;
+    }
+
+    public T setTrackingId(String trackingId)
+    {
+        this.trackingId = trackingId;
+        return (T) this;
+    }
 
     @Override
     public boolean isAsync()
