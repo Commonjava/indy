@@ -126,6 +126,7 @@ public class KafkaEventPublisher
                 {
                     fileMetadata.set( galleyMetaItem.getKey(), galleyMetaItem.getValue() );
                 }
+                fileEvent.setEventMetadata( fileMetadata );
                 final TrackingKey trackingKey = (TrackingKey) galleyMetadata.get( "tracking-id" );
                 if ( trackingKey != null )
                 {
