@@ -79,6 +79,7 @@ public class UIConfiguration
         return enabled == null ? DEFAULT_ENABLED : enabled;
     }
 
+    @ConfigName( "enabled" )
     public void setEnabled( final Boolean enabled )
     {
         this.enabled = enabled;
