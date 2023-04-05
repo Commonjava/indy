@@ -58,6 +58,10 @@ public class FoloTrackingAdjustListener
 
     public void onPromoteComplete( @Observes final PromoteCompleteEvent event )
     {
+        if (!foloConfig.isRecordingEnabled()) {
+            logger.debug( "Recording is disabled in monolith, ignoring PROMOTE COMPLETE" );
+            return;
+        }
         logger.trace( "Promote COMPLETE: {}", event );
 
         if ( !foloConfig.isEnabled() )
