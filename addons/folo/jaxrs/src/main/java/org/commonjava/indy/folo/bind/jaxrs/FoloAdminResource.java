@@ -73,6 +73,7 @@ import static org.commonjava.indy.util.ApplicationContent.application_zip;
 @Path( "/api/folo/admin" )
 @ApplicationScoped
 @REST
+@Deprecated
 public class FoloAdminResource
         implements IndyResources
 {

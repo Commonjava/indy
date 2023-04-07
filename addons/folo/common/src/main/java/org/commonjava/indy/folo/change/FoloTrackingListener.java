@@ -77,6 +77,10 @@ public class FoloTrackingListener
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
+        if (!foloConfig.isRecordingEnabled()) {
+            logger.debug( "Recording is disabled in monolith, ignoring FILE ACCESS" );
+            return;
+        }
         logger.trace( "FILE ACCESS: {}", event );
 
         EventMetadata metadata = event.getEventMetadata();
@@ -148,6 +152,10 @@ public class FoloTrackingListener
 
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
+        if (!foloConfig.isRecordingEnabled()) {
+            logger.debug( "Recording is disabled in monolith, ignoring FILE STORAGE" );
+            return;
+        }
         logger.trace( "FILE STORAGE: {}", event );
 
         if ( TransferOperation.UPLOAD != event.getType() )

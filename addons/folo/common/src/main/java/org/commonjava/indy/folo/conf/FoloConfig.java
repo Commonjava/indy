@@ -40,6 +40,8 @@ public class FoloConfig
 
     private Boolean enabled;
 
+    private Boolean recordingEnabled;
+
     private Boolean storeToCassandra;
 
     private Boolean trackGroupContent;
@@ -64,6 +66,22 @@ public class FoloConfig
 
     @ConfigName( "enabled")
     public void setEnabled( final boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
+    public boolean isRecordingEnabled()
+    {
+        return recordingEnabled == null ? DEFAULT_ENABLED : recordingEnabled;
+    }
+
+    public Boolean getRecordingEnabled()
+    {
+        return recordingEnabled;
+    }
+
+    @ConfigName( "recording.enabled")
+    public void setRecordingEnabled( final boolean enabled )
     {
         this.enabled = enabled;
     }
