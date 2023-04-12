@@ -25,7 +25,7 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.core.bind.jaxrs.util.ContentAdminController;
-import org.commonjava.indy.core.model.dto.TrackedContentDTO;
+import org.commonjava.indy.core.model.dto.ContentDTO;
 import org.commonjava.indy.core.model.TrackedContentEntry;
 import org.commonjava.indy.core.model.dto.ContentTransferDTO;
 import org.slf4j.Logger;
@@ -69,7 +69,7 @@ public class ContentAdminResource
     @Path( "/repo/zip" )
     @POST
     @Produces( application_zip )
-    public File getZipRepository( @Context final UriInfo uriInfo, final TrackedContentDTO record )
+    public File getZipRepository( @Context final UriInfo uriInfo, final ContentDTO record )
     {
         try
         {
