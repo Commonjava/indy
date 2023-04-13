@@ -24,7 +24,7 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
-public class TrackedContentDTO
+public class ContentDTO
                 implements Externalizable
 {
 
@@ -34,12 +34,12 @@ public class TrackedContentDTO
 
     private Set<ContentEntryDTO> downloads;
 
-    public TrackedContentDTO()
+    public ContentDTO()
     {
     }
 
-    public TrackedContentDTO( final TrackingKey key, final Set<ContentEntryDTO> uploads,
-                              final Set<ContentEntryDTO> downloads )
+    public ContentDTO( final TrackingKey key, final Set<ContentEntryDTO> uploads,
+                       final Set<ContentEntryDTO> downloads )
     {
         this.key = key;
         this.uploads = uploads;
@@ -68,12 +68,12 @@ public class TrackedContentDTO
         {
             return true;
         }
-        if ( !( o instanceof TrackedContentDTO ) )
+        if ( !( o instanceof ContentDTO ) )
         {
             return false;
         }
 
-        TrackedContentDTO that = (TrackedContentDTO) o;
+        ContentDTO that = (ContentDTO) o;
 
         return getKey() != null ? getKey().equals( that.getKey() ) : that.getKey() == null;
 
