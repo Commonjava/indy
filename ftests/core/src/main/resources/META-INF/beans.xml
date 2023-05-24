@@ -16,10 +16,10 @@
 
   <decorators>
     <!-- ContentManager decorators -->
-    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
+    <!--<class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>-->
 
     <!-- ContentManagerDirectAccess decorators -->
-    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
+    <!--<class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>-->
 
   </decorators>
 

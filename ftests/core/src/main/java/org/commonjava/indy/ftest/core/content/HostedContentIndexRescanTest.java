@@ -16,7 +16,6 @@
 package org.commonjava.indy.ftest.core.content;
 
 import org.apache.commons.io.IOUtils;
-import org.commonjava.indy.client.core.module.IndyMaintenanceClientModule;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
@@ -54,9 +53,6 @@ public class HostedContentIndexRescanTest
         client.content().store( hosted.getKey(), path1, new ByteArrayInputStream( content1.getBytes() ) );
         client.content().store( hosted.getKey(), path2, new ByteArrayInputStream( content2.getBytes() ) );
         client.content().store( hosted.getKey(), path3, new ByteArrayInputStream( content3.getBytes() ) );
-
-        client.module( IndyMaintenanceClientModule.class )
-              .rescan( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.hosted, hostedName );
 
         try (InputStream in = client.content().get( hosted.getKey(), path1 ))
         {
