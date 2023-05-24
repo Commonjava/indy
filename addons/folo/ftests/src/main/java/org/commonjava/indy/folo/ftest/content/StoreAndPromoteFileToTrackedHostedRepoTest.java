@@ -22,7 +22,6 @@ import org.commonjava.indy.folo.dto.TrackedContentDTO;
 import org.commonjava.indy.folo.dto.TrackedContentEntryDTO;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
-import org.commonjava.indy.promote.client.IndyPromoteClientModule;
 import org.commonjava.indy.promote.model.PathsPromoteRequest;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.junit.Test;

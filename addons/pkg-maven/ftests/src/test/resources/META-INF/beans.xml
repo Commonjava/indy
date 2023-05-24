@@ -21,10 +21,10 @@
   <!-- NOTE: In the decorators below, the FIRST listed will be invoked FIRST (outer-most in the stack) -->
   <decorators>
     <!-- ContentManager decorators -->
-    <class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>
+    <!--<class>org.commonjava.indy.content.index.IndexingContentManagerDecorator</class>-->
 
     <!-- ContentManagerDirectAccess decorators -->
-    <class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>
+    <!--<class>org.commonjava.indy.content.index.IndexingDirectContentAccessDecorator</class>-->
 
   </decorators>
       

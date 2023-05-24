@@ -15,7 +15,7 @@
  */
 package org.commonjava.indy.httprox.util;
 
-import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
+import org.commonjava.indy.httprox.metric.IndyGoldenSignalsMetricSet;
 import org.slf4j.Logger;
 import org.commonjava.indy.util.RequestContextHelper;
 

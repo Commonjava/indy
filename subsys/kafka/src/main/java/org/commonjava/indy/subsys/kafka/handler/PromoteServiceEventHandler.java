@@ -24,7 +24,7 @@ import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.db.service.ServiceStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
-import org.commonjava.indy.promote.data.PromotionHelper;
+import org.commonjava.indy.subsys.kafka.data.PromotionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

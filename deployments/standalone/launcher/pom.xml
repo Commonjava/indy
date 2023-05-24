@@ -38,33 +38,11 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy.ui</groupId>
-      <artifactId>indy-ui-layover</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy.embed</groupId>
       <artifactId>indy-embedder</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-dot-maven-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-revisions-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-revisions-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>uiset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-folo-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
@@ -74,24 +52,6 @@
       <artifactId>indy-folo-common</artifactId>
       <type>tar.gz</type>
       <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-implied-repos-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-promote-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>dataset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-promote-common</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
@@ -107,19 +67,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-metrics-reporter</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-hosted-by-archive-common</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
@@ -160,12 +108,6 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-prefetch</artifactId>
-      <type>tar.gz</type>
-      <classifier>confset</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-cassandra</artifactId>
       <type>tar.gz</type>
       <classifier>confset</classifier>
@@ -184,33 +126,6 @@
       <groupId>io.swagger</groupId>
       <artifactId>swagger-annotations</artifactId>
       <scope>runtime</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-browse-common</artifactId>
-      <classifier>confset</classifier>
-      <type>tar.gz</type>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-browse-ui</artifactId>
-      <classifier>reactui</classifier>
-      <type>tar.gz</type>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-changelog-common</artifactId>
-      <classifier>confset</classifier>
-      <type>tar.gz</type>
-    </dependency>
-
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-event-audit-common</artifactId>
-      <classifier>confset</classifier>
-      <type>tar.gz</type>
     </dependency>
   </dependencies>
 

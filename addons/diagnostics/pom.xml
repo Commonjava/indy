@@ -29,7 +29,6 @@
 
   <modules>
     <module>jaxrs</module>
-    <module>client-java</module>
     <module>common</module>
     <module>ftests</module>
   </modules>

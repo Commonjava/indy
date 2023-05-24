@@ -23,7 +23,7 @@ import org.commonjava.indy.httprox.conf.HttproxConfig;
 import org.commonjava.indy.httprox.keycloak.KeycloakProxyAuthenticator;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.AccessChannel;
-import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
+import org.commonjava.indy.httprox.metric.IndyGoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.indy.subsys.template.IndyGroovyException;
 import org.commonjava.indy.subsys.template.ScriptEngine;

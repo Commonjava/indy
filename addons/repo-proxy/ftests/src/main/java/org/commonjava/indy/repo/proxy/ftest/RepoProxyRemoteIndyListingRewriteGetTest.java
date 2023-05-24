@@ -16,8 +16,6 @@
 package org.commonjava.indy.repo.proxy.ftest;
 
 import org.commonjava.indy.client.core.IndyClientModule;
-import org.commonjava.indy.content.browse.client.IndyContentBrowseClientModule;
-import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.ftest.core.AbstractIndyFunctionalTest;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
