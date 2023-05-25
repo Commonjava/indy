@@ -34,14 +34,9 @@
     <module>folo</module>
     <module>httprox</module>
     <module>koji</module>
-    <module>promote</module>
-    <!--
-    <module>revisions</module>
-    -->
     <module>pkg-maven</module>
     <module>diagnostics</module>
     <module>pkg-npm</module>
-    <module>sli</module>
     <module>path-mapped</module>
     <module>repo-proxy</module>
     <module>schedule</module>

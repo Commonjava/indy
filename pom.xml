@@ -148,8 +148,6 @@
   </properties>
 
   <modules>
-    <module>uis</module>
-    <module>models</module>
     <module>api</module>
     <module>addons</module>
     <module>boot</module>
@@ -163,7 +161,6 @@
     <module>embedder</module>
     <module>ftests</module>
     <module>rest</module>
-    <module>clients</module>
 
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
     <!-- <module>embedder-tests</module> -->
@@ -195,7 +192,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-model-core-java</artifactId>
-        <version>3.2.0-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -400,7 +397,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-model-java</artifactId>
-        <version>3.2.0-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -497,7 +494,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-model-java</artifactId>
-        <version>3.2.0-SNAPSHOT</version>
+        <version>3.3.0-SNAPSHOT</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
