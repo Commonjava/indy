@@ -18,7 +18,6 @@ package org.commonjava.indy.ftest.core.fixture;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.data.StoreEventDispatcher;
-import org.commonjava.indy.flat.data.DataFileStoreDataManager;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.datafile.DataFileManager;
 

@@ -45,6 +45,10 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-client-java</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-bindings-jaxrs</artifactId>
     </dependency>
     <dependency>
