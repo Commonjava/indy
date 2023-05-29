@@ -54,11 +54,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-flat</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>http-testserver</artifactId>
       <scope>provided</scope>

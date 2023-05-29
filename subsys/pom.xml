@@ -39,13 +39,8 @@
     <module>jaxrs</module>
     <module>infinispan</module>
     <module>metrics</module>
-    <module>prefetch</module>
     <module>kafka</module>
-    <module>cpool</module>
     <module>service</module>
-    <!--
-    <module>git</module>
-    -->
   </modules>
 
 </project>
