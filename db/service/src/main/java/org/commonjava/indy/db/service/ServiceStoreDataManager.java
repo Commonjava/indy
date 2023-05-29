@@ -59,7 +59,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @SuppressWarnings( "unchecked" )
 @ApplicationScoped
-@Serviced
+/*@Serviced*/
 public class ServiceStoreDataManager
         extends AbstractStoreDataManager
         implements StoreDataManager

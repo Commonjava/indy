@@ -27,7 +27,6 @@ import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.content.ContentManager;
-import org.commonjava.indy.content.index.ContentIndexManager;
 import org.commonjava.indy.core.inject.GroupMembershipLocks;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -121,9 +120,6 @@ public abstract class KojiContentManagerDecorator
 
     @Inject
     private KojiBuildAuthority buildAuthority;
-
-    @Inject
-    private ContentIndexManager indexManager;
 
     @GroupMembershipLocks
     @Inject
@@ -470,7 +466,7 @@ public abstract class KojiContentManagerDecorator
 
                 // pre-index the koji build artifacts and set authoritative index of the remote to let the
                 // koji remote repo directly go through the content index
-                patterns.forEach( path->indexManager.indexPathInStores( path, remoteKey ) );
+                // patterns.forEach( path->indexManager.indexPathInStores( path, remoteKey ) );
                 remote.setAuthoritativeIndex( true );
                 remote.setPathMaskPatterns( patterns );
 

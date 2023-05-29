@@ -17,8 +17,6 @@ package org.commonjava.indy.koji.prefetch;
 
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.subsys.prefetch.ContentListBuilder;
-import org.commonjava.indy.subsys.prefetch.HtmlContentListBuilder;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.slf4j.Logger;
@@ -39,13 +37,11 @@ import static org.commonjava.indy.model.core.RemoteRepository.PREFETCH_LISTING_T
 @Alternative
 @ApplicationScoped
 public class KojiContentListBuilder
-        implements ContentListBuilder
 {
-    private static final Logger logger = LoggerFactory.getLogger( HtmlContentListBuilder.class );
+    private static final Logger logger = LoggerFactory.getLogger( KojiContentListBuilder.class );
 
     public static final String PREFETCH_LISTING_TYPE_KOJI = "koji";
 
-    @Override
     public List<ConcreteResource> buildContent( final RemoteRepository repository, final boolean isRescan )
     {
         if ( PREFETCH_LISTING_TYPE_HTML.equals( repository.getPrefetchListingType() )
@@ -70,7 +66,6 @@ public class KojiContentListBuilder
         }
     }
 
-    @Override
     public String type()
     {
         return PREFETCH_LISTING_TYPE_KOJI;
