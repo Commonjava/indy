@@ -156,6 +156,11 @@ public class CassandraNotFoundCache
     @Measure
     public void addMissing( final ConcreteResource resource )
     {
+        if (isCacheDisabled(resource))
+        {
+            return;
+        }
+
         KeyedLocation location = (KeyedLocation) resource.getLocation();
         StoreKey key = location.getKey();
 

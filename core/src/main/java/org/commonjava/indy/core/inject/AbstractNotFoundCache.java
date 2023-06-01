@@ -17,6 +17,7 @@ package org.commonjava.indy.core.inject;
 
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.model.core.StoreKey;
+import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.model.galley.RepositoryLocation;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
@@ -25,6 +26,8 @@ import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
+import static org.commonjava.indy.model.core.StoreType.hosted;
 
 /**
  * Created by ruhan on 12/1/17.
@@ -60,4 +63,18 @@ public abstract class AbstractNotFoundCache implements NotFoundCache
 
     protected abstract IndyConfiguration getIndyConfiguration();
 
+    /**
+     * This is to skip certain types of resources based on the type. By default, we do not cache for hosted repo.
+     * Derived classes should check it before adding entries to their cache impl.
+     */
+    protected boolean isCacheDisabled(ConcreteResource resource)
+    {
+        Location loc = resource.getLocation();
+        if (loc instanceof KeyedLocation)
+        {
+            KeyedLocation keyedLocation = (KeyedLocation) loc;
+            return keyedLocation.getKey().getType().equals(hosted);
+        }
+        return false;
+    }
 }

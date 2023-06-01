@@ -82,6 +82,11 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void addMissing( final ConcreteResource resource )
     {
+        if (isCacheDisabled(resource))
+        {
+            return;
+        }
+
         long timeout = Long.MAX_VALUE;
         if ( config.getNotFoundCacheTimeoutSeconds() > 0 )
         {
