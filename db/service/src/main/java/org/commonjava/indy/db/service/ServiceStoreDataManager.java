@@ -59,7 +59,7 @@ import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @SuppressWarnings( "unchecked" )
 @ApplicationScoped
-/*@Serviced*/
+@Serviced
 public class ServiceStoreDataManager
         extends AbstractStoreDataManager
         implements StoreDataManager
@@ -251,7 +251,7 @@ public class ServiceStoreDataManager
     }
 
     public ArtifactStore getArtifactStore( StoreKey key, boolean forceQuery )
-                    throws IndyDataException
+            throws IndyDataException
     {
         try
         {

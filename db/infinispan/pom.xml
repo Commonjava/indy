@@ -35,11 +35,15 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-cassandra</artifactId>
+      <artifactId>indy-db-common</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
