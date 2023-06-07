@@ -41,16 +41,11 @@ public class StoreDataManagerProvider
     @Default
     public StoreDataManager getStoreDataManager(
             @Standalone StoreDataManager ispnStoreDataManager,
-            @Clustered StoreDataManager clusterStoreDataManager,
             @Serviced StoreDataManager serviceStoreDataManager )
     {
         if ( IndyDurableStateConfig.STORAGE_INFINISPAN.equals( durableStateConfig.getStoreStorage() ) )
         {
             return ispnStoreDataManager;
-        }
-        else if ( IndyDurableStateConfig.STORAGE_CASSANDRA.equals( durableStateConfig.getStoreStorage()) )
-        {
-            return clusterStoreDataManager;
         }
         else if ( IndyDurableStateConfig.STORAGE_SERVICE.equals( durableStateConfig.getStoreStorage()) )
         {

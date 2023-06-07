@@ -29,10 +29,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-infinispan</artifactId>
-    </dependency>
-    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>indy-client-core-java</artifactId>
     </dependency>
@@ -58,11 +54,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-bindings-jaxrs</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

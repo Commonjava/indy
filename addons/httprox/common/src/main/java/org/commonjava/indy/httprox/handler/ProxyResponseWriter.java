@@ -33,7 +33,7 @@ import org.commonjava.indy.httprox.util.ProxyMeter;
 import org.commonjava.indy.httprox.util.ProxyResponseHelper;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.sli.metrics.IndyGoldenSignalsMetricSet;
+import org.commonjava.indy.httprox.metrics.IndyGoldenSignalsMetricSet;
 import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
