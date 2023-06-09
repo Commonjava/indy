@@ -48,10 +48,6 @@
       <artifactId>weld-se-shaded</artifactId>
       <scope>compile</scope>
     </dependency>
-    <dependency>
-      <groupId>org.jboss.resteasy</groupId>
-      <artifactId>resteasy-jaxrs</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>io.swagger</groupId>
