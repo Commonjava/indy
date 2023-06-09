@@ -74,10 +74,6 @@
       <artifactId>log4j-over-slf4j</artifactId>
     </dependency>
     <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-api</artifactId>
     </dependency>
@@ -92,10 +88,6 @@
     <dependency>
       <groupId>org.commonjava.cdi.util</groupId>
       <artifactId>weft</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-interpolation</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
