@@ -121,17 +121,43 @@ public class UIServlet
                 logger.debug( "UI basedir: '{}'", uiDir );
 
                 final File resource = new File( uiDir, path );
-                logger.debug( "Trying to send file: " + resource );
+                if ( !isValidUIResource(uiDir, resource) )
+                {
+                    logger.debug( "Invalid resource: {}", resource );
+                    response.setStatus( ApplicationStatus.BAD_REQUEST.code() );
+                    return;
+                }
+
+                logger.debug( "Send file: " + resource );
                 sendFile( response, resource, method );
                 return;
             }
             default:
             {
-                logger.error( "cannot handle request for method: {}", method );
+                logger.error( "Cannot handle request for method: {}", method );
                 response.setStatus( ApplicationStatus.BAD_REQUEST.code() );
             }
         }
     }
 
+    /**
+     * Check if the resource file is under uiDir in order to prevent path traversal attack.
+     * @param uiDir
+     * @param resource
+     * @return true if requested resource file is under UI dir.
+     */
+    public static boolean isValidUIResource(File uiDir, File resource)
+    {
+        try
+        {
+            return resource.getCanonicalPath().contains(uiDir.getCanonicalPath());
+        }
+        catch (IOException e)
+        {
+            final Logger logger = LoggerFactory.getLogger( UIServlet.class );
+            logger.warn("Failed to validate UI resource", e);
+            return false;
+        }
+    }
 
 }

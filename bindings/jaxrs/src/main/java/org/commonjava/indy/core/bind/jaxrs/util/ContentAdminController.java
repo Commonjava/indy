@@ -24,7 +24,7 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
 import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.core.model.StoreEffect;
-import org.commonjava.indy.core.model.dto.TrackedContentDTO;
+import org.commonjava.indy.core.model.dto.ContentDTO;
 import org.commonjava.indy.core.model.TrackedContentEntry;
 import org.commonjava.indy.core.model.dto.ContentEntryDTO;
 import org.commonjava.indy.core.model.TrackingKey;
@@ -165,7 +165,7 @@ public class ContentAdminController
                                         digests.get( ContentDigest.SHA_1 ), digests.get( ContentDigest.SHA_256 ) );
     }
 
-    public File renderRepositoryZip( final TrackedContentDTO record ) throws IndyWorkflowException
+    public File renderRepositoryZip( final ContentDTO record ) throws IndyWorkflowException
     {
         String id = record.getKey().getId();
         final TrackingKey tk = new TrackingKey( id );
