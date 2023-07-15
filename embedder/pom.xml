@@ -162,6 +162,14 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-common</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-jaxrs</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-repo-proxy-common</artifactId>
     </dependency>
     <dependency>
@@ -257,6 +265,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-ftests-pkg-npm</artifactId>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-ftests-content-browse</artifactId>
     </dependency>
 
     <dependency>
@@ -412,6 +424,7 @@
               <dependency>org.commonjava.indy:indy-ftests-pkg-maven</dependency>
               <dependency>org.commonjava.indy:indy-ftests-pkg-npm</dependency>
               <dependency>org.commonjava.indy:indy-ftests-repo-proxy</dependency>
+              <dependency>org.commonjava.indy:indy-ftests-content-browse</dependency>
             </dependenciesToScan>
             <jvm>${JAVA_11_HOME}/bin/java</jvm>
           </configuration>

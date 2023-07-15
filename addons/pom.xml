@@ -41,6 +41,7 @@
     <module>repo-proxy</module>
     <module>schedule</module>
     <module>event-publisher</module>
+    <module>content-browse</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>
