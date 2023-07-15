@@ -195,6 +195,11 @@
         <version>1.3-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.indy.service</groupId>
+        <artifactId>indy-folo-model-java</artifactId>
+        <version>1.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-api</artifactId>
         <version>3.3.0-SNAPSHOT</version>
@@ -396,11 +401,6 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-client-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-folo-model-java</artifactId>
         <version>3.3.0-SNAPSHOT</version>
       </dependency>
       <dependency>
