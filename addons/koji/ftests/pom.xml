@@ -44,7 +44,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-folo-model-java</artifactId>
     </dependency>
     <dependency>

@@ -195,6 +195,11 @@
         <version>1.3-SNAPSHOT</version>
       </dependency>
       <dependency>
+        <groupId>org.commonjava.indy.service</groupId>
+        <artifactId>indy-folo-model-java</artifactId>
+        <version>1.3-SNAPSHOT</version>
+      </dependency>
+      <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-api</artifactId>
         <version>3.3.0-SNAPSHOT</version>
@@ -400,11 +405,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-folo-model-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
         <version>3.3.0-SNAPSHOT</version>
       </dependency>
@@ -563,6 +563,36 @@
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-model-java</artifactId>
         <version>3.3.0-SNAPSHOT</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-content-browse-common</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-content-browse-model-java</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-content-browse-jaxrs</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-ftests-content-browse</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-content-browse-common</artifactId>
+        <version>3.3.0-SNAPSHOT</version>
+        <classifier>confset</classifier>
+        <type>tar.gz</type>
+        <scope>provided</scope>
       </dependency>
 
       <dependency>

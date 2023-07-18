@@ -30,10 +30,12 @@
   <modules>
     <module>common</module>
     <module>jaxrs</module>
-    <module>ftests</module>
     <module>model-java</module>
+    <module>ftests</module>
+    <!--
     <module>ui</module>
     <module>client-java</module>
+    -->
   </modules>
 
 </project>
