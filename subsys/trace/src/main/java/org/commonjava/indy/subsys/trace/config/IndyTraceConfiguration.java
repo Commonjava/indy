@@ -18,7 +18,6 @@ package org.commonjava.indy.subsys.trace.config;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.subsys.trace.TracerPlugin;
-import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
 import org.commonjava.o11yphant.otel.OtelConfiguration;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
 import org.commonjava.propulsor.config.ConfigurationException;
@@ -36,13 +35,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 @SectionName( "trace" )
 @ApplicationScoped
 public class IndyTraceConfiguration
-                extends MapSectionListener
-                implements IndyConfigInfo, TracerConfiguration, OtelConfiguration, HoneycombConfiguration
+        extends MapSectionListener
+        implements IndyConfigInfo, TracerConfiguration, OtelConfiguration
 {
     private static final TracerPlugin DEFAULT_TRACER = TracerPlugin.honeycomb;
 
@@ -54,10 +51,6 @@ public class IndyTraceConfiguration
     private static final String TRACER = "tracer";
 
     private static final String CONSOLE_TRANSPORT = "console.transport";
-
-    private static final String WRITE_KEY = "honeycomb.write.key";
-
-    private static final String DATASET = "honeycomb.dataset";
 
     private static final String OTEL_GRPC_URI = "otel.grpc.uri";
 
@@ -82,10 +75,6 @@ public class IndyTraceConfiguration
     private TracerPlugin tracer;
 
     private boolean consoleTransport;
-
-    private String writeKey;
-
-    private String dataset;
 
     private Integer baseSampleRate;
 
@@ -148,12 +137,6 @@ public class IndyTraceConfiguration
             case TRACER:
                 this.tracer = TracerPlugin.valueOf( value.trim().toLowerCase() );
                 break;
-            case WRITE_KEY:
-                this.writeKey = value.trim();
-                break;
-            case DATASET:
-                this.dataset = value.trim();
-                break;
             case BASE_SAMPLE_RATE:
                 this.baseSampleRate = Integer.parseInt( value.trim() );
                 break;
@@ -198,18 +181,6 @@ public class IndyTraceConfiguration
     public TracerPlugin getTracer()
     {
         return tracer == null ? DEFAULT_TRACER : tracer;
-    }
-
-    @Override
-    public String getWriteKey()
-    {
-        return writeKey;
-    }
-
-    @Override
-    public String getDataset()
-    {
-        return dataset;
     }
 
     @Override
@@ -261,33 +232,15 @@ public class IndyTraceConfiguration
     }
 
     @Override
-    public Map<String, String> getResources(){
+    public Map<String, String> getResources()
+    {
         return grpcResources;
     }
+
     @Override
     public String getGrpcEndpointUri()
     {
         return grpcUri == null ? DEFAULT_GRPC_URI : grpcUri;
-    }
-
-    public void validateForHoneycomb() throws ConfigurationException
-    {
-        Set<String> ret = new HashSet<>();
-        if ( isEmpty( writeKey ) )
-        {
-            ret.add( WRITE_KEY );
-        }
-
-        if ( isEmpty( dataset ) )
-        {
-            ret.add( DATASET );
-        }
-
-        if ( !ret.isEmpty() )
-        {
-            throw new ConfigurationException( "Cannot initialize Honeycomb tracer. Missing configuration fields: {}",
-                                              ret );
-        }
     }
 
 }

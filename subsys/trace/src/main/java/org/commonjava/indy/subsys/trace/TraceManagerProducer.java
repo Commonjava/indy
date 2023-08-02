@@ -15,16 +15,14 @@
  */
 package org.commonjava.indy.subsys.trace;
 
-import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
 import org.commonjava.indy.subsys.metrics.IndyTrafficClassifier;
-import org.commonjava.o11yphant.honeycomb.HoneycombTracePlugin;
+import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
 import org.commonjava.o11yphant.otel.OtelTracePlugin;
 import org.commonjava.o11yphant.trace.SpanFieldsDecorator;
 import org.commonjava.o11yphant.trace.TraceManager;
 import org.commonjava.o11yphant.trace.spi.O11yphantTracePlugin;
 import org.commonjava.o11yphant.trace.spi.SpanFieldsInjector;
 import org.commonjava.o11yphant.trace.thread.TraceThreadContextualizer;
-import org.commonjava.propulsor.config.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +34,6 @@ import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @ApplicationScoped
 public class TraceManagerProducer
@@ -59,30 +56,8 @@ public class TraceManagerProducer
     @PostConstruct
     public void init()
     {
-        O11yphantTracePlugin<?> plugin;
-        if ( config.getTracer() == TracerPlugin.opentelemetry )
-        {
-            logger.info( "Initializing Opentelemetry trace plugin" );
-            plugin = new OtelTracePlugin( config, config );
-        }
-        else
-        {
-            logger.info( "Initializing Honeycomb trace plugin" );
-            if ( config.isEnabled() )
-            {
-                try
-                {
-                    config.validateForHoneycomb();
-                }
-                catch ( ConfigurationException e )
-                {
-                    logger.error( "Invalid Honeycomb configuration detected!" );
-                    throw new RuntimeException( e );
-                }
-            }
-
-            plugin = new HoneycombTracePlugin( config, config, Optional.of( trafficClassifier ) );
-        }
+        logger.info( "Initializing Opentelemetry trace plugin" );
+        O11yphantTracePlugin<?> plugin = new OtelTracePlugin( config, config );
 
         traceManager = new TraceManager<>( plugin, new SpanFieldsDecorator( getRootSpanFields() ), config );
         traceThreadContextualizer = traceManager.getTraceThreadContextualizer();
