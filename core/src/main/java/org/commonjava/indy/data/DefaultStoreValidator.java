@@ -22,11 +22,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
-import org.commonjava.indy.IndyWorkflowException;
-import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.conf.SslValidationConfig;
 import org.commonjava.indy.model.core.*;
-import org.infinispan.util.concurrent.ReclosableLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,10 +37,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
@@ -74,7 +68,7 @@ public class DefaultStoreValidator implements StoreValidator {
 
                 // If Remote Repo is disabled return data object with info that repo is disabled and valid true.
                 if(remoteRepository.isDisabled()) {
-                    LOGGER.warn("=> Remote Repository is disabled: ", remoteRepository.getUrl());
+                    LOGGER.warn("=> Remote Repository is disabled: {}", remoteRepository.getUrl());
                     return disabledRemoteRepositoryData(remoteRepository);
                 }
 
