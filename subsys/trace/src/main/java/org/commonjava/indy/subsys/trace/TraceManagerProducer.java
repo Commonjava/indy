@@ -40,7 +40,7 @@ public class TraceManagerProducer
 {
     private TraceManager traceManager;
 
-    private TraceThreadContextualizer<?> traceThreadContextualizer;
+    private TraceThreadContextualizer traceThreadContextualizer;
 
     @Inject
     private IndyTraceConfiguration config;
@@ -57,9 +57,9 @@ public class TraceManagerProducer
     public void init()
     {
         logger.info( "Initializing Opentelemetry trace plugin" );
-        O11yphantTracePlugin<?> plugin = new OtelTracePlugin( config, config );
+        O11yphantTracePlugin plugin = new OtelTracePlugin( config, config );
 
-        traceManager = new TraceManager<>( plugin, new SpanFieldsDecorator( getRootSpanFields() ), config );
+        traceManager = new TraceManager( plugin, new SpanFieldsDecorator( getRootSpanFields() ), config );
         traceThreadContextualizer = traceManager.getTraceThreadContextualizer();
     }
 

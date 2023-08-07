@@ -77,13 +77,13 @@ public class ClientMetricManager
     private void buildTraceManager(){
         if ( this.configuration.isEnabled() )
         {
-            O11yphantTracePlugin<?> plugin =
+            O11yphantTracePlugin plugin =
                     new OtelTracePlugin( configuration, configuration );
             if ( StringUtils.isNotBlank( configuration.getGrpcEndpointUri() ) )
             {
                 plugin = new OtelTracePlugin( configuration, configuration );
             }
-            this.traceManager = new TraceManager<>( plugin, new SpanFieldsDecorator(
+            this.traceManager = new TraceManager( plugin, new SpanFieldsDecorator(
                     Collections.singletonList( new ClientGoldenSignalsSpanFieldsInjector( metricSet ) ) ),
                                                     configuration );
         }
