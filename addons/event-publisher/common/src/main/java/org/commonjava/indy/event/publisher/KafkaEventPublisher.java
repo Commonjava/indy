@@ -39,6 +39,7 @@ import org.commonjava.maven.galley.io.checksum.ContentDigest;
 import org.commonjava.maven.galley.io.checksum.TransferMetadata;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
+import org.commonjava.maven.galley.model.TransferOperation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -157,6 +158,29 @@ public class KafkaEventPublisher
             fileEvent.setChecksum( artifactData.getDigests().get( ContentDigest.SHA_256 ) );
             fileEvent.setSize( artifactData.getSize() );
             fileEvent.setStoreKey( affectedStore.toString() );
+            
+            if ( galleyEvent instanceof FileStorageEvent )
+            {
+                TransferOperation op = ((FileStorageEvent) galleyEvent).getType();
+                switch ( op )
+                {
+                    case DOWNLOAD:
+                    {
+                        fileEvent.setOperation( org.commonjava.event.file.TransferOperation.DOWNLOAD );
+                        break;
+                    }
+                    case UPLOAD:
+                    {
+                        fileEvent.setOperation( org.commonjava.event.file.TransferOperation.UPLOAD );
+                        break;
+                    }
+                    default:
+                    {
+                        logger.trace( "Ignoring transfer operation: {} for: {}", op, transfer );
+                        return;
+                    }
+                }
+            }
 
             if ( StoreType.remote == affectedStore.getType() )
             {
