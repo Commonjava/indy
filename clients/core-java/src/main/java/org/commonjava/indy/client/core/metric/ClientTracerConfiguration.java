@@ -17,7 +17,6 @@ package org.commonjava.indy.client.core.metric;
 
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.client.core.inject.ClientMetricConfig;
-import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
 import org.commonjava.o11yphant.otel.OtelConfiguration;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
 
@@ -28,7 +27,7 @@ import java.util.Set;
 @SuppressWarnings( "unused" )
 @ClientMetricConfig
 public class ClientTracerConfiguration
-        implements TracerConfiguration, OtelConfiguration, HoneycombConfiguration
+        implements TracerConfiguration, OtelConfiguration
 {
     private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
 
@@ -39,10 +38,6 @@ public class ClientTracerConfiguration
     private String serviceName;
 
     private boolean consoleTransport;
-
-    private String writeKey;
-
-    private String dataset;
 
     private Integer baseSampleRate;
 
@@ -76,18 +71,6 @@ public class ClientTracerConfiguration
     public boolean isConsoleTransport()
     {
         return consoleTransport;
-    }
-
-    @Override
-    public String getWriteKey()
-    {
-        return writeKey;
-    }
-
-    @Override
-    public String getDataset()
-    {
-        return dataset;
     }
 
     @Override
@@ -142,16 +125,6 @@ public class ClientTracerConfiguration
     public String getGrpcEndpointUri()
     {
         return grpcUri == null ? DEFAULT_GRPC_URI : grpcUri;
-    }
-
-    public void setDataset( String dataset )
-    {
-        this.dataset = dataset;
-    }
-
-    public void setWriteKey( String writeKey )
-    {
-        this.writeKey = writeKey;
     }
 
     public void setConsoleTransport( boolean consoleTransport )
