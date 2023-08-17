@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>3.2.1</version>
+    <version>3.2.2-SNAPSHOT</version>
   </parent>
   <artifactId>indy-path-mapped</artifactId>
   <name>Indy :: Add-Ons :: Path Mapped :: Parent</name>
