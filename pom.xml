@@ -90,8 +90,8 @@
 
     <!-- commonjava/redhat projects -->
     <atlasVersion>1.1.1</atlasVersion>
-    <galleyVersion>1.14-SNAPSHOT</galleyVersion>
-    <weftVersion>1.22-SNAPSHOT</weftVersion>
+    <galleyVersion>1.14</galleyVersion>
+    <weftVersion>1.22</weftVersion>
     <bomVersion>28</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
