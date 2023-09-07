@@ -26,7 +26,7 @@
 
   <groupId>org.commonjava.indy</groupId>
   <artifactId>indy-parent</artifactId>
-  <version>3.2.3-SNAPSHOT</version>
+  <version>3.2.3</version>
 
   <packaging>pom</packaging>
 
@@ -37,7 +37,7 @@
     <connection>scm:git:https://github.com/CommonJava/indy</connection>
     <developerConnection>scm:git:https://github.com/CommonJava/indy</developerConnection>
     <url>http://github.com/Commonjava/indy</url>
-    <tag>indy-parent-3.2.0</tag>
+    <tag>indy-parent-3.2.3</tag>
   </scm>
 
   <repositories>
@@ -194,7 +194,7 @@
       <dependency>
         <groupId>org.commonjava.indy.ui</groupId>
         <artifactId>indy-ui-layover</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <!-- <type>war</type> -->
         <scope>runtime</scope>
       </dependency>
@@ -202,22 +202,22 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-model-core-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-api</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-core</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-core</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -225,42 +225,42 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-flat</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-metrics</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-infinispan</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-cassandra</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-service</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-bindings-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>skinny</classifier>
         <scope>provided</scope>
@@ -268,7 +268,7 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>complete</classifier>
         <scope>provided</scope>
@@ -276,7 +276,7 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>data</classifier>
         <scope>provided</scope>
@@ -284,7 +284,7 @@
       <dependency>
         <groupId>org.commonjava.indy.launch</groupId>
         <artifactId>indy-launcher</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>etc</classifier>
         <scope>provided</scope>
@@ -293,12 +293,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -306,22 +306,22 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-dot-maven-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-dot-maven</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-httprox-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-httprox-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -329,17 +329,17 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-httprox</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-index</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-index</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -347,51 +347,51 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-db-memory</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-db</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-fixtures-core</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-providers-core</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-test-utils</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-filer-default</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-trace</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-trace</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -399,17 +399,17 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-flatfile</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-cassandra</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-cassandra</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -417,79 +417,79 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-http</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-groovy</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-prefetch</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-cpool</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-service</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-client-core-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-core</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-folo</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -497,7 +497,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -505,33 +505,33 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-promote</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -539,7 +539,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>dataset</classifier>
         <scope>provided</scope>
@@ -547,19 +547,19 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>dataset</classifier>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -567,37 +567,37 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-implied-repos-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-implied-repos</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.embed</groupId>
         <artifactId>indy-embedder</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.boot</groupId>
         <artifactId>indy-booter-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-keycloak</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-keycloak</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -605,12 +605,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-kafka</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-kafka</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -618,7 +618,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-infinispan</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -626,7 +626,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-prefetch</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -634,7 +634,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-service</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -643,7 +643,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
@@ -651,103 +651,103 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-path-mapped-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-path-mapped-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-path-mapped-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-maven-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-maven-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-pkg-maven</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-pkg-npm</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-pkg-npm-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-diagnostics</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -755,28 +755,28 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-hosted-by-archive</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-hosted-by-archive-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
@@ -784,18 +784,18 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-event-publisher-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-subsys-metrics</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -804,21 +804,21 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-sli</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
 
       <dependency>
         <groupId>org.commonjava.indy.rest</groupId>
         <artifactId>indy-rest-api</artifactId>
         <type>yaml</type>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.rest</groupId>
         <artifactId>indy-rest-api</artifactId>
         <type>json</type>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
@@ -867,33 +867,33 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-content-browse</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -901,35 +901,35 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-ui</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>reactui</classifier>
         <type>tar.gz</type>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-client-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-changelog</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-changelog-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
@@ -947,12 +947,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-event-audit-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-event-audit-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
@@ -967,35 +967,35 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-repo-proxy-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-repo-proxy-jaxrs</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-repo-proxy</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-repo-proxy-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
         <classifier>confset</classifier>
         <type>tar.gz</type>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-schedule-common</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-schedule-model-java</artifactId>
-        <version>3.2.3-SNAPSHOT</version>
+        <version>3.2.3</version>
       </dependency>
 
       <!-- DO NOT REMOVE: append::depMgmt -->
