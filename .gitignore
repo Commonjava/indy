@@ -23,6 +23,9 @@ uis/layover/dist/
 *.iws
 *.ipr
 
+# vscode
+.vscode
+
 # mac
 *.DS_Store
 

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.commonjava.indy.infinispan.data;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
-import org.commonjava.indy.data.StandaloneStoreDataManager;
+import org.commonjava.indy.db.common.inject.Standalone;
 import org.commonjava.indy.data.StoreEventDispatcher;
 import org.commonjava.indy.db.common.AbstractStoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -49,8 +49,12 @@ import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_B
 import static org.commonjava.indy.infinispan.data.StoreDataCacheProducer.STORE_DATA_CACHE;
 import static org.commonjava.indy.model.core.StoreType.group;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @ApplicationScoped
-@StandaloneStoreDataManager
+@Standalone
 public class InfinispanStoreDataManager
                 extends AbstractStoreDataManager
 {

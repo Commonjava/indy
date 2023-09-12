@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -613,6 +613,10 @@ public class PromotionValidationTools
         return storeDataManager.getArtifactStore( key );
     }
 
+    /**
+     * @deprecated This method is not used anywhere, so may be removed later
+     */
+    @Deprecated
     public Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException
     {

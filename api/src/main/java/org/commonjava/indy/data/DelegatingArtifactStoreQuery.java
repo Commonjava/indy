@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 /**
  * Provides a convenient delegating implementation of {@link ArtifactStoreQuery}, which can be extended to wrap
@@ -38,7 +37,7 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         implements ArtifactStoreQuery<T>
 {
 
-    private ArtifactStoreQuery<T> delegate ;
+    private ArtifactStoreQuery<T> delegate;
 
     protected DelegatingArtifactStoreQuery( ArtifactStoreQuery delegate )
     {
@@ -49,13 +48,6 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     {
         return delegate;
     }
-
-//    @Override
-//    public ArtifactStoreQuery<T> rewrap( final StoreDataManager manager )
-//    {
-//        delegate.rewrap( manager );
-//        return this;
-//    }
 
     @Override
     public <C extends ArtifactStore> ArtifactStoreQuery<C> storeType( final Class<C> storeCls )
@@ -85,46 +77,12 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         return this;
     }
 
-//    @Override
-//    public boolean isEmpty()
-//    {
-//        return delegate.isEmpty();
-//    }
-
     @Override
     public List<T> getAll()
             throws IndyDataException
     {
         return delegate.getAll();
     }
-
-    @Override
-    public Stream<T> stream()
-            throws IndyDataException
-    {
-        return delegate.stream();
-    }
-
-    @Override
-    public Stream<T> stream( final Predicate<ArtifactStore> filter )
-            throws IndyDataException
-    {
-        return delegate.stream( filter );
-    }
-
-//    @Override
-//    public Stream<StoreKey> keyStream()
-//            throws IndyDataException
-//    {
-//        return delegate.keyStream();
-//    }
-
-//    @Override
-//    public Stream<StoreKey> keyStream( final Predicate<StoreKey> filterPredicate )
-//            throws IndyDataException
-//    {
-//        return null;
-//    }
 
     @Override
     public List<T> getAll( final Predicate<ArtifactStore> filter )
@@ -147,13 +105,6 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
         return delegate.getByName( name );
     }
 
-//    @Override
-//    public boolean containsByName( final String name )
-//            throws IndyDataException
-//    {
-//        return delegate.containsByName( name );
-//    }
-
     @Override
     public Set<Group> getGroupsContaining( final StoreKey storeKey )
             throws IndyDataException
@@ -163,7 +114,7 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
 
     @Override
     public Set<Group> getGroupsContaining( final StoreKey storeKey, final Boolean enabled )
-                    throws IndyDataException
+            throws IndyDataException
     {
         return delegate.getGroupsContaining( storeKey, enabled );
     }
@@ -176,8 +127,9 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType,final String url, final Boolean enabled )
-                    throws IndyDataException
+    public List<RemoteRepository> getRemoteRepositoryByUrl( final String packageType, final String url,
+                                                            final Boolean enabled )
+            throws IndyDataException
     {
         return delegate.getRemoteRepositoryByUrl( packageType, url, enabled );
     }
@@ -190,8 +142,9 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
-                    throws IndyDataException
+    public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName,
+                                                                final Boolean enabled )
+            throws IndyDataException
     {
         return delegate.getOrderedConcreteStoresInGroup( packageType, groupName, enabled );
     }
@@ -204,8 +157,9 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
-                    throws IndyDataException
+    public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName,
+                                                        final Boolean enabled )
+            throws IndyDataException
     {
         return delegate.getOrderedStoresInGroup( packageType, groupName, enabled );
     }
@@ -253,37 +207,43 @@ public class DelegatingArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    public List<RemoteRepository> getAllRemoteRepositories( String packageType ) throws IndyDataException
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType )
+            throws IndyDataException
     {
         return delegate.getAllRemoteRepositories( packageType );
     }
 
     @Override
-    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    public List<RemoteRepository> getAllRemoteRepositories( String packageType, Boolean enabled )
+            throws IndyDataException
     {
         return delegate.getAllRemoteRepositories( packageType, enabled );
     }
 
     @Override
-    public List<HostedRepository> getAllHostedRepositories( String packageType ) throws IndyDataException
+    public List<HostedRepository> getAllHostedRepositories( String packageType )
+            throws IndyDataException
     {
         return delegate.getAllHostedRepositories( packageType );
     }
 
     @Override
-    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled ) throws IndyDataException
+    public List<HostedRepository> getAllHostedRepositories( String packageType, Boolean enabled )
+            throws IndyDataException
     {
         return delegate.getAllHostedRepositories( packageType, enabled );
     }
 
     @Override
-    public List<Group> getAllGroups( String packageType ) throws IndyDataException
+    public List<Group> getAllGroups( String packageType )
+            throws IndyDataException
     {
         return delegate.getAllGroups( packageType );
     }
 
     @Override
-    public List<Group> getAllGroups( String packageType, Boolean enabled ) throws IndyDataException
+    public List<Group> getAllGroups( String packageType, Boolean enabled )
+            throws IndyDataException
     {
         return delegate.getAllGroups( packageType, enabled );
     }

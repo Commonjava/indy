@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.commonjava.indy.subsys.http.util.IndySiteConfigLookup;
 import org.commonjava.maven.galley.spi.auth.PasswordManager;
 import org.commonjava.maven.galley.transport.htcli.Http;
 import org.commonjava.maven.galley.transport.htcli.HttpImpl;
-import org.commonjava.o11yphant.jhttpc.SpanningHttpFactory;
-import org.commonjava.o11yphant.trace.TraceManager;
 import org.commonjava.util.jhttpc.HttpFactory;
 import org.commonjava.util.jhttpc.HttpFactoryIfc;
 import org.commonjava.util.jhttpc.INTERNAL.util.HttpUtils;
@@ -37,7 +35,6 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Optional;
 
 @ApplicationScoped
 public class IndyHttpProvider
@@ -50,8 +47,6 @@ public class IndyHttpProvider
     @Inject
     private IndySiteConfigLookup siteConfigLookup;
 
-    @Inject
-    private TraceManager traceManager;
 
     private PasswordManager passwordManager;
 
@@ -69,10 +64,9 @@ public class IndyHttpProvider
     public void setup()
     {
         passwordManager = new org.commonjava.maven.galley.auth.AttributePasswordManager();
-        Optional<TraceManager> traceManagerOptional = traceManager == null ? Optional.empty() : Optional.of( traceManager );
-        http = new HttpImpl( passwordManager, traceManagerOptional );
+        http = new HttpImpl( passwordManager );
 
-        httpFactory = new SpanningHttpFactory( new HttpFactory( new AttributePasswordManager( siteConfigLookup ) ), traceManagerOptional );
+        httpFactory = new HttpFactory( new AttributePasswordManager( siteConfigLookup ) );
     }
 
     @Produces

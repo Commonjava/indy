@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ public class IndyPromoteClientModule
 
     public static final String GROUP_ROLLBACK_PATH = PROMOTE_BASEPATH + "/groups/rollback";
 
+    @Deprecated
     public GroupPromoteResult promoteToGroup( final StoreKey src, final String targetGroup )
             throws IndyClientException
     {
@@ -53,6 +54,7 @@ public class IndyPromoteClientModule
         return result;
     }
 
+    @Deprecated
     public GroupPromoteResult promoteToGroup( final StoreKey src, final StoreKey target )
             throws IndyClientException
     {
@@ -63,6 +65,7 @@ public class IndyPromoteClientModule
         return result;
     }
 
+    @Deprecated
     public GroupPromoteResult promoteToGroup( final GroupPromoteRequest request )
             throws IndyClientException
     {
@@ -72,24 +75,35 @@ public class IndyPromoteClientModule
         return result;
     }
 
+    @Deprecated
     public GroupPromoteResult rollbackGroupPromote( final GroupPromoteResult result )
             throws IndyClientException
     {
         return http.postWithResponse( GROUP_ROLLBACK_PATH, result, GroupPromoteResult.class, HttpStatus.SC_OK );
     }
 
+    @Deprecated
     public GroupPromoteResult rollbackGroupPromote( final GroupPromoteRequest request )
             throws IndyClientException
     {
         return http.postWithResponse( GROUP_ROLLBACK_PATH, new GroupPromoteResult( request ), GroupPromoteResult.class, HttpStatus.SC_OK );
     }
 
+    @Deprecated
     public PathsPromoteResult promoteByPath( final StoreKey src, final StoreKey target, final boolean purgeSource,
                                              final String... paths )
         throws IndyClientException
     {
+        return promoteByPath( null, src, target, purgeSource, paths );
+    }
+
+    public PathsPromoteResult promoteByPath( String trackingId, final StoreKey src, final StoreKey target, final boolean purgeSource,
+                                             final String... paths )
+            throws IndyClientException
+    {
         final PathsPromoteRequest req =
-            new PathsPromoteRequest( src, target, new HashSet<String>( Arrays.asList( paths ) ) ).setPurgeSource( purgeSource );
+                new PathsPromoteRequest( src, target, new HashSet( Arrays.asList( paths ) ) )
+                        .setTrackingId( trackingId ).setPurgeSource( purgeSource );
 
         final PathsPromoteResult
                 result = http.postWithResponse( PATHS_PROMOTE_PATH, req, PathsPromoteResult.class, HttpStatus.SC_OK );

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public abstract class AbstractMergedContentGenerator
     }
 
     @Override
-    public final void handleContentDeletion( final ArtifactStore store, final String path,
+    public void handleContentDeletion( final ArtifactStore store, final String path,
                                              final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -99,7 +99,7 @@ public abstract class AbstractMergedContentGenerator
     }
 
     @Override
-    public final void handleContentStorage( final ArtifactStore store, final String path, final Transfer result,
+    public void handleContentStorage( final ArtifactStore store, final String path, final Transfer result,
                                             final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {

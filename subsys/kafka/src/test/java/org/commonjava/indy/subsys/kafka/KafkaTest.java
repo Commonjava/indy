@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,26 +33,6 @@ public class KafkaTest
 
         System.out.println( msg );
         //{"timestamp":"2018-12-20T04:28:18.551","level":"INFO","thread":"main","logger":"org.commonjava.indy._userlog_.kafka-log","message":"Hello world!","context":"default"}
-    }
-
-    /**
-     * To run this, follow https://kafka.apache.org/quickstart until step 3 (create the topic).
-     * If you want to view the message on console, follow step 5.
-     */
-    @Ignore
-    @Test
-    public void sendMessageTest() throws Exception
-    {
-        LogbackFormatter formatter = new LogbackFormatter( "org.commonjava.indy._userlog_.kafka-log" );
-
-        Properties props = new Properties();
-        props.load( getClass().getClassLoader().getResourceAsStream( "producer.properties" ) );
-        IndyKafkaProducer kafkaProducer = new IndyKafkaProducer( props );
-
-        kafkaProducer.send( "test", "Hello world!", formatter );
-        kafkaProducer.send( "test", "This is KafkaTest!", formatter, 30000 );
-
-        kafkaProducer.close();
     }
 
 }

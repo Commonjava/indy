@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,28 +15,55 @@
  */
 package org.commonjava.indy.client.core.metric;
 
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.client.core.inject.ClientMetricConfig;
-import org.commonjava.o11yphant.honeycomb.HoneycombConfiguration;
 import org.commonjava.o11yphant.otel.OtelConfiguration;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+@SuppressWarnings( "unused" )
 @ClientMetricConfig
 public class ClientTracerConfiguration
-        implements TracerConfiguration, OtelConfiguration, HoneycombConfiguration
+        implements TracerConfiguration, OtelConfiguration
 {
+    private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
+
+    private static final String DEFAULT_INDY_CLIENT_SERVICE_NAME = "indy-client";
 
     private boolean enabled;
 
-    private Integer baseSampleRate;
+    private String serviceName;
 
     private boolean consoleTransport;
 
-    private String dataset;
+    private Integer baseSampleRate;
 
-    private String writeKey;
+    private final Map<String, Integer> spanRates = new HashMap<>();
+
+    private Set<String> fields;
+
+    private String environmentMappings;
+
+    private String cpNames;
+
+    private String grpcUri;
+
+    private Map<String, String> grpcHeaders = new HashMap<>();
+
+    private Map<String, String> grpcResources = new HashMap<>();
 
     @Override
-    public boolean isEnabled() {
+    public Map<String, Integer> getSpanRates()
+    {
+        return spanRates;
+    }
+
+    @Override
+    public boolean isEnabled()
+    {
         return enabled;
     }
 
@@ -47,25 +74,57 @@ public class ClientTracerConfiguration
     }
 
     @Override
-    public String getWriteKey()
+    public Integer getBaseSampleRate()
     {
-        return writeKey;
+        return baseSampleRate == null ? DEFAULT_BASE_SAMPLE_RATE : baseSampleRate;
     }
 
     @Override
-    public String getDataset()
+    public Set<String> getFieldSet()
     {
-        return dataset;
+        return fields == null ? DEFAULT_FIELDS : fields;
     }
 
-    public void setDataset( String dataset )
+    @Override
+    public String getEnvironmentMappings()
     {
-        this.dataset = dataset;
+        return environmentMappings;
     }
 
-    public void setWriteKey( String writeKey )
+    @Override
+    public String getCPNames()
     {
-        this.writeKey = writeKey;
+        return cpNames;
+    }
+
+    @Override
+    public Map<String, String> getGrpcHeaders()
+    {
+        return grpcHeaders;
+    }
+
+    @Override
+    public Map<String, String> getResources()
+    {
+        return grpcResources;
+    }
+
+    @Override
+    public String getServiceName()
+    {
+        return StringUtils.isBlank( serviceName ) ? DEFAULT_INDY_CLIENT_SERVICE_NAME : serviceName;
+    }
+
+    @Override
+    public String getNodeId()
+    {
+        return null;
+    }
+
+    @Override
+    public String getGrpcEndpointUri()
+    {
+        return grpcUri == null ? DEFAULT_GRPC_URI : grpcUri;
     }
 
     public void setConsoleTransport( boolean consoleTransport )
@@ -73,27 +132,48 @@ public class ClientTracerConfiguration
         this.consoleTransport = consoleTransport;
     }
 
-    public void setEnabled( boolean enabled ) {
+    public void setEnabled( boolean enabled )
+    {
         this.enabled = enabled;
     }
 
-    @Override
-    public String getServiceName() {
-        return "indy-client";
-    }
-
-    @Override
-    public String getNodeId() {
-        return null;
-    }
-
-    @Override
-    public Integer getBaseSampleRate()
+    public void setBaseSampleRate( Integer baseSampleRate )
     {
-        return baseSampleRate == null ? DEFAULT_BASE_SAMPLE_RATE : baseSampleRate;
+        this.baseSampleRate = baseSampleRate;
     }
 
-    public void setBaseSampleRate( Integer baseSampleRate ) {
-        this.baseSampleRate = baseSampleRate;
+    public void setFields( Set<String> fields )
+    {
+        this.fields = fields;
+    }
+
+    public void setEnvironmentMappings( String environmentMappings )
+    {
+        this.environmentMappings = environmentMappings;
+    }
+
+    public void setCpNames( String cpNames )
+    {
+        this.cpNames = cpNames;
+    }
+
+    public void setGrpcUri( String grpcUri )
+    {
+        this.grpcUri = grpcUri;
+    }
+
+    public void setServiceName( String serviceName )
+    {
+        this.serviceName = serviceName;
+    }
+
+    public void setGrpcHeaders( Map<String, String> grpcHeaders )
+    {
+        this.grpcHeaders = grpcHeaders;
+    }
+
+    public void setGrpcResources( Map<String, String> grpcResources )
+    {
+        this.grpcResources = grpcResources;
     }
 }

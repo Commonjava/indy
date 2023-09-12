@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.cassandra.data;
+package org.commonjava.indy.event.publisher;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.commonjava.event.file.FileEvent;
 
-@Qualifier
-@Target( { ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
-@Retention( RetentionPolicy.RUNTIME)
-@Documented
-public @interface ClusterStoreDataManager
+public interface FileEventPublisher
 {
+    void publishFileEvent( FileEvent fileEvent );
 }

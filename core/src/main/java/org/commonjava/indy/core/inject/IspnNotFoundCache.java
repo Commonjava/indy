@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
-import org.commonjava.indy.subsys.infinispan.CacheHandle;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.infinispan.Cache;
@@ -107,6 +106,11 @@ public class IspnNotFoundCache
     @Measure
     public void addMissing( final ConcreteResource resource )
     {
+        if (isCacheDisabled(resource))
+        {
+            return;
+        }
+
         boolean withTimeout = true;
         if ( ( (KeyedLocation) resource.getLocation() ).getKey().getType() == hosted )
         {

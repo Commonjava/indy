@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.commonjava.indy.folo.client;
 
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
+import org.commonjava.indy.client.core.IndyClientHttp;
 import org.commonjava.indy.client.core.helper.PathInfo;
 import org.commonjava.test.http.expect.ExpectationServer;
 import org.junit.Before;
@@ -44,7 +45,10 @@ public class IndyFoloContentClientModuleTest
             throws IndyClientException
     {
         module = new IndyFoloContentClientModule();
-        indy = new Indy( server.formatUrl( "api" ), module ).connect();
+        indy = Indy.builder()
+                   .setLocation( IndyClientHttp.defaultSiteConfig( server.formatUrl( "api" ) ) )
+                   .setModules( module )
+                   .build();
     }
 
     @Test

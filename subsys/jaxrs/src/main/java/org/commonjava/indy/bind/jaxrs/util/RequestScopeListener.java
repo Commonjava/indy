@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -41,10 +41,12 @@ public class RequestScopeListener
         @SuppressWarnings( "unchecked" )
         final Map<String, Object> instanceMap = (Map<String, Object>) req.getAttribute( CDI_INSTANCE_MAP );
         final BoundRequestContext ctx = (BoundRequestContext) req.getAttribute( CDI_CONTEXT );
-
-        ctx.invalidate();
-        ctx.deactivate();
-        ctx.dissociate( instanceMap );
+        if ( ctx != null )
+        {
+            ctx.invalidate();
+            ctx.deactivate();
+            ctx.dissociate( instanceMap );
+        }
 
         req.removeAttribute( CDI_CONTEXT );
         req.removeAttribute( CDI_INSTANCE_MAP );

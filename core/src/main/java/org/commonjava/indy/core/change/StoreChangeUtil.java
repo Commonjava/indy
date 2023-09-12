@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,10 +47,10 @@ public class StoreChangeUtil
     public static Set<StoreKey>[] getDiffMembers( Group newGroup, Group oldGroup )
     {
         List<StoreKey> newMembers = newGroup.getConstituents();
-        logger.debug( "New members of {}: {}", newGroup, newMembers );
+        logger.info( "New members of {}: {}", newGroup, newMembers );
 
         List<StoreKey> oldMembers = oldGroup.getConstituents();
-        logger.debug( "Old members of {}: {}", oldGroup, oldMembers );
+        logger.info( "Old members of {}: {}", oldGroup, oldMembers );
 
         return getDiff( newMembers, oldMembers );
     }

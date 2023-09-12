@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.commonjava.indy.subsys.http.HttpWrapper;
 import org.commonjava.indy.subsys.http.util.UserPass;
 import org.commonjava.indy.subsys.keycloak.KeycloakAuthenticator;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
-import org.commonjava.indy.subsys.keycloak.util.KeycloakBearerTokenDebug;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.keycloak.RSATokenVerifier;
@@ -34,14 +33,13 @@ import org.keycloak.representations.AccessToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.util.List;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 
 import static org.commonjava.indy.httprox.util.HttpProxyConstants.PROXY_AUTHENTICATE_FORMAT;
 
@@ -65,6 +63,7 @@ public class KeycloakProxyAuthenticator
 
     private KeycloakDeployment deployment;
 
+    @SuppressWarnings( "unused" )
     protected KeycloakProxyAuthenticator()
     {
     }
@@ -131,7 +130,7 @@ public class KeycloakProxyAuthenticator
 
         if ( result == null || !result.success )
         {
-            String ts = null;
+            String ts;
             List<String> headers = http.getHeaders( TOKEN_HEADER );
             if ( headers != null && !headers.isEmpty() )
             {
@@ -159,7 +158,7 @@ public class KeycloakProxyAuthenticator
 
     private static final class AuthResult
     {
-        private boolean success;
+        private final boolean success;
         private String reason;
         private String description;
 
@@ -176,8 +175,8 @@ public class KeycloakProxyAuthenticator
         }
     }
 
+    @SuppressWarnings( "unused" )
     protected AuthResult authenticateToken( HttpWrapper exchange, String tokenString )
-            throws IOException
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -185,7 +184,6 @@ public class KeycloakProxyAuthenticator
         try
         {
 //            KeycloakBearerTokenDebug.debugToken( tokenString );
-
             logger.debug( "Verifying token: '{}'", tokenString );
             token = RSATokenVerifier.verifyToken( tokenString, getHardcodedRealmKey( deployment ), deployment.getRealmInfoUrl() );
         }
@@ -194,7 +192,7 @@ public class KeycloakProxyAuthenticator
             logger.error( "Failed to verify token", e );
             return new AuthResult( false, "invalid_token", e.getMessage() );
         }
-        if ( token.getIssuedAt() < deployment.getNotBefore() )
+        if ( token.getIat() < deployment.getNotBefore() )
         {
             logger.error( "Stale token" );
             return new AuthResult( false, "invalid_token", "Stale token" );

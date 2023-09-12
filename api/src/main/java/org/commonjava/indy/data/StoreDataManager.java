@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,13 +75,17 @@ public interface StoreDataManager
 
     /**
      * Return the full list of {@link ArtifactStore} instances of a given {@link StoreType} (hosted, remote, or group) available on the system.
+     * @deprecated We should avoid to call this method in new microservice architecture due to performance consideration
      */
+    @Deprecated
     Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException;
 
     /**
      * Return the {@link ArtifactStore} instances as a {@link Stream}.
+     * @deprecated We should avoid to call this method in new microservice architecture due to performance consideration
      */
+    @Deprecated
     Stream<ArtifactStore> streamArtifactStores()
             throws IndyDataException;
 

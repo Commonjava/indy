@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -154,17 +154,15 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
         return stream().collect( Collectors.toList() );
     }
 
-    @Override
     @Measure
-    public Stream<T> stream()
+    private Stream<T> stream()
             throws IndyDataException
     {
         return stream( store -> true );
     }
 
-    @Override
     @Measure
-    public Stream<T> stream( Predicate<ArtifactStore> filter )
+    private Stream<T> stream( Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
         /* @formatter:off */
@@ -419,32 +417,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     {
         return dataManager.affectedBy( keys );
     }
-
-//    public Stream<StoreKey> keyStream()
-//    {
-//        return keyStream( null );
-//    }
-
-//    public Stream<StoreKey> keyStream( Predicate<StoreKey> filterPredicate )
-//    {
-//        final Stream<StoreKey> storeKeys;
-//        if ( StringUtils.isNotBlank( this.packageType ) )
-//        {
-//            storeKeys = dataManager.getStoreKeysByPkg( this.packageType ).stream();
-//        }
-//        else
-//        {
-//            storeKeys = dataManager.streamArtifactStoreKeys();
-//        }
-//        return storeKeys.filter(key -> {
-//            if ( types != null && !types.isEmpty() && !types.contains( key.getType() ) )
-//            {
-//                return false;
-//            }
-//
-//            return filterPredicate == null || filterPredicate.test(key);
-//        });
-//    }
 
     @Override
     public RemoteRepository getRemoteRepository( final String packageType, final String name )

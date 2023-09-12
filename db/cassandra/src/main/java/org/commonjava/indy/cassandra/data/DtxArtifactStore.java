@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ import java.util.Set;
 
 import static org.commonjava.indy.cassandra.data.CassandraStoreUtil.TABLE_STORE;
 
+/**
+ * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
+ */
+@Deprecated
 @Table( name = TABLE_STORE, readConsistency = "QUORUM", writeConsistency = "QUORUM" )
 public class DtxArtifactStore
 {

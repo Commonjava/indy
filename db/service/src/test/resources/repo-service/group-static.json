@@ -1,0 +1,17 @@
+{
+  "type" : "group",
+  "key" : "maven:group:static",
+  "description" : "This group provides faster access to static data, that are stored in Indy.",
+  "metadata" : {
+    "changelog" : ""
+  },
+  "disabled" : false,
+  "constituents" : [ "maven:group:builds-untested+shared-imports" ],
+  "name" : "static",
+  "packageType" : "maven",
+  "disable_timeout" : -1,
+  "path_style" : "plain",
+  "authoritative_index" : false,
+  "create_time" : "2019-12-12 21:06:58 +0000",
+  "prepend_constituent" : false
+}

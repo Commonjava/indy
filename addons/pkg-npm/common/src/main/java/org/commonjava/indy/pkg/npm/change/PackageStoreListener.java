@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.commonjava.indy.pkg.npm.change;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.core.change.event.IndyFileEventManager;
+import org.commonjava.indy.core.conf.IndyEventHandlerConfig;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
@@ -65,6 +66,9 @@ public class PackageStoreListener
     @Inject
     private IndyFileEventManager fileEvent;
 
+    @Inject
+    private IndyEventHandlerConfig handlerConfig;
+
     /**
      * this listener observes {@link org.commonjava.maven.galley.event.FileStorageEvent}
      * for a tarball file, which means package.json will be cleared when a npm package
@@ -72,6 +76,14 @@ public class PackageStoreListener
      */
     public void onPackageStorageEvent( @Observes FileStorageEvent event )
     {
+
+        // Skip this if the kafka handler is enabled
+        if ( IndyEventHandlerConfig.HANDLER_KAFKA.equals( handlerConfig.getFileEventHandler()) )
+        {
+            logger.info( "{} handler enabled, skip this.", IndyEventHandlerConfig.HANDLER_KAFKA );
+            return;
+        }
+
         if ( !event.getTransfer().getPath().endsWith( PACKAGE_TARBALL_EXTENSION ) )
         {
             return;

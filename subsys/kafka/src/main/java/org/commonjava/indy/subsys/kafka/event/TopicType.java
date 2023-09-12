@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.data;
+package org.commonjava.indy.subsys.kafka.event;
 
-import javax.inject.Qualifier;
-import java.lang.annotation.*;
+public enum TopicType
+{
 
-/**
- * Qualifier used to supply the storeDataManager in standalone mode.
- */
-@Qualifier
-@Target( { ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
-@Retention( RetentionPolicy.RUNTIME)
-@Documented
-public @interface StandaloneStoreDataManager {
+    STORE_EVENT( "store-event" ),
+
+    PROMOTE_COMPLETE_EVENT( "promote-complete-event" );
+
+    private final String name;
+
+    TopicType( String name )
+    {
+        this.name = name;
+    }
+
+    public String getName()
+    {
+        return name;
+    }
 }

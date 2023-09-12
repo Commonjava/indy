@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -330,7 +330,7 @@ public class PackageMetadataGenerator
             }
             catch ( IOException e )
             {
-                logger.error( "Get the version metadata error from path {}", versionPath, e );
+                logger.error( String.format("Get the version metadata error from path %s.", versionPath), e );
                 throw new IndyWorkflowException( "Get the version metadata error from path {}", versionPath );
             }
         }
@@ -393,7 +393,7 @@ public class PackageMetadataGenerator
         }
         catch ( IOException | IndyWorkflowException e )
         {
-            logger.error( "Extract/store metadata file {} error.", versionPath, e );
+            logger.error( String.format("Extract/store metadata file %s error.", versionPath), e );
         }
         return metaFile;
 
