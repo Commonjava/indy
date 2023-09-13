@@ -83,7 +83,7 @@ public class FoloConfig
     @ConfigName( "recording.enabled")
     public void setRecordingEnabled( final boolean enabled )
     {
-        this.enabled = enabled;
+        this.recordingEnabled = enabled;
     }
 
     public boolean isGroupContentTracked()
