@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
-import org.commonjava.indy.subsys.honeycomb.TraceManagerProducer;
+import org.commonjava.indy.subsys.trace.TraceManagerProducer;
 import org.commonjava.o11yphant.metrics.GoldenSignalsFilter;
 import org.commonjava.o11yphant.trace.servlet.TraceFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;

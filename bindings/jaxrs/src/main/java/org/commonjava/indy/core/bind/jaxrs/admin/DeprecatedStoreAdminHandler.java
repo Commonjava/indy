@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.commons.io.IOUtils;
+import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
@@ -36,7 +37,6 @@ import org.commonjava.indy.model.core.dto.StoreListingDTO;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.ApplicationContent;
-import org.commonjava.atlas.maven.ident.util.JoinString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +58,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.List;
@@ -77,6 +76,7 @@ import static org.commonjava.indy.util.ApplicationContent.application_json;
 @Path( "/api/admin/{type: (hosted|group|remote)}" )
 @ApplicationScoped
 @REST
+@Deprecated
 public class DeprecatedStoreAdminHandler
     implements IndyResources
 {
@@ -100,11 +100,6 @@ public class DeprecatedStoreAdminHandler
         logger.info( "\n\n\n\nStarted StoreAdminHandler\n\n\n\n" );
     }
 
-    //    @Context
-    //    private UriInfo uriInfo;
-    //
-    //    @Context
-    //    private HttpServletRequest request;
 
     @ApiOperation( "Check if a given store exists" )
     @ApiResponses( { @ApiResponse( code = 200, message = "The store exists" ),
@@ -140,7 +135,7 @@ public class DeprecatedStoreAdminHandler
     @ApiOperation( "Create a new store" )
     @ApiResponses( { @ApiResponse( code = 201, response = ArtifactStore.class, message = "The store was created" ),
         @ApiResponse( code = 409, message = "A store with the specified type and name already exists" ) } )
-    @ApiImplicitParams( { @ApiImplicitParam( allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
+    @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
     @POST
     @Consumes( ApplicationContent.application_json )
     @Produces( ApplicationContent.application_json )
@@ -232,7 +227,7 @@ public class DeprecatedStoreAdminHandler
     @ApiOperation( "Update an existing store" )
     @ApiResponses( { @ApiResponse( code = 200, message = "The store was updated" ),
         @ApiResponse( code = 400, message = "The store specified in the body JSON didn't match the URL parameters" ), } )
-    @ApiImplicitParams( { @ApiImplicitParam( allowMultiple = false, paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
+    @ApiImplicitParams( { @ApiImplicitParam( paramType = "body", name = "body", required = true, dataType = "org.commonjava.indy.model.core.ArtifactStore", value = "The artifact store definition JSON" ) } )
     @Path( "/{name}" )
     @PUT
     @Consumes( ApplicationContent.application_json )

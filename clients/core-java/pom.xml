@@ -1,6 +1,6 @@
 <!--
 
-    Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+    Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-clients-parent</artifactId>
-    <version>2.7.7-SNAPSHOT</version>
+    <version>3.2.3</version>
   </parent>
 
   <artifactId>indy-client-core-java</artifactId>
@@ -31,16 +31,6 @@
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>o11yphant-trace-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-honeycomb</artifactId>
-      <exclusions>
-        <exclusion>
-          <groupId>io.undertow</groupId>
-          <artifactId>undertow-servlet</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>

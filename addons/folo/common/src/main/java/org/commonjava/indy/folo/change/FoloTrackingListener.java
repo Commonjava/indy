@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,6 +77,10 @@ public class FoloTrackingListener
 
     public void onFileAccess( @Observes final FileAccessEvent event )
     {
+        if (!foloConfig.isRecordingEnabled()) {
+            logger.debug( "Recording is disabled in monolith, ignoring FILE ACCESS" );
+            return;
+        }
         logger.trace( "FILE ACCESS: {}", event );
 
         EventMetadata metadata = event.getEventMetadata();
@@ -148,6 +152,10 @@ public class FoloTrackingListener
 
     public void onFileUpload( @Observes final FileStorageEvent event )
     {
+        if (!foloConfig.isRecordingEnabled()) {
+            logger.debug( "Recording is disabled in monolith, ignoring FILE STORAGE" );
+            return;
+        }
         logger.trace( "FILE STORAGE: {}", event );
 
         if ( TransferOperation.UPLOAD != event.getType() )

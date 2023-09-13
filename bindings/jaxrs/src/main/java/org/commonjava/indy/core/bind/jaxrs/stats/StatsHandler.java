@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -130,11 +130,14 @@ public class StatsHandler
         return Response.ok( new TreeSet<>( PackageTypes.getPackageTypes() ) ).build();
     }
 
-    @ApiOperation( "Retrieve a listing of the artifact stores available on the system. This is especially useful for setting up a network of Indy instances that reference one another" )
+    @ApiOperation( "Retrieve a listing of the artifact stores available on the system. "
+            + "This is especially useful for setting up a network of Indy instances that reference one another."
+            + "Note: this method is deprecated as repository management is moved to standalone repository service." )
     @ApiResponse( code = 200, response = EndpointViewListing.class, message = "The artifact store listing" )
     @Path( "/all-endpoints" )
     @GET
     @Produces( ApplicationContent.application_json )
+    @Deprecated
     public Response getAllEndpoints( @Context final UriInfo uriInfo )
     {
         Response response;

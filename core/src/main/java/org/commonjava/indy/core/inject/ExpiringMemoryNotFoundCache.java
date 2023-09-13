@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2011-2022 Red Hat, Inc. (https://github.com/Commonjava/indy)
+ * Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -82,6 +82,11 @@ public class ExpiringMemoryNotFoundCache
     @Override
     public void addMissing( final ConcreteResource resource )
     {
+        if (isCacheDisabled(resource))
+        {
+            return;
+        }
+
         long timeout = Long.MAX_VALUE;
         if ( config.getNotFoundCacheTimeoutSeconds() > 0 )
         {

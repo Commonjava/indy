@@ -1,0 +1,31 @@
+{
+  "type" : "remote",
+  "key" : "npm:remote:npmjs",
+  "description" : "npmjs registry",
+  "metadata" : {
+    "changelog" : "Refresh metadata every hour, to express schedule expiration bug"
+  },
+  "disabled" : false,
+  "host" : "registry.npmjs.org",
+  "port" : 443,
+  "name" : "npmjs",
+  "packageType" : "npm",
+  "disable_timeout" : -1,
+  "path_style" : "plain",
+  "authoritative_index" : false,
+  "create_time" : "2022-07-07 14:29:53 +0000",
+  "allow_snapshots" : true,
+  "allow_releases" : true,
+  "url" : "https://registry.npmjs.org/",
+  "timeout_seconds" : 0,
+  "max_connections" : 30,
+  "ignore_hostname_verification" : false,
+  "nfc_timeout_seconds" : 0,
+  "is_passthrough" : false,
+  "cache_timeout_seconds" : 0,
+  "metadata_timeout_seconds" : 3600,
+  "proxy_port" : 0,
+  "prefetch_priority" : 0,
+  "prefetch_rescan" : false,
+  "prefetch_listing_type" : "html"
+}
