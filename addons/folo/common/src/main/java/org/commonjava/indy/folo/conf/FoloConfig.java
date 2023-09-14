@@ -25,6 +25,10 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.InputStream;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 @SectionName( "folo" )
 @ApplicationScoped
 public class FoloConfig
@@ -34,15 +38,12 @@ public class FoloConfig
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     public static final boolean DEFAULT_ENABLED = true;
-    public static final boolean DEFAULT_DISABLED =  false;
     public static final String DEFAULT_FOLO_CASSANDRA_KEYSPACE =  "folo";
     public static final String DEFAULT_FOLO_CASSANDRA_TABLENAME =  "records";
 
     private Boolean enabled;
 
     private Boolean recordingEnabled;
-
-    private Boolean storeToCassandra;
 
     private Boolean trackGroupContent;
 
@@ -70,55 +71,65 @@ public class FoloConfig
         this.enabled = enabled;
     }
 
-    public boolean isRecordingEnabled()
-    {
-        return recordingEnabled == null ? DEFAULT_ENABLED : recordingEnabled;
-    }
-
-    public Boolean getRecordingEnabled()
-    {
-        return recordingEnabled;
-    }
-
-    @ConfigName( "recording.enabled")
-    public void setRecordingEnabled( final boolean enabled )
-    {
-        this.recordingEnabled = enabled;
-    }
-
-    public boolean isGroupContentTracked()
-    {
-        return Boolean.TRUE.equals( trackGroupContent );
-    }
-
-    @ConfigName( "track.group.content" )
-    public void setTrackGroupContent( final Boolean trackGroupContent )
-    {
-        this.trackGroupContent = trackGroupContent;
-    }
-
-    public Boolean getTrackGroupContent()
-    {
-        return trackGroupContent;
-    }
-
+    @Deprecated(since = "3.3.0")
     public String getFoloCassandraKeyspace() {
         return foloCassandraKeyspace == null ?  DEFAULT_FOLO_CASSANDRA_KEYSPACE : foloCassandraKeyspace;
     }
 
+    @Deprecated(since = "3.3.0")
     @ConfigName("folo.cassandra.keyspace")
     public void setFoloCassandraKeyspace(String foloCassandraKeyspace) {
         logger.warn("\n\n-- SETING FOLO KEYSPACE NAME: "  + foloCassandraKeyspace);
         this.foloCassandraKeyspace = foloCassandraKeyspace;
     }
 
+    @Deprecated(since = "3.3.0")
     public String getFoloCassandraTablename() {
         return foloCassandraTablename == null ? DEFAULT_FOLO_CASSANDRA_TABLENAME : foloCassandraTablename;
     }
 
+    @Deprecated(since = "3.3.0")
     @ConfigName("folo.cassandra.tablename")
     public void setFoloCassandraTablename(String foloCassandraTablename) {
         this.foloCassandraTablename = foloCassandraTablename;
+    }
+
+    @Deprecated(since = "3.3.0")
+    public boolean isRecordingEnabled()
+    {
+        return recordingEnabled == null ? DEFAULT_ENABLED : recordingEnabled;
+    }
+
+    @Deprecated(since = "3.3.0")
+    public Boolean getRecordingEnabled()
+    {
+        return recordingEnabled;
+    }
+
+    @Deprecated(since = "3.3.0")
+    @ConfigName( "recording.enabled")
+    public void setRecordingEnabled( final boolean enabled )
+    {
+        this.recordingEnabled = enabled;
+    }
+
+    @Deprecated(since = "3.3.0")
+    public boolean isGroupContentTracked()
+    {
+        return Boolean.TRUE.equals( trackGroupContent );
+    }
+
+    @Deprecated(since = "3.3.0")
+    @ConfigName( "track.group.content" )
+    public void setTrackGroupContent( final Boolean trackGroupContent )
+    {
+        this.trackGroupContent = trackGroupContent;
+    }
+
+    @Deprecated(since = "3.3.0")
+    public Boolean getTrackGroupContent()
+    {
+        return trackGroupContent;
     }
 
     @Override

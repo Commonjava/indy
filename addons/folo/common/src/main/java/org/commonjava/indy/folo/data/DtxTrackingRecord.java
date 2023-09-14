@@ -33,6 +33,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.commonjava.indy.folo.data.FoloRecordCassandra.TABLE_NAME;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 @Table(name = TABLE_NAME )
 public class DtxTrackingRecord {
 

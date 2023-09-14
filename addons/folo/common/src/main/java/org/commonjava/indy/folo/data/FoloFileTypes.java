@@ -22,7 +22,10 @@ import java.util.Set;
 
 /**
  * Created by jdcasey on 9/9/15.
+ *
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
  */
+@Deprecated(since = "3.3.0")
 public final class FoloFileTypes
 {
 

@@ -44,6 +44,10 @@ import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 @ApplicationScoped
 @FoloStoretoInfinispan
 public class FoloRecordCache implements FoloRecord {

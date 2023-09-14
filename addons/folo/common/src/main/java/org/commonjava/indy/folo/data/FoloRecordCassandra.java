@@ -41,6 +41,10 @@ import java.util.stream.Collectors;
 
 import static org.commonjava.indy.folo.data.DtxTrackingRecord.fromCassandraRow;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 @ApplicationScoped
 @FoloStoreToCassandra
 public class FoloRecordCassandra implements FoloRecord,StartupAction {
