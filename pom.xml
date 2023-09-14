@@ -69,7 +69,7 @@
     <undertowVersion>2.2.24.Final</undertowVersion>
     <xnioVersion>3.8.2.Final</xnioVersion>
     <keycloakVersion>17.0.1</keycloakVersion>
-    <bouncycastleVersion>1.64</bouncycastleVersion>
+    <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.20</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
     <logbackVersion>1.2.9</logbackVersion>
@@ -78,7 +78,7 @@
     <jacksonVersion>2.13.3</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
-    <httpclientVersion>4.5.9</httpclientVersion>
+    <httpclientVersion>4.5.13</httpclientVersion>
     <otelInstrumentationVersion>1.19.0-alpha</otelInstrumentationVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.11.3</datastaxVersion>
