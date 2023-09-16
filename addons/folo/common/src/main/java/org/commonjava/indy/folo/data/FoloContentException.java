@@ -20,6 +20,10 @@ import org.commonjava.indy.IndyException;
 import java.text.MessageFormat;
 import java.util.IllegalFormatException;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 public class FoloContentException
         extends IndyException
 {

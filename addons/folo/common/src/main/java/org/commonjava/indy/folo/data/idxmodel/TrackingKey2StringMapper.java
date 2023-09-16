@@ -21,6 +21,10 @@ import org.commonjava.indy.subsys.infinispan.AbstractIndyKey2StringMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 public class TrackingKey2StringMapper
         extends AbstractIndyKey2StringMapper<TrackingKey>
 {

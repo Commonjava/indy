@@ -27,7 +27,10 @@ import java.io.IOException;
 /**
  * A customized infinispan {@link Transformer} used for {@link TrackedContentEntry}
  * to support it to be used as infinispan cache key in indexing.
+ *
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
  */
+@Deprecated(since = "3.3.0")
 public class TrackedContentEntryTransformer
         implements Transformer
 {

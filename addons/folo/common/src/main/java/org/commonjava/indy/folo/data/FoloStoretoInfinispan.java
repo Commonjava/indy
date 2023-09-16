@@ -15,13 +15,16 @@
  */
 package org.commonjava.indy.folo.data;
 
-
 import javax.inject.Qualifier;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
+ */
+@Deprecated(since = "3.3.0")
 @Qualifier
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD,ElementType.TYPE})
 @Retention( RetentionPolicy.RUNTIME)

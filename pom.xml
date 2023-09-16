@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava</groupId>
     <artifactId>commonjava</artifactId>
-    <version>17</version>
+    <version>18</version>
   </parent>
 
   <groupId>org.commonjava.indy</groupId>
@@ -61,21 +61,22 @@
     <javaVersion>11</javaVersion>
     <slf4j-version>1.7.36</slf4j-version>
     <infinispanVersion>9.4.24.Final</infinispanVersion>
-    <!--<luceneVersion>7.3.0</luceneVersion>-->
     <protostreamVersion>4.3.0.Final</protostreamVersion>
-    <gsonVersion>2.8.9</gsonVersion>
+    <gsonVersion>2.9.1</gsonVersion>
     <hibernateVersion>5.8.1.Final</hibernateVersion>
     <resteasyVersion>3.0.12.Final</resteasyVersion>
-    <undertowVersion>2.2.24.Final</undertowVersion>
+    <jaxrsVersion>3.0.12.Final</jaxrsVersion>
+    <asyncServletVersion>3.0.19.Final</asyncServletVersion>
+    <undertowVersion>2.2.26.Final</undertowVersion>
     <xnioVersion>3.8.2.Final</xnioVersion>
     <keycloakVersion>17.0.1</keycloakVersion>
     <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.20</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
-    <logbackVersion>1.2.9</logbackVersion>
+    <logbackVersion>1.2.12</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>3.1.9.Final</weldVersion>
-    <jacksonVersion>2.13.3</jacksonVersion>
+    <jacksonVersion>2.15.2</jacksonVersion>
     <jgroupsVersion>4.0.4.Final</jgroupsVersion>
     <httpcoreVersion>4.4.9</httpcoreVersion>
     <httpclientVersion>4.5.13</httpclientVersion>
@@ -925,12 +926,12 @@
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>jaxrs-api</artifactId>
-        <version>${resteasyVersion}</version>
+        <version>${jaxrsVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.resteasy</groupId>
         <artifactId>async-http-servlet-3.0</artifactId>
-        <version>${resteasyVersion}</version>
+        <version>${asyncServletVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.spec.javax.servlet</groupId>

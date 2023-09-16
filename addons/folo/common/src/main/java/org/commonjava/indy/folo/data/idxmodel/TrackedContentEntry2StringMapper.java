@@ -26,7 +26,10 @@ import org.commonjava.indy.subsys.infinispan.AbstractIndyKey2StringMapper;
  * The key2string mapper for {@link TrackedContentEntry} working for ISPN jdbc persistence. Note that this mapper only
  * cares about the fields that used in equals() method which follows {@link org.infinispan.persistence.keymappers.Key2StringMapper}
  * rules, so will ignore other fields
+ *
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
  */
+@Deprecated(since = "3.3.0")
 public class TrackedContentEntry2StringMapper
         extends AbstractIndyKey2StringMapper<TrackedContentEntry>
 {
