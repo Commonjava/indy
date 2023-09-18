@@ -24,6 +24,7 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
 import org.commonjava.indy.subsys.kafka.handler.ServiceEventHandler;
 import org.commonjava.indy.subsys.kafka.trace.TracingKafkaClientSupplier;
@@ -34,11 +35,12 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import java.time.Duration;
 import java.util.Properties;
 
 @ApplicationScoped
 public class KafkaStreamBooter
-                implements BootupAction
+        implements BootupAction, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -48,12 +50,20 @@ public class KafkaStreamBooter
 
     @Inject
     KafkaConfig config;
-    
+
     @Inject
     IndyTraceConfiguration traceConfig;
 
+    @Inject
+    TracingKafkaClientSupplier traceClientSupplier;
+
+    private static final long DEFAULT_KAFKA_STREAM_CLOSE_TIMEOUT = 5 * 60 * 3000L;
+
+    private KafkaStreams streams;
+
     @Override
-    public void init() throws IndyLifecycleException
+    public void init()
+            throws IndyLifecycleException
     {
 
         if ( !config.isEnabled() )
@@ -74,9 +84,9 @@ public class KafkaStreamBooter
         for ( String topic : config.getTopics() )
         {
             KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
-            for (ServiceEventHandler handler : serviceEventHandlers)
+            for ( ServiceEventHandler handler : serviceEventHandlers )
             {
-                if ( handler.canHandle(topic) )
+                if ( handler.canHandle( topic ) )
                 {
                     handler.dispatchEvent( stream, topic );
                 }
@@ -85,29 +95,23 @@ public class KafkaStreamBooter
 
         Properties props = setKafkaProps();
 
-        if ( traceConfig.isEnabled() )
+        if ( traceConfig.isEnabled() && config.isTracing() )
         {
-            logger.info("The trace is enabled for Kafka client, so inject otel instrumentation to Kafka client.");
-            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props,
-                                                                new TracingKafkaClientSupplier() ))
-            {
-                streams.start();
-            }
-            catch ( final Throwable e )
-            {
-                throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
-            }
+            logger.info( "The trace is enabled for Kafka client, so inject otel instrumentation to Kafka client." );
+            streams = new KafkaStreams( builder.build(), props, traceClientSupplier );
         }
         else
         {
-            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props ))
-            {
-                streams.start();
-            }
-            catch ( final Throwable e )
-            {
-                throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
-            }
+            streams = new KafkaStreams( builder.build(), props );
+        }
+        
+        try
+        {
+            streams.start();
+        }
+        catch ( final Throwable e )
+        {
+            throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
         }
     }
 
@@ -132,5 +136,34 @@ public class KafkaStreamBooter
 
         logger.info( "Kafka props: {}", props );
         return props;
+    }
+
+    @Override
+    public void stop()
+    {
+        if ( !config.isEnabled() )
+        {
+            logger.info( "Kafka stream is disabled, no need to close it." );
+            return;
+        }
+        logger.info( "Closing Kafka streams..." );
+        if ( streams != null )
+        {
+            try
+            {
+                streams.close( Duration.ofMillis( DEFAULT_KAFKA_STREAM_CLOSE_TIMEOUT ) );
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Kafka streams closing failed. Cause: ", e );
+            }
+        }
+        logger.info( "Kafka streams for message consuming stopped." );
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 100;
     }
 }

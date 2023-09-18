@@ -15,12 +15,17 @@
  */
 package org.commonjava.indy.subsys.kafka;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.kafkaclients.KafkaTelemetry;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
+import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
+import org.commonjava.o11yphant.otel.OtelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +49,14 @@ public class IndyKafkaProducer
     @Inject
     private KafkaConfig config;
 
-    private KafkaProducer kafkaProducer;
+    @Inject
+    IndyTraceConfiguration traceConfiguration;
+
+    private Producer<String, Object> kafkaProducer;
 
     private final Consumer<Exception> exceptionHandler = ( e ) -> logger.error( "Send to Kafka failed", e );
 
-    private final Callback callback = ( metadata, exception ) ->
-    {
+    private final Callback callback = ( metadata, exception ) -> {
         if ( exception != null )
         {
             exceptionHandler.accept( exception );
@@ -67,10 +74,18 @@ public class IndyKafkaProducer
         if ( config.isEnabled() )
         {
             Properties props = new Properties();
-            props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers());
-            props.setProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-            props.setProperty(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, KafkaObjectMapperSerializer.class.getName());
+            props.setProperty( ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers() );
+            props.setProperty( ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName() );
+            props.setProperty( ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
+                               KafkaObjectMapperSerializer.class.getName() );
             kafkaProducer = new KafkaProducer<>( props );
+            if ( traceConfiguration.isEnabled() && config.isTracing() )
+            {
+                logger.info( "Enabling the opentelemetry for Kafka message producer." );
+                final OpenTelemetry otel = OtelUtil.getOpenTelemetry( traceConfiguration, traceConfiguration );
+                final KafkaTelemetry telemetry = KafkaTelemetry.create( otel );
+                kafkaProducer = telemetry.wrap( kafkaProducer );
+            }
         }
     }
 
@@ -83,13 +98,12 @@ public class IndyKafkaProducer
         doKafkaSend( topic, message );
     }
 
-
     /**
      * Blocking send. The message will be available to consumers immediately. Wait for at most the given time
      * for the operation to complete.
      */
     public void send( String topic, Object message, long timeoutMillis )
-                    throws InterruptedException, ExecutionException, TimeoutException
+            throws InterruptedException, ExecutionException, TimeoutException
     {
         Future future = doKafkaSend( topic, message );
         if ( future != null )
@@ -98,13 +112,11 @@ public class IndyKafkaProducer
         }
     }
 
-    @SuppressWarnings( "unchecked" )
     private Future doKafkaSend( String topic, Object message )
     {
         if ( kafkaProducer != null )
         {
-            ProducerRecord<String, Object> producerRecord =
-                            new ProducerRecord<>( topic, message );
+            ProducerRecord<String, Object> producerRecord = new ProducerRecord<>( topic, message );
 
             return kafkaProducer.send( producerRecord, callback );
         }
