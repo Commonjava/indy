@@ -31,7 +31,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 @SectionName( "kafka" )
 @ApplicationScoped
 public class KafkaConfig
-                implements IndyConfigInfo
+        implements IndyConfigInfo
 {
 
     private static final String DEFAULT_BOOTSTRP_SERVERS = "127.0.0.1:9092";
@@ -41,6 +41,8 @@ public class KafkaConfig
     private static final Integer DEFAULT_RECORDS_PER_PARTITION = 1000;
 
     private static final boolean DEFAULT_ENABLED = true;
+
+    private static final boolean DEFAULT_TRACE = false;
 
     private Boolean enabled;
 
@@ -53,6 +55,8 @@ public class KafkaConfig
     private Integer recordsPerPartition;
 
     private String fileEventTopic;
+
+    private Boolean tracing;
 
     public KafkaConfig()
     {
@@ -119,6 +123,7 @@ public class KafkaConfig
     {
         this.recordsPerPartition = recordsPerPartition;
     }
+
     public String getFileEventTopic()
     {
         return fileEventTopic;
@@ -130,6 +135,16 @@ public class KafkaConfig
         this.fileEventTopic = fileEventTopic;
     }
 
+    public boolean isTracing()
+    {
+        return tracing == null ? DEFAULT_TRACE : tracing;
+    }
+
+    @ConfigName( "kafka.trace" )
+    public void setTracing( boolean tracing )
+    {
+        this.tracing = tracing;
+    }
 
     @Override
     public String getDefaultConfigFileName()
