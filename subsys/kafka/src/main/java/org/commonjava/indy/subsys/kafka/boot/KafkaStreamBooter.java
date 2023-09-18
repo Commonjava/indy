@@ -24,6 +24,7 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.commonjava.indy.action.BootupAction;
 import org.commonjava.indy.action.IndyLifecycleException;
+import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
 import org.commonjava.indy.subsys.kafka.handler.ServiceEventHandler;
 import org.commonjava.indy.subsys.kafka.trace.TracingKafkaClientSupplier;
@@ -34,11 +35,12 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
+import java.time.Duration;
 import java.util.Properties;
 
 @ApplicationScoped
 public class KafkaStreamBooter
-        implements BootupAction
+        implements BootupAction, ShutdownAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -54,6 +56,10 @@ public class KafkaStreamBooter
 
     @Inject
     TracingKafkaClientSupplier traceClientSupplier;
+
+    private static final long DEFAULT_KAFKA_STREAM_CLOSE_TIMEOUT = 5 * 60 * 3000L;
+
+    private KafkaStreams streams;
 
     @Override
     public void init()
@@ -92,25 +98,20 @@ public class KafkaStreamBooter
         if ( traceConfig.isEnabled() && config.isTracing() )
         {
             logger.info( "The trace is enabled for Kafka client, so inject otel instrumentation to Kafka client." );
-            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props, traceClientSupplier ))
-            {
-                streams.start();
-            }
-            catch ( final Throwable e )
-            {
-                throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
-            }
+            streams = new KafkaStreams( builder.build(), props, traceClientSupplier );
         }
         else
         {
-            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props ))
-            {
-                streams.start();
-            }
-            catch ( final Throwable e )
-            {
-                throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
-            }
+            streams = new KafkaStreams( builder.build(), props );
+        }
+        
+        try
+        {
+            streams.start();
+        }
+        catch ( final Throwable e )
+        {
+            throw new IndyLifecycleException( "Failed to start Kafka consumer streaming.", e );
         }
     }
 
@@ -135,5 +136,34 @@ public class KafkaStreamBooter
 
         logger.info( "Kafka props: {}", props );
         return props;
+    }
+
+    @Override
+    public void stop()
+    {
+        if ( !config.isEnabled() )
+        {
+            logger.info( "Kafka stream is disabled, no need to close it." );
+            return;
+        }
+        logger.info( "Closing Kafka streams..." );
+        if ( streams != null )
+        {
+            try
+            {
+                streams.close( Duration.ofMillis( DEFAULT_KAFKA_STREAM_CLOSE_TIMEOUT ) );
+            }
+            catch ( Exception e )
+            {
+                logger.error( "Kafka streams closing failed. Cause: ", e );
+            }
+        }
+        logger.info( "Kafka streams for message consuming stopped." );
+    }
+
+    @Override
+    public int getShutdownPriority()
+    {
+        return 100;
     }
 }

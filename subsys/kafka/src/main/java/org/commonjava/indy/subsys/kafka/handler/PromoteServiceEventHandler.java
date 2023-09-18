@@ -93,7 +93,7 @@ public class PromoteServiceEventHandler
                 return;
             }
 
-            Set<String> clearPaths = new HashSet();
+            Set<String> clearPaths = new HashSet<>();
             addClearPaths(clearPaths, completeEvent.getCompletedPaths());
             addClearPaths(clearPaths, completeEvent.getSkippedPaths());
 
