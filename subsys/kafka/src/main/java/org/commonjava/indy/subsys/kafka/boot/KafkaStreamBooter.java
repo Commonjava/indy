@@ -38,7 +38,7 @@ import java.util.Properties;
 
 @ApplicationScoped
 public class KafkaStreamBooter
-                implements BootupAction
+        implements BootupAction
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -48,12 +48,16 @@ public class KafkaStreamBooter
 
     @Inject
     KafkaConfig config;
-    
+
     @Inject
     IndyTraceConfiguration traceConfig;
 
+    @Inject
+    TracingKafkaClientSupplier traceClientSupplier;
+
     @Override
-    public void init() throws IndyLifecycleException
+    public void init()
+            throws IndyLifecycleException
     {
 
         if ( !config.isEnabled() )
@@ -74,9 +78,9 @@ public class KafkaStreamBooter
         for ( String topic : config.getTopics() )
         {
             KStream<String, String> stream = builder.stream( topic, Consumed.with( stringSerde, stringSerde ) );
-            for (ServiceEventHandler handler : serviceEventHandlers)
+            for ( ServiceEventHandler handler : serviceEventHandlers )
             {
-                if ( handler.canHandle(topic) )
+                if ( handler.canHandle( topic ) )
                 {
                     handler.dispatchEvent( stream, topic );
                 }
@@ -85,11 +89,10 @@ public class KafkaStreamBooter
 
         Properties props = setKafkaProps();
 
-        if ( traceConfig.isEnabled() )
+        if ( traceConfig.isEnabled() && config.isTracing() )
         {
-            logger.info("The trace is enabled for Kafka client, so inject otel instrumentation to Kafka client.");
-            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props,
-                                                                new TracingKafkaClientSupplier() ))
+            logger.info( "The trace is enabled for Kafka client, so inject otel instrumentation to Kafka client." );
+            try (final KafkaStreams streams = new KafkaStreams( builder.build(), props, traceClientSupplier ))
             {
                 streams.start();
             }
