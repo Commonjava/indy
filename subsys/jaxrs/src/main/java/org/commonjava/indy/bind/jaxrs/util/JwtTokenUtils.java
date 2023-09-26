@@ -40,7 +40,7 @@ public class JwtTokenUtils
                 .setClaims( claims )
                 .setSubject( DEFAULT_SUBJECT )
                 .setIssuedAt( new Date( currentTimeMillis ) )
-                .setExpiration( new Date( currentTimeMillis + authConfig.getTokenExpirationHours() * 1000 ) )
+                .setExpiration( new Date( currentTimeMillis + authConfig.getTokenExpirationHours() * 60 * 60 * 1000 ) )
                 //Sign the JWT using the HS512 algorithm and secret key.
                 .signWith( SignatureAlgorithm.HS512, authConfig.getSecret().getBytes())
                 .compact();

@@ -20,7 +20,7 @@ public class AuthConfig
 
     private static final String DEFAULT_SECRET = "indy_default";
 
-    private static final Integer DEFAULT_TOKEN_VALIDITY = 12 * 60 * 60;
+    private static final Integer DEFAULT_TOKEN_VALIDITY = 12;
 
     private Boolean enabled;
 
@@ -44,7 +44,7 @@ public class AuthConfig
 
     public Integer getTokenExpirationHours()
     {
-        return tokenExpirationHours != null ? tokenExpirationHours * 60 * 60 : DEFAULT_TOKEN_VALIDITY;
+        return tokenExpirationHours != null ? tokenExpirationHours : DEFAULT_TOKEN_VALIDITY;
     }
 
     @ConfigName( "token.expiration.hours" )
