@@ -15,13 +15,11 @@
  */
 package org.commonjava.indy.subsys.kafka.trace;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.kafkaclients.KafkaTelemetry;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.streams.processor.internals.DefaultKafkaClientSupplier;
-import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
 import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
 import org.commonjava.o11yphant.otel.OtelUtil;
 
