@@ -54,6 +54,9 @@ public class KeycloakDeploymentProvider
     @Inject
     private BasicAuthenticationOAuthTranslator basicAuthInjector;
 
+    @Inject
+    private IndyIdentityManager identityManager;
+
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
@@ -99,6 +102,8 @@ public class KeycloakDeploymentProvider
                 logger.debug( "Keycloak Security Constraint: {}", sc );
                 di.addSecurityConstraint( sc );
             }
+
+            di.setIdentityManager(identityManager);
 
             logger.debug( "Using keycloak.json: {} (exists? {})", config.getKeycloakJson(),
                           new File( config.getKeycloakJson() ).exists() );

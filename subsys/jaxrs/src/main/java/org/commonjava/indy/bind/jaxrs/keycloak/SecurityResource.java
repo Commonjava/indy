@@ -21,9 +21,11 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.JwtTokenUtils;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
 import org.commonjava.indy.subsys.keycloak.rest.SecurityController;
+import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +38,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Api( "Security Infrastructure" )
 @Path( "/api/security" )
@@ -55,6 +59,9 @@ public class SecurityResource
 
     @Inject
     private ResponseHelper responseHelper;
+
+    @Inject
+    private JwtTokenUtils jwtTokenUtils;
 
     @ApiOperation( "Retrieve the keycloak JSON configuration (for use by the UI)" )
     @ApiResponses( { @ApiResponse( code = 400, message = "Keycloak is disabled" ),
@@ -146,6 +153,21 @@ public class SecurityResource
         }
 
         return response;
+    }
+
+    @Path("/auth/token")
+    @Produces(ApplicationContent.application_json)
+    @GET
+    public Response getBuilderToken()
+    {
+
+        Map<String, String> results = new HashMap<>();
+
+        final String token = jwtTokenUtils.generateToken();
+        results.put("token", token);
+
+        Response.ResponseBuilder builder = Response.status( 200 );
+        return builder.entity( results ).build();
     }
 
 }

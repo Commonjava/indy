@@ -109,5 +109,10 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-metrics</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
+    </dependency>
   </dependencies>
 </project>
