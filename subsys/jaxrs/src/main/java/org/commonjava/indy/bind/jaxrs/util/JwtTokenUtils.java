@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.DefaultClaims;
 import org.commonjava.indy.bind.jaxrs.keycloak.AuthConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 @ApplicationScoped
@@ -23,18 +21,30 @@ public class JwtTokenUtils
     
     private static final String DEFAULT_SUBJECT = "sub";
 
+    private static final String CLAIM_BUILD_ID = "build-id";
+
     @Inject
     private AuthConfig authConfig;
 
-    public String generateToken()
+    public JwtTokenUtils() {}
+
+    public JwtTokenUtils(AuthConfig authConfig)
     {
-        Map<String, Object> claims = new HashMap<>();
+        this.authConfig = authConfig;
+    }
+
+    public String generateToken( String buildId )
+    {
+        Map<String, Object> claims = Jwts.claims();
+        claims.put( CLAIM_BUILD_ID, buildId );
         return doGenerateToken( claims );
     }
 
     private synchronized String doGenerateToken( Map<String, Object> claims ) {
 
         long currentTimeMillis = System.currentTimeMillis();
+
+        logger.info( "Generate token with claims: {}", claims );
 
         return Jwts.builder()
                 .setClaims( claims )
@@ -46,26 +56,37 @@ public class JwtTokenUtils
                 .compact();
     }
 
-    public Boolean isExpired( String token )
+    public boolean validate( String id, String token )
     {
-        Boolean tokenExpired = Boolean.TRUE;
         try
         {
             Claims claims = Jwts.parser().setSigningKey( authConfig.getSecret().getBytes() )
                     .parseClaimsJws( token ).getBody();
-            tokenExpired = claims.getExpiration().before( new Date() );
+
+            logger.info("Validation with claims: {}", claims );
+
+            if ( claims.getExpiration().before( new Date() ) )
+            {
+                logger.warn( "Token with claims {} expired.", claims );
+                return false;
+            }
+
+            if ( claims.get( CLAIM_BUILD_ID )!= null && id.contains( (String)claims.get( CLAIM_BUILD_ID ) ) )
+            {
+                return true;
+            }
         }
         catch ( ExpiredJwtException ex )
         {
-            DefaultClaims claims = (DefaultClaims) ex.getClaims();
-            tokenExpired = claims.getExpiration().before( new Date() );
+            logger.warn( "Token with claims {} expired: {}", ex.getClaims(), ex.getMessage() );
         }
         catch ( Exception e )
         {
             logger.warn( "Validate token failed: {}", e.getMessage() );
         }
 
-        return tokenExpired;
+        return false;
+
     }
 
 }

@@ -23,9 +23,9 @@ public class IndyIdentityManager implements IdentityManager
     @Inject
     private AuthConfig authConfig;
 
-    public Account verify( String token )
+    public Account verify( String id, String token )
     {
-        if ( !tokenUtils.isExpired(token) )
+        if ( tokenUtils.validate(id, token) )
         {
             LocalAccount account = new LocalAccount();
             logger.info("Authenticated as {}, roles [{}]", account.name, account.roles );

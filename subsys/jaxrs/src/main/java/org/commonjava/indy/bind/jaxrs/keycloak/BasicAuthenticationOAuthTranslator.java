@@ -128,6 +128,8 @@ public class BasicAuthenticationOAuthTranslator
 
         logger.debug( "BASIC authenticate injector checking for " + AUTHORIZATION_HEADER + " header." );
         final HeaderMap headers = exchange.getRequestHeaders();
+        final String requestPath = exchange.getRequestPath();
+
         final Collection<String> vals = headers.remove( AUTHORIZATION_HEADER );
         String basicAuth = null;
         String bearerAuth = null;
@@ -150,7 +152,7 @@ public class BasicAuthenticationOAuthTranslator
                     if ( authConfig.isEnabled() )
                     {
                         String encodedToken = value.substring(7);
-                        Account account = identityManager.verify( encodedToken );
+                        Account account = identityManager.verify( requestPath, encodedToken );
                         if ( account != null )
                         {
                             securityContext.authenticationComplete( account, "BASIC", false );
