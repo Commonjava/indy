@@ -69,7 +69,7 @@ import org.commonjava.indy.bind.jaxrs.IndyResources;
 import org.commonjava.indy.bind.jaxrs.SecurityManager;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
-import org.commonjava.indy.core.conf.IndyDurableStateConfig;
+import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.core.ctl.AdminController;
 import org.commonjava.indy.data.ArtifactStoreValidateData;
 import org.commonjava.indy.data.IndyDataException;
@@ -116,7 +116,7 @@ public class StoreAdminHandler
     private ResponseHelper responseHelper;
 
     @Inject
-    IndyDurableStateConfig durableStateConfig;
+    IndyConfiguration config;
 
     public StoreAdminHandler() {
         logger.info("\n\n\n\nStarted StoreAdminHandler\n\n\n\n");
@@ -132,7 +132,7 @@ public class StoreAdminHandler
                            @PathParam("type") String type,
                            @ApiParam(required = true) @PathParam("name") final String name)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -142,7 +142,6 @@ public class StoreAdminHandler
         logger.info("Checking for existence of: {}:{}:{}", packageType, st, name);
 
         if (adminController.exists(new StoreKey(packageType, st, name))) {
-
             logger.info("returning OK");
             response = Response.ok().build();
         } else {
@@ -165,7 +164,7 @@ public class StoreAdminHandler
                            final @Context HttpServletRequest request,
                            final @Context SecurityContext securityContext)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -176,12 +175,10 @@ public class StoreAdminHandler
         try
         {
             json = IOUtils.toString( request.getInputStream() );
-
             json = objectMapper.patchLegacyStoreJson(json);
         } catch (final IOException e) {
             final String message = "Failed to read " + st.getStoreClass()
                                                          .getSimpleName() + " from request body.";
-
             logger.error(message, e);
             response = responseHelper.formatResponse(e, message);
         }
@@ -196,7 +193,6 @@ public class StoreAdminHandler
         } catch (final IOException e) {
             final String message = "Failed to parse " + st.getStoreClass()
                 .getSimpleName() + " from request body.";
-
             logger.error(message, e);
             response = responseHelper.formatResponse(e, message);
         }
@@ -248,7 +244,7 @@ public class StoreAdminHandler
                           final @Context HttpServletRequest request,
                           final @Context SecurityContext securityContext)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -262,7 +258,6 @@ public class StoreAdminHandler
         } catch (final IOException e) {
             final String message = "Failed to read " + st.getStoreClass()
                 .getSimpleName() + " from request body.";
-
             logger.error(message, e);
             response = responseHelper.formatResponse(e, message);
         }
@@ -277,7 +272,6 @@ public class StoreAdminHandler
         } catch (final IOException e) {
             final String message = "Failed to parse " + st.getStoreClass()
                 .getSimpleName() + " from request body.";
-
             logger.error(message, e);
             response = responseHelper.formatResponse(e, message);
         }
@@ -295,7 +289,6 @@ public class StoreAdminHandler
 
         try {
             String user = securityManager.getUser(securityContext, request);
-
             logger.info("Storing: {}", store);
             if (adminController.store(store, user, false)) {
                 response = ok().build();
@@ -322,7 +315,7 @@ public class StoreAdminHandler
                            final @ApiParam(allowableValues = "hosted,group,remote", required = true)
                            @PathParam("type") String type)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -332,11 +325,8 @@ public class StoreAdminHandler
         Response response;
         try {
             final List<ArtifactStore> stores = adminController.getAllOfType(packageType, st);
-
             logger.info("Returning listing containing stores:\n\t{}", new JoinString("\n\t", stores));
-
             final StoreListingDTO<ArtifactStore> dto = new StoreListingDTO<>(stores);
-
             response = responseHelper.formatOkResponseWithJsonEntity(dto);
         } catch (final IndyWorkflowException e) {
             logger.error(e.getMessage(), e);
@@ -356,7 +346,7 @@ public class StoreAdminHandler
                         final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
                         final @ApiParam(required = true) @PathParam("name") String name)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -392,7 +382,7 @@ public class StoreAdminHandler
                            @Context final HttpServletRequest request,
                            final @Context SecurityContext securityContext)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -418,11 +408,8 @@ public class StoreAdminHandler
                 summary = "Changelog not provided";
             }
             summary += ( ", deleteContent:" + deleteContent );
-
             String user = securityManager.getUser(securityContext, request);
-
             adminController.delete( key, user, summary, deleteContent );
-
             response = noContent().build();
         } catch (final IndyWorkflowException e) {
             logger.error(e.getMessage(), e);
@@ -443,7 +430,7 @@ public class StoreAdminHandler
                                    @Context final HttpServletRequest request,
                                    final @Context SecurityContext securityContext)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -481,7 +468,7 @@ public class StoreAdminHandler
         @PathParam("packageType") String packageType,
         @PathParam("type") String type)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -492,28 +479,22 @@ public class StoreAdminHandler
 
         try {
             StoreType storeType = StoreType.get(type);
-
             List<ArtifactStore> allArtifactStores = adminController.getAllOfType(packageType, storeType);
-
             for (ArtifactStore artifactStore : allArtifactStores) {
                 // Validate this Store
                 result = adminController.validateStore(artifactStore);
                 results.put(artifactStore.getKey().toString(), result);
             }
             response = responseHelper.formatOkResponseWithJsonEntity(results);
-
         } catch (IndyDataException ide) {
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
             response = responseHelper.formatResponse(ide);
-
         } catch (MalformedURLException mue) {
             logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
             response = responseHelper.formatResponse(mue);
-
         } catch (IndyWorkflowException iwe) {
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
             response = responseHelper.formatResponse(iwe);
-
         }
         return response;
     }
@@ -528,25 +509,20 @@ public class StoreAdminHandler
         final @ApiParam(allowableValues = "hosted,group,remote", required = true) @PathParam("type") String type,
         final @ApiParam(required = true) @PathParam("name") String name)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
 
-
         ArtifactStoreValidateData result;
-
         Response response;
-
         try {
             final StoreType st = StoreType.get(type);
             final StoreKey key = new StoreKey(packageType, st, name);
             final ArtifactStore store = adminController.get(key);
             logger.info("=> Returning repository: {}", store);
-
             // Validate this Store
             result = adminController.validateStore(store);
-
             logger.warn("=> Result from Validating Store: " + result);
             if(result == null) {
                 response = Response.status(Status.NOT_FOUND).build();
@@ -557,11 +533,9 @@ public class StoreAdminHandler
         } catch (IndyDataException ide) {
             logger.warn("=> [IndyDataException] exception message: " + ide.getMessage());
             response = responseHelper.formatResponse(ide);
-
         } catch (MalformedURLException mue) {
             logger.warn("=> [MalformedURLException] Invalid URL exception message: " + mue.getMessage());
             response = responseHelper.formatResponse(mue);
-
         } catch (IndyWorkflowException iwe) {
             logger.warn("=> [IndyWorkflowException] exception message: " + iwe.getMessage());
             response = responseHelper.formatResponse(iwe);
@@ -580,7 +554,7 @@ public class StoreAdminHandler
             final @ApiParam(required = true) @PathParam("packageType") String packageType,
             final @ApiParam(allowableValues = "remote", required = true) @PathParam("type") String type)
     {
-        if ( isRepoServiceEnabled() )
+        if ( !config.isStoreManagementRestEnabled() )
         {
             return forbiddenResponse();
         }
@@ -595,11 +569,6 @@ public class StoreAdminHandler
     {
         return responseHelper.formatResponse( FORBIDDEN,
                                               "Store management APIs has been disabled in this service. Please use Indy Repository Service API instead!" );
-    }
-
-    private boolean isRepoServiceEnabled()
-    {
-        return IndyDurableStateConfig.STORAGE_SERVICE.equals( durableStateConfig.getStoreStorage() );
     }
 
 }
