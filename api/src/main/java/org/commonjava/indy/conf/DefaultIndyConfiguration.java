@@ -114,6 +114,8 @@ public class DefaultIndyConfiguration
 
     private Boolean timeoutProcessing;
 
+    private Boolean storeManagementRestEnabled = true;
+
     public DefaultIndyConfiguration()
     {
     }
@@ -448,6 +450,16 @@ public class DefaultIndyConfiguration
         return IndyConfigInfo.APPEND_DEFAULTS_TO_MAIN_CONF;
     }
 
+    @ConfigName( "store.management.rest.enabled" )
+    public void setStoreManagementRestEnabled( Boolean storeManagementRestEnabled )
+    {
+        this.storeManagementRestEnabled = storeManagementRestEnabled;
+    }
+    @Override
+    public boolean isStoreManagementRestEnabled()
+    {
+        return storeManagementRestEnabled;
+    }
     @Override
     public InputStream getDefaultConfig()
     {
