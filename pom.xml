@@ -365,7 +365,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-client-core-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -392,7 +392,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-client-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -418,7 +418,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-promote-client-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.embed</groupId>
@@ -489,12 +489,12 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-model-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-client-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -564,7 +564,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-model-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -594,7 +594,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-client-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
@@ -618,7 +618,7 @@
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-client-java</artifactId>
-        <version>3.3.0-SNAPSHOT</version>
+        <version>3.3.0</version>
       </dependency>
 
       <dependency>
