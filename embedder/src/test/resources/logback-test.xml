@@ -51,10 +51,10 @@
   <logger name="com.datastax" level="WARN" />
   <logger name="org.apache.http" level="WARN"/>
   <logger name="org.jboss.weld" level="ERROR"/>
-
+  <logger name="org.apache.kafka" level="ERROR"/>
 
   <logger name="org.commonjava.indy" level="TRACE"/>
-  <logger name="org.commonjava.maven.galley" level="TRACE"/>
+  <logger name="org.commonjava.maven.galley" level="DEBUG"/>
 
   <logger name="org.commonjava.propulsor" level="INFO" />
   <logger name="org.commonjava.atlas" level="INFO" />
