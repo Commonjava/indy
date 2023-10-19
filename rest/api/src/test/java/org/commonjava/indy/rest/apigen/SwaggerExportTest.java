@@ -49,14 +49,18 @@ import static org.junit.Assert.fail;
  * Once written to the target directory, the build-helper-maven-plugins picks them up and attaches them to the
  * Maven project for installation and deployment to Maven repositories...and for use as dependencies by other
  * Indy modules.
+ *
+ * @deprecated Since 3.3.0, the indy API doc will not be managed by this indy-monolith service, so the swagger doc generator
+ *             will not be used anymore
  */
+@Deprecated
 public class SwaggerExportTest
         extends AbstractIndyFunctionalTest
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
     @Test
-    //    @Ignore
+    @Ignore
     public void downloadApiFiles()
     {
         try (CloseableHttpClient client = HttpClientBuilder.create().build())
