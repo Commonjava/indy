@@ -90,6 +90,8 @@
     <groovyVersion>3.0.13</groovyVersion>
 
     <!-- commonjava/redhat projects -->
+    <indyModelVersion>1.4-SNAPSHOT</indyModelVersion>
+    <indyClientVersion>3.3.1-SNAPSHOT</indyClientVersion>
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.15</galleyVersion>
     <weftVersion>1.22</weftVersion>
@@ -183,13 +185,66 @@
       <dependency>
         <groupId>org.commonjava.indy.service</groupId>
         <artifactId>indy-model-core-java</artifactId>
-        <version>1.3</version>
+        <version>${indyModelVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.service</groupId>
         <artifactId>indy-folo-model-java</artifactId>
-        <version>1.3</version>
+        <version>${indyModelVersion}</version>
       </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.service</groupId>
+        <artifactId>indy-koji-model-java</artifactId>
+        <version>${indyModelVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.service</groupId>
+        <artifactId>indy-content-browse-model-java</artifactId>
+        <version>${indyModelVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy.service</groupId>
+        <artifactId>indy-event-model</artifactId>
+        <version>${indyModelVersion}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.jboss.slf4j</groupId>
+            <artifactId>slf4j-jboss-logmanager</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-client-core-java</artifactId>
+        <version>${indyClientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-folo-client-java</artifactId>
+        <version>${indyClientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-promote-client-java</artifactId>
+        <version>${indyClientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-koji-client-java</artifactId>
+        <version>${indyClientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-diagnostics-client-java</artifactId>
+        <version>${indyClientVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.indy</groupId>
+        <artifactId>indy-content-browse-client-java</artifactId>
+        <version>${indyClientVersion}</version>
+      </dependency>
+
       <dependency>
         <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-api</artifactId>
@@ -364,11 +419,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-client-core-java</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-ftests-common</artifactId>
         <version>3.3.1-SNAPSHOT</version>
       </dependency>
@@ -391,11 +441,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-folo-client-java</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-folo-common</artifactId>
         <version>3.3.1-SNAPSHOT</version>
       </dependency>
@@ -414,11 +459,6 @@
         <type>tar.gz</type>
         <classifier>confset</classifier>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-promote-client-java</artifactId>
-        <version>3.3.0</version>
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy.embed</groupId>
@@ -488,16 +528,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-koji-model-java</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-koji-client-java</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-koji-jaxrs</artifactId>
         <version>3.3.1-SNAPSHOT</version>
       </dependency>
@@ -563,11 +593,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-content-browse-model-java</artifactId>
-        <version>3.3.1-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-content-browse-jaxrs</artifactId>
         <version>3.3.1-SNAPSHOT</version>
       </dependency>
@@ -593,11 +618,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-diagnostics-client-java</artifactId>
-        <version>3.3.0</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-diagnostics-common</artifactId>
         <version>3.3.1-SNAPSHOT</version>
       </dependency>
@@ -614,11 +634,6 @@
         <classifier>confset</classifier>
         <type>tar.gz</type>
         <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-content-browse-client-java</artifactId>
-        <version>3.3.0</version>
       </dependency>
 
       <dependency>
@@ -654,17 +669,7 @@
         <version>3.3.1-SNAPSHOT</version>
         <scope>provided</scope>
       </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy.service</groupId>
-        <artifactId>indy-event-model</artifactId>
-        <version>1.3</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.jboss.slf4j</groupId>
-            <artifactId>slf4j-jboss-logmanager</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
+
       <dependency>
         <groupId>io.agroal</groupId>
         <artifactId>agroal-api</artifactId>
