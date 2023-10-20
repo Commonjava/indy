@@ -90,8 +90,8 @@
     <groovyVersion>3.0.13</groovyVersion>
 
     <!-- commonjava/redhat projects -->
-    <indyModelVersion>1.4-SNAPSHOT</indyModelVersion>
-    <indyClientVersion>3.3.1-SNAPSHOT</indyClientVersion>
+    <indyModelVersion>1.4</indyModelVersion>
+    <indyClientVersion>3.3.1</indyClientVersion>
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.15</galleyVersion>
     <weftVersion>1.22</weftVersion>
