@@ -49,7 +49,7 @@
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
-      <artifactId>http-testserver</artifactId>
+      <artifactId>http-testserver-core</artifactId>
       <scope>compile</scope>
     </dependency>
     <dependency>

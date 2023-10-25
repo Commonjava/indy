@@ -78,7 +78,6 @@ public class HttpTestFixture
     @Override
     protected void after()
     {
-        server.after();
         folder.delete();
         super.after();
     }
@@ -88,7 +87,6 @@ public class HttpTestFixture
         throws Throwable
     {
         super.before();
-        server.before();
     }
 
     public TemporaryFolder getFolder()
