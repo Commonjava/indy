@@ -21,7 +21,7 @@
   <parent>
     <artifactId>indy-schedule</artifactId>
     <groupId>org.commonjava.indy</groupId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-schedule-common</artifactId>
@@ -31,11 +31,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-schedule-model-java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.datastax.cassandra</groupId>
-      <artifactId>cassandra-driver-core</artifactId>
-      <version>${datastaxVersion}</version>
     </dependency>
     <dependency>
       <groupId>com.datastax.cassandra</groupId>

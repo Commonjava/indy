@@ -63,8 +63,6 @@ import java.util.function.Supplier;
 
 import static java.lang.Thread.sleep;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.commonjava.indy.IndyRequestConstants.TRANSFER_SIZE;
-import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 @ApplicationScoped
 @NPMContentHandler
@@ -112,7 +110,6 @@ public class NPMContentAccessHandler
         {
             // store the transfer of new request package.json
             final Transfer metadataFile = contentController.store( sk, path, request.getInputStream(), eventMetadata );
-            addFieldToActiveSpan( TRANSFER_SIZE, metadataFile.length() );
 
             // generate its relevant files from the metadata file package.json
             List<Transfer> generated = generateNPMContentsFromTransfer( metadataFile, eventMetadata );
@@ -208,7 +205,7 @@ public class NPMContentAccessHandler
                     final Response.ResponseBuilder builder = Response.ok();
 
                     responseHelper.setInfoHeaders( builder, item, sk, path, true, getNPMContentType( path ),
-                                    httpMetadata );
+                                                   httpMetadata );
                     if ( builderModifier != null )
                     {
                         builderModifier.accept( builder );
@@ -267,11 +264,11 @@ public class NPMContentAccessHandler
             return responseWithBuilder( Response.status( 400 ), builderModifier );
         }
 
-         // hide npm sensitive user info for publish
+        // hide npm sensitive user info for publish
         if ( path != null && path.startsWith( "-/user" ) )
-         {
-             return responseWithBuilder( Response.status( 404 ), builderModifier );
-         }
+        {
+            return responseWithBuilder( Response.status( 404 ), builderModifier );
+        }
 
         final StoreType st = StoreType.get( type );
         final StoreKey sk = new StoreKey( packageType, st, name );
@@ -300,11 +297,11 @@ public class NPMContentAccessHandler
             {
                 // NOTE: We do NOT want to map this here. Instead, let's map it when we retrieve a Transfer instance as
                 // we access the file storage on this system...we do that via StoragePathCalculator, in pkg-npm/common.
-//                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
-//                {
-//                    // make sure the right mapping path for hosted and group when retrieve content
-//                    path = PathUtils.storagePath( path, eventMetadata );
-//                }
+                //                if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.remote != st )
+                //                {
+                //                    // make sure the right mapping path for hosted and group when retrieve content
+                //                    path = PathUtils.storagePath( path, eventMetadata );
+                //                }
 
                 logger.info( "START: retrieval of content: {}/{}", sk, path );
                 Transfer item = contentController.get( sk, path, eventMetadata );
@@ -339,38 +336,37 @@ public class NPMContentAccessHandler
                         // the item here will be a directory, so reassign the path and item as the mapping one
 
                         // Note: as STORAGE_PATH is not used, these code is also useless now.
-//                        if ( item.isDirectory() && StoreType.remote == st )
-//                        {
-//                            path = PathUtils.storagePath( path, eventMetadata );
-//                            origItem = item;
-//                            item = contentController.get( sk, path, eventMetadata );
-//                        }
+                        //                        if ( item.isDirectory() && StoreType.remote == st )
+                        //                        {
+                        //                            path = PathUtils.storagePath( path, eventMetadata );
+                        //                            origItem = item;
+                        //                            item = contentController.get( sk, path, eventMetadata );
+                        //                        }
 
-//                        if ( item == null )
-//                        {
-//                            logger.error( "Retrieval of actual storage path: {} FAILED!", path );
-//                            responseHelper.throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
-//                        }
+                        //                        if ( item == null )
+                        //                        {
+                        //                            logger.error( "Retrieval of actual storage path: {} FAILED!", path );
+                        //                            responseHelper.throwError( ApplicationStatus.SERVER_ERROR, new NullPointerException( path ), "Retrieval of mapped file from storage failed." );
+                        //                        }
 
                         logger.info( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = openInputStreamSafe( item, eventMetadata );
 
-                        addFieldToActiveSpan( TRANSFER_SIZE, item.length() );
                         final Response.ResponseBuilder builder =
                                 Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
 
                         responseHelper.setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
-                                        contentController.getHttpMetadata( item ) );
+                                                       contentController.getHttpMetadata( item ) );
                         response = responseWithBuilder( builder, builderModifier );
 
-//                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
-//                        // hosted .http-metadata.json will be generated when publish
-//                        // only package.json file will generate this customized http meta to satisfy npm client header check
-//                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
-//                        {
-//                            generateHttpMetadataHeaders( item, request, response );
-//                        }
+                        //                        // generating .http-metadata.json for npm group and remote retrieve to resolve header requirements
+                        //                        // hosted .http-metadata.json will be generated when publish
+                        //                        // only package.json file will generate this customized http meta to satisfy npm client header check
+                        //                        if ( eventMetadata.get( STORAGE_PATH ) != null && StoreType.hosted != st )
+                        //                        {
+                        //                            generateHttpMetadataHeaders( item, request, response );
+                        //                        }
                     }
                 }
                 finally

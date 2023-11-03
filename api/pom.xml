@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-api</artifactId>
@@ -29,7 +29,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>
@@ -47,10 +47,6 @@
     <dependency>
       <groupId>org.commonjava.maven.galley</groupId>
       <artifactId>galley-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.maven.galley</groupId>
-      <artifactId>galley-cache-partyline</artifactId>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

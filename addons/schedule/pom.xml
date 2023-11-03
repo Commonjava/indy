@@ -21,7 +21,7 @@
   <parent>
     <artifactId>indy-addons</artifactId>
     <groupId>org.commonjava.indy</groupId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-schedule</artifactId>

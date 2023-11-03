@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-bindings</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-bindings-jaxrs</artifactId>
@@ -48,10 +48,6 @@
     <dependency>
       <groupId>args4j</groupId>
       <artifactId>args4j</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-flat</artifactId>
     </dependency>
   </dependencies>
 

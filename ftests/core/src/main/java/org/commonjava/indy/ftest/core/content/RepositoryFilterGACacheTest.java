@@ -22,8 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
-import org.commonjava.indy.ftest.core.category.ClusterTest;
-import org.commonjava.indy.ftest.core.fixture.ResultBufferingGroupRepoFilter;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.RemoteRepository;
@@ -32,10 +30,8 @@ import org.commonjava.indy.pathmapped.cache.PathMappedMavenGACache;
 import org.commonjava.indy.pathmapped.inject.PathMappedGroupRepositoryFilter;
 import org.commonjava.indy.pathmapped.inject.PathMappedMavenGACacheGroupRepositoryFilter;
 import org.commonjava.test.http.expect.ExpectationServer;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,12 +40,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -118,9 +112,8 @@ import static org.junit.Assert.assertTrue;
  * return the right file. We can only check the log to see whether the GA cache filter works. We also need to
  * make sure it works before the default path-mapped filter.
  */
-@Category( ClusterTest.class )
 public class RepositoryFilterGACacheTest
-                extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
 
     private final String GROUP_ID = "org/commonjava";
@@ -142,30 +135,29 @@ public class RepositoryFilterGACacheTest
 
     /* @formatter:off */
     private static final String POM_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<project>\n" +
-        "  <modelVersion>4.0.0</modelVersion>\n" +
-        "  <groupId>org/commonjava</groupId>\n" +
-        "  <artifactId>%artifact%</artifactId>\n" +
-        "  <version>%version%</version>\n" +
-        "</project>\n";
+            "<project>\n" +
+            "  <modelVersion>4.0.0</modelVersion>\n" +
+            "  <groupId>org/commonjava</groupId>\n" +
+            "  <artifactId>%artifact%</artifactId>\n" +
+            "  <version>%version%</version>\n" +
+            "</project>\n";
 
     private static final String METADATA_TEMPLATE = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-        "<metadata>\n" +
-        "  <groupId>org/commonjava</groupId>\n" +
-        "  <artifactId>%artifact%</artifactId>\n" +
-        "  <versioning>\n" +
-        "    <latest>%version%</latest>\n" +
-        "    <release>%version%</release>\n" +
-        "    <versions>\n" +
-        "      <version>%version%</version>\n" +
-        "    </versions>\n" +
-        "  </versioning>\n" +
-        "</metadata>\n";
+            "<metadata>\n" +
+            "  <groupId>org/commonjava</groupId>\n" +
+            "  <artifactId>%artifact%</artifactId>\n" +
+            "  <versioning>\n" +
+            "    <latest>%version%</latest>\n" +
+            "    <release>%version%</release>\n" +
+            "    <versions>\n" +
+            "      <version>%version%</version>\n" +
+            "    </versions>\n" +
+            "  </versioning>\n" +
+            "</metadata>\n";
     /* @formatter:on */
 
 
     @Test
-//    @Ignore( "Test validation relies on log message stability, which is not something we test for")
     public void run() throws Exception
     {
         BufferedLogAppender bufferedLogAppender = prepareTestAppender();
@@ -218,10 +210,7 @@ public class RepositoryFilterGACacheTest
 
         // fill the GA cache (because when test fixture starts up the repos are not created yet)
         CDI.current().select( PathMappedMavenGACache.class).get().fill();
-        ResultBufferingGroupRepoFilter filterBuffer =
-                        CDI.current().select( ResultBufferingGroupRepoFilter.class ).get();
 
-        Thread.sleep( 10 );
         // get pom
         String pomPath = getPomPath( A_0, V1 );
         try (InputStream stream = client.content().get( g.getKey(), pomPath ))
@@ -231,9 +220,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<artifactId>" + A_0 + "</artifactId>" ) );
             assertThat( str, containsString( "<version>" + V1 + "</version>" ) );
         }
-        assertEquals( Arrays.asList( hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( pomPath, g ) );
-//        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:npc_builds, maven:remote:R]" );
 
         pomPath = getPomPath( A_1, V2_1 );
         try (InputStream stream = client.content().get( g.getKey(), pomPath ))
@@ -243,9 +231,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<artifactId>" + A_1 + "</artifactId>" ) );
             assertThat( str, containsString( "<version>" + V2_1 + "</version>" ) );
         }
-        assertEquals( Arrays.asList( hosted_1, hosted_2, hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( pomPath, g ) );
-//        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:build-1, maven:hosted:build-2, maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:build-1, maven:hosted:build-2, maven:hosted:npc_builds, maven:remote:R]" );
 
         pomPath = getPomPath( A_2, V2_1 );
         try (InputStream stream = client.content().get( g.getKey(), pomPath ))
@@ -255,9 +242,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<artifactId>" + A_2 + "</artifactId>" ) );
             assertThat( str, containsString( "<version>" + V2_1 + "</version>" ) );
         }
-        assertEquals( Arrays.asList( hosted_3, hosted_4, hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( pomPath, g ) );
-//        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:build-3, maven:hosted:build-4, maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:build-3, maven:hosted:build-4, maven:hosted:npc_builds, maven:remote:R]" );
 
         pomPath = getPomPath( A_1, V1 );
         try (InputStream stream = client.content().get( g.getKey(), pomPath ))
@@ -267,9 +253,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<artifactId>" + A_1 + "</artifactId>" ) );
             assertThat( str, containsString( "<version>" + V1 + "</version>" ) );
         }
-        assertEquals( Arrays.asList( hosted_1, hosted_2, hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( pomPath, g ) );
-//        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:build-1, maven:hosted:build-2, maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( pomPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:build-1, maven:hosted:build-2, maven:hosted:npc_builds, maven:remote:R]" );
 
         // get metadata
         String metadataPath = getMetadataPath( A_0 );
@@ -280,9 +265,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<artifactId>" + A_0 + "</artifactId>" ) );
             assertThat( str, containsString( "<version>" + V1 + "</version>" ) );
         }
-        assertEquals( Arrays.asList( hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( metadataPath, g ) );
-//        checkLogMessage( metadataPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( metadataPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:npc_builds, maven:remote:R]" );
 
         metadataPath = getMetadataPath( A_1 );
         try (InputStream stream = client.content().get( g.getKey(), metadataPath ))
@@ -294,9 +278,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<version>" + V2_1 + "</version>" ) );
             assertThat( str, containsString( "<version>" + V2_2 + "</version>" ) );
         }
-        assertEquals( Arrays.asList( hosted_1, hosted_2, hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( metadataPath, g ) );
-//        checkLogMessage( metadataPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:build-1, maven:hosted:build-2, maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( metadataPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:build-1, maven:hosted:build-2, maven:hosted:npc_builds, maven:remote:R]" );
 
         metadataPath = getMetadataPath( A_2 );
         try (InputStream stream = client.content().get( g.getKey(), metadataPath ))
@@ -308,9 +291,8 @@ public class RepositoryFilterGACacheTest
             assertThat( str, containsString( "<version>" + V2_1 + "</version>" ) );
             assertThat( str, containsString( "<version>" + V2_2 + "</version>" ) );
         }
-        assertEquals( Arrays.asList(hosted_3, hosted_4, hosted_npc_builds, remote ), filterBuffer.getFilteredRepositories( metadataPath, g ) );
-//        checkLogMessage( metadataPath, bufferedLogAppender.getMessages().toString(),
-//                         "[maven:hosted:build-3, maven:hosted:build-4, maven:hosted:npc_builds, maven:remote:R]" );
+        checkLogMessage( metadataPath, bufferedLogAppender.getMessages().toString(),
+                         "[maven:hosted:build-3, maven:hosted:build-4, maven:hosted:npc_builds, maven:remote:R]" );
 
         //
         String messages = bufferedLogAppender.getMessages().toString();
@@ -344,7 +326,7 @@ public class RepositoryFilterGACacheTest
     }
 
     class BufferedLogAppender
-                    extends AppenderBase<ILoggingEvent>
+            extends AppenderBase<ILoggingEvent>
     {
         private StringBuilder messages = new StringBuilder(  );
         private String filter;
@@ -425,12 +407,12 @@ public class RepositoryFilterGACacheTest
 
         client.content()
               .store( hosted.getKey(), pomPath, new ByteArrayInputStream(
-                              POM_TEMPLATE.replaceAll( "%artifact%", A ).replaceAll( "%version%", V ).getBytes() ) );
+                      POM_TEMPLATE.replaceAll( "%artifact%", A ).replaceAll( "%version%", V ).getBytes() ) );
         client.content()
               .store( hosted.getKey(), metadataPath, new ByteArrayInputStream(
-                              METADATA_TEMPLATE.replaceAll( "%artifact%", A )
-                                               .replaceAll( "%version%", V )
-                                               .getBytes() ) );
+                      METADATA_TEMPLATE.replaceAll( "%artifact%", A )
+                                       .replaceAll( "%version%", V )
+                                       .getBytes() ) );
         return hosted;
     }
 

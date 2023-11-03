@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-repo-proxy</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-repo-proxy-jaxrs</artifactId>
@@ -51,11 +51,6 @@
     <dependency>
       <groupId>org.jboss.resteasy</groupId>
       <artifactId>resteasy-jaxrs</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-annotations</artifactId>
     </dependency>
   </dependencies>
 

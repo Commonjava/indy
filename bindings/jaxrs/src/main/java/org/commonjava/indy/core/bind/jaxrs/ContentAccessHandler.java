@@ -65,7 +65,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.commonjava.indy.IndyRequestConstants.TRANSFER_SIZE;
 import static org.commonjava.indy.core.bind.jaxrs.util.RequestUtils.isDirectoryPath;
 import static org.commonjava.indy.util.RequestContextHelper.CONTENT_ENTRY_POINT;
 import static org.commonjava.indy.util.RequestContextHelper.HTTP_STATUS;
@@ -74,7 +73,6 @@ import static org.commonjava.indy.util.RequestContextHelper.PACKAGE_TYPE;
 import static org.commonjava.indy.util.RequestContextHelper.PATH;
 import static org.commonjava.indy.util.RequestContextHelper.setContext;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
-import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 @ApplicationScoped
 @REST
@@ -104,7 +102,7 @@ public class ContentAccessHandler
 
     @Inject
     private ResponseHelper responseHelper;
-    
+
     @Inject
     ContentDigester contentDigester;
 
@@ -149,7 +147,6 @@ public class ContentAccessHandler
                     new TransferCountingInputStream( request.getInputStream(), metricsManager, metricsConfig );
 
             transfer = contentController.store( sk, path, streamingInputStream, eventMetadata );
-            addFieldToActiveSpan( TRANSFER_SIZE, transfer.length() );
 
             final StoreKey storageKey = LocationUtils.getKey( transfer );
             logger.info( "Key for storage location: {}", storageKey );
@@ -382,14 +379,14 @@ public class ContentAccessHandler
                             contentController.getContentType( path );
 
                     responseHelper.setInfoHeaders( builder, item, sk, path, true, contentType,
-                                    httpMetadata );
-    
+                                                   httpMetadata );
+
                     if(!path.endsWith("/")) {
                         // Content hashing headers
                         builder.header(ApplicationHeader.md5.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.MD5));
                         builder.header(ApplicationHeader.sha1.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1));
                     }
-                    
+
                     if ( builderModifier != null )
                     {
                         builderModifier.accept( builder );
@@ -519,14 +516,12 @@ public class ContentAccessHandler
                     {
                         logger.debug( "RETURNING: retrieval of content: {}:{}", sk, path );
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
-
-                        addFieldToActiveSpan( TRANSFER_SIZE, item.length() );
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final ResponseBuilder builder = Response.ok(
                                 new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
 
                         responseHelper.setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
-                                        contentController.getHttpMetadata( item ) );
+                                                       contentController.getHttpMetadata( item ) );
                         if ( builderModifier != null )
                         {
                             builderModifier.accept( builder );
@@ -587,12 +582,9 @@ public class ContentAccessHandler
         if ( response == null )
         {
             response = responseHelper.formatResponse( ApplicationStatus.NOT_FOUND, null,
-                                       "Path " + path + " is not available in store " + sk + ".", builderModifier );
+                                                      "Path " + path + " is not available in store " + sk + ".", builderModifier );
         }
 
         return response;
     }
-
-
-
 }

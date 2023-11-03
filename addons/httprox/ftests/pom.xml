@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-httprox</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-ftests-httprox</artifactId>
@@ -86,16 +86,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-core</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-flat</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

@@ -21,17 +21,15 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
   <artifactId>indy-folo</artifactId>
   <name>Indy :: Add-Ons :: Folo Usage Tracker :: Parent</name>
   <packaging>pom</packaging>
 
   <modules>
-    <module>client-java</module>
     <module>common</module>
     <module>ftests</module>
-    <module>model-java</module>
     <module>jaxrs</module>
   </modules>
 

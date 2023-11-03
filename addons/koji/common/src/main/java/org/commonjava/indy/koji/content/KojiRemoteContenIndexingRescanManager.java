@@ -18,8 +18,6 @@ package org.commonjava.indy.koji.content;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.change.event.ArtifactStorePostRescanEvent;
 import org.commonjava.indy.change.event.ArtifactStorePreRescanEvent;
-import org.commonjava.indy.content.index.ContentIndexManager;
-import org.commonjava.indy.content.index.ContentIndexRescanManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.ArtifactStore;
@@ -45,15 +43,12 @@ import static org.commonjava.indy.koji.model.IndyKojiConstants.KOJI_ORIGIN;
  * be based on the remote path masks.
  */
 @ApplicationScoped
-public class KojiRemoteContenIndexingRescanManager implements ContentIndexRescanManager
+public class KojiRemoteContenIndexingRescanManager
 {
     private final Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
 
     @Inject
     private StoreDataManager storeDataManager;
-
-    @Inject
-    private ContentIndexManager contentIndexManager;
 
     protected KojiRemoteContenIndexingRescanManager()
     {
@@ -69,8 +64,8 @@ public class KojiRemoteContenIndexingRescanManager implements ContentIndexRescan
                                                            .startsWith( KOJI_ORIGIN ) )
             {
                 LOGGER.trace( "Clear content index for koji remote: {}", repo.getKey() );
-                contentIndexManager.clearAllIndexedPathInStore( repo );
-                contentIndexManager.clearAllIndexedPathWithOriginalStore( repo );
+//                contentIndexManager.clearAllIndexedPathInStore( repo );
+//                contentIndexManager.clearAllIndexedPathWithOriginalStore( repo );
             }
         }
     }
@@ -92,9 +87,9 @@ public class KojiRemoteContenIndexingRescanManager implements ContentIndexRescan
                     Set<StoreKey> affetctedGroupKeys =
                             affected.stream().map( g -> g.getKey() ).collect( Collectors.toSet() );
                     StoreKey[] gKeys = affetctedGroupKeys.toArray( new StoreKey[affetctedGroupKeys.size()] );
-                    kojiRemote.getPathMaskPatterns()
-                              .forEach( path -> contentIndexManager.indexPathInStores( path, kojiRemote.getKey(),
-                                                                                       gKeys ) );
+//                    kojiRemote.getPathMaskPatterns()
+//                              .forEach( path -> contentIndexManager.indexPathInStores( path, kojiRemote.getKey(),
+//                                                                                       gKeys ) );
                 }
                 catch ( IndyDataException ex )
                 {

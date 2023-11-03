@@ -20,7 +20,7 @@
   <parent>
     <artifactId>indy-subsystems</artifactId>
     <groupId>org.commonjava.indy</groupId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -39,10 +39,6 @@
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>o11yphant-trace-otel</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>io.grpc</groupId>
-      <artifactId>grpc-netty</artifactId>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>

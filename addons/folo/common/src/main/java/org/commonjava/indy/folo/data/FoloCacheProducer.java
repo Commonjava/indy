@@ -39,7 +39,10 @@ import java.lang.annotation.ElementType;
  * This ISPN cache producer has some self-defined indexing logic. This directly uses ISPN/hibernate search api
  * to configure the indexable keys used in folo-sealed cache to decouple the folo/model-java dependency on ISPN
  * libraries.
+ *
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
  */
+@Deprecated(since = "3.3.0")
 public class FoloCacheProducer
 {
 

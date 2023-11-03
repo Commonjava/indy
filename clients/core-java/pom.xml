@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-clients-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>indy-client-core-java</artifactId>
@@ -45,7 +45,7 @@
       <artifactId>o11yphant-metrics-common</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>

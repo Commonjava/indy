@@ -251,7 +251,7 @@ public class ServiceStoreDataManager
     }
 
     public ArtifactStore getArtifactStore( StoreKey key, boolean forceQuery )
-                    throws IndyDataException
+            throws IndyDataException
     {
         try
         {

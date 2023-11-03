@@ -21,21 +21,13 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-folo</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-ftests-folo</artifactId>
   <name>Indy :: Folo Usage Tracker :: Functional Tests</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-promote-jaxrs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-promote-common</artifactId>
-    </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-promote-client-java</artifactId>
@@ -57,10 +49,6 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-client-core-java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

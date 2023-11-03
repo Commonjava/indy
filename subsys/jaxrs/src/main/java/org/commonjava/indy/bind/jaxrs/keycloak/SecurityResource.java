@@ -19,23 +19,33 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.bind.jaxrs.IndyResources;
+import org.commonjava.indy.bind.jaxrs.util.JwtTokenUtils;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.indy.bind.jaxrs.util.ResponseHelper;
+import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.keycloak.rest.SecurityController;
+import org.commonjava.indy.util.ApplicationContent;
 import org.commonjava.indy.util.ApplicationHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Api( "Security Infrastructure" )
 @Path( "/api/security" )
@@ -55,6 +65,12 @@ public class SecurityResource
 
     @Inject
     private ResponseHelper responseHelper;
+
+    @Inject
+    private JwtTokenUtils jwtTokenUtils;
+
+    @Inject
+    private IndyObjectMapper objectMapper;
 
     @ApiOperation( "Retrieve the keycloak JSON configuration (for use by the UI)" )
     @ApiResponses( { @ApiResponse( code = 400, message = "Keycloak is disabled" ),
@@ -146,6 +162,40 @@ public class SecurityResource
         }
 
         return response;
+    }
+
+    @Path("/auth/token")
+    @Produces(ApplicationContent.application_json)
+    @POST
+    public Response getBuilderToken( final @Context HttpServletRequest request )
+    {
+
+        Response response;
+        try
+        {
+            String json = IOUtils.toString( request.getInputStream() );
+            Map<String, String> reqObj = objectMapper.readValue( json, Map.class );
+
+            String buildId = reqObj.get("build-id");
+            if ( buildId == null || buildId.isBlank() )
+            {
+                return Response.status( 400 ).build();
+            }
+
+            Map<String, String> results = new HashMap<>();
+
+            final String token = jwtTokenUtils.generateToken( buildId );
+            results.put("token", token);
+
+            Response.ResponseBuilder builder = Response.status( 200 );
+            return builder.entity( results ).build();
+        }
+        catch ( final Exception e )
+        {
+            response = responseHelper.formatResponse( e, "Failed to generate token." );
+            return response;
+        }
+
     }
 
 }

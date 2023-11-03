@@ -24,7 +24,10 @@ import java.lang.annotation.Target;
 
 /**
  * Qualifier used to supply "folo-in-progress" cache in infinispan.xml.
+ *
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
  */
+@Deprecated(since = "3.3.0")
 @Qualifier
 @Target({ ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @Retention( RetentionPolicy.RUNTIME)

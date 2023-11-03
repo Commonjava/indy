@@ -20,7 +20,7 @@
     <parent>
         <artifactId>indy-event-publisher</artifactId>
         <groupId>org.commonjava.indy</groupId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,7 +37,7 @@
             <artifactId>indy-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.commonjava.indy</groupId>
+            <groupId>org.commonjava.indy.service</groupId>
             <artifactId>indy-folo-model-java</artifactId>
         </dependency>
         <dependency>

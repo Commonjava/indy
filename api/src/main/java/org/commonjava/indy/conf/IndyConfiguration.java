@@ -134,4 +134,11 @@ public interface IndyConfiguration
      * @sinces 2.5.4
      */
     int getKeyspaceReplicas();
+
+    /**
+     * Decide if the REST endpoints enabled for store management in the indy service
+     * @return
+     * @since 3.3.0
+     */
+    boolean isStoreManagementRestEnabled();
 }

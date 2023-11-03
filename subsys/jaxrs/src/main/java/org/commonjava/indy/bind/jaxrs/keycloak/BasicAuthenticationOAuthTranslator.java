@@ -17,6 +17,7 @@ package org.commonjava.indy.bind.jaxrs.keycloak;
 
 import io.undertow.security.api.AuthenticationMechanism;
 import io.undertow.security.api.SecurityContext;
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.HttpString;
@@ -43,7 +44,6 @@ import org.commonjava.indy.subsys.http.IndyHttpException;
 import org.commonjava.indy.subsys.http.IndyHttpProvider;
 import org.commonjava.indy.subsys.keycloak.conf.KeycloakConfig;
 import org.commonjava.indy.subsys.http.util.UserPass;
-import org.commonjava.indy.subsys.keycloak.util.KeycloakBearerTokenDebug;
 import org.keycloak.OAuth2Constants;
 import org.keycloak.constants.ServiceUrlConstants;
 import org.keycloak.representations.AccessTokenResponse;
@@ -85,6 +85,12 @@ public class BasicAuthenticationOAuthTranslator
     @Inject
     private IndyHttpProvider http;
 
+    @Inject
+    private IndyIdentityManager identityManager;
+
+    @Inject
+    private AuthConfig authConfig;
+
     private boolean enabled;
 
     protected BasicAuthenticationOAuthTranslator()
@@ -122,6 +128,8 @@ public class BasicAuthenticationOAuthTranslator
 
         logger.debug( "BASIC authenticate injector checking for " + AUTHORIZATION_HEADER + " header." );
         final HeaderMap headers = exchange.getRequestHeaders();
+        final String requestPath = exchange.getRequestPath();
+
         final Collection<String> vals = headers.remove( AUTHORIZATION_HEADER );
         String basicAuth = null;
         String bearerAuth = null;
@@ -140,6 +148,18 @@ public class BasicAuthenticationOAuthTranslator
                 else if ( value.toLowerCase()
                                .startsWith( BEARER_AUTH_PREFIX ) )
                 {
+                    // For the request with bearer token , checking it locally first to support the token issued by Indy
+                    if ( authConfig.isEnabled() )
+                    {
+                        String encodedToken = value.substring(7);
+                        Account account = identityManager.verify( requestPath, encodedToken );
+                        if ( account != null )
+                        {
+                            securityContext.authenticationComplete( account, "BASIC", false );
+                            return AuthenticationMechanismOutcome.AUTHENTICATED;
+                        }
+                    }
+
                     bearerAuth = value;
                     resultValues.add( value );
                 }

@@ -23,9 +23,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.commonjava.cdi.util.weft.ExecutorConfig;
 import org.commonjava.cdi.util.weft.WeftManaged;
 import org.commonjava.indy.conf.SslValidationConfig;
-import org.commonjava.indy.model.core.ArtifactStore;
-import org.commonjava.indy.model.core.RemoteRepository;
-import org.commonjava.indy.model.core.StoreType;
+import org.commonjava.indy.model.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;

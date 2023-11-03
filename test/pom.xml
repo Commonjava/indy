@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-test</artifactId>
@@ -31,7 +31,6 @@
 
   <modules>
     <module>db</module>
-    <module>providers-core</module>
     <module>fixtures-core</module>
     <module>utils</module>
   </modules>

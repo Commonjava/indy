@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-diagnostics</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
   <artifactId>indy-diagnostics-common</artifactId>
   <name>Indy :: Add-Ons :: Diagnostic Tools :: Common</name>
@@ -36,17 +36,9 @@
       <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-flat</artifactId>
-    </dependency>
-    <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
       <scope>compile</scope>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>

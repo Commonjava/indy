@@ -42,7 +42,7 @@ public class KafkaConfig
 
     private static final boolean DEFAULT_ENABLED = true;
 
-    private static final long DEFALUT_TIMEOUTMILLIS = 60000;
+    private static final boolean DEFAULT_TRACE = false;
 
     private Boolean enabled;
 
@@ -55,6 +55,8 @@ public class KafkaConfig
     private Integer recordsPerPartition;
 
     private String fileEventTopic;
+
+    private Boolean tracing;
 
     public KafkaConfig()
     {
@@ -131,6 +133,17 @@ public class KafkaConfig
     public void setFileEventTopic( String fileEventTopic )
     {
         this.fileEventTopic = fileEventTopic;
+    }
+
+    public boolean isTracing()
+    {
+        return tracing == null ? DEFAULT_TRACE : tracing;
+    }
+
+    @ConfigName( "kafka.trace" )
+    public void setTracing( boolean tracing )
+    {
+        this.tracing = tracing;
     }
 
     @Override

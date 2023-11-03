@@ -29,7 +29,10 @@ import java.io.IOException;
 /**
  * A FieldBridge used for {@link TrackedContentEntry} storeKey field when do indexing by hibernate search.
  * Used json as the ser/de-ser way
+ *
+ * @deprecated As folo recording function has been moved to tracking service, we don't need this storage anymore
  */
+@Deprecated(since = "3.3.0")
 public class StoreKeyFieldBridge
         implements TwoWayStringBridge
 {

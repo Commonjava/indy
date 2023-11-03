@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-path-mapped</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-path-mapped-model-java</artifactId>
@@ -29,22 +29,8 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-model-core-java</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>io.swagger</groupId>
-      <artifactId>swagger-annotations</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

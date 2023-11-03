@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-addons</artifactId>
@@ -31,28 +31,17 @@
   <name>Indy :: Add-Ons :: Parent</name>
 
   <modules>
-    <module>content-index</module>
-    <module>dot-maven</module>
     <module>folo</module>
     <module>httprox</module>
-    <module>implied-repos</module>
     <module>koji</module>
-    <module>promote</module>
-    <!--
-    <module>revisions</module>
-    -->
     <module>pkg-maven</module>
     <module>diagnostics</module>
     <module>pkg-npm</module>
-    <module>hosted-by-archive</module>
-    <module>content-browse</module>
-    <module>changelog</module>
-    <module>event-audit</module>
-    <module>sli</module>
     <module>path-mapped</module>
     <module>repo-proxy</module>
     <module>schedule</module>
     <module>event-publisher</module>
+    <module>content-browse</module>
     <!-- DO NOT REMOVE: append::addon -->
   </modules>
 </project>

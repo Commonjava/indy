@@ -20,7 +20,7 @@
   <parent>
     <artifactId>indy-pkg-maven</artifactId>
     <groupId>org.commonjava.indy</groupId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -56,16 +56,6 @@
     <dependency>
       <groupId>org.commonjava.indy.boot</groupId>
       <artifactId>indy-booter-jaxrs</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-infinispan</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

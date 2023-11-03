@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-subsystems</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-subsys-jaxrs</artifactId>
@@ -74,10 +74,6 @@
       <artifactId>log4j-over-slf4j</artifactId>
     </dependency>
     <dependency>
-      <groupId>args4j</groupId>
-      <artifactId>args4j</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-api</artifactId>
     </dependency>
@@ -94,20 +90,12 @@
       <artifactId>weft</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.codehaus.plexus</groupId>
-      <artifactId>plexus-interpolation</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-trace</artifactId>
     </dependency>
     <dependency>
       <groupId>org.commonjava.util</groupId>
       <artifactId>o11yphant-trace-helper-servlet</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-sli</artifactId>
     </dependency>
     <dependency>
       <groupId>io.swagger</groupId>
@@ -120,6 +108,11 @@
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-subsys-metrics</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
     </dependency>
   </dependencies>
 </project>

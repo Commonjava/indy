@@ -21,13 +21,17 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-core</artifactId>
   <name>Indy :: Core</name>
 
   <dependencies>
+    <dependency>
+      <groupId>org.commonjava.indy.service</groupId>
+      <artifactId>indy-model-core-java</artifactId>
+    </dependency>
     <dependency>
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-api</artifactId>

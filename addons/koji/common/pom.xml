@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-koji</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
   <artifactId>indy-koji-common</artifactId>
   <name>Indy :: Add-Ons :: Koji Integration :: Common</name>
@@ -71,14 +71,6 @@
       <artifactId>indy-subsys-groovy</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-subsys-prefetch</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
-    </dependency>
-    <dependency>
       <groupId>xmlunit</groupId>
       <artifactId>xmlunit</artifactId>
     </dependency>
@@ -99,7 +91,7 @@
     </dependency>
 
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-koji-model-java</artifactId>
     </dependency>
     <dependency>

@@ -20,7 +20,7 @@
   <parent>
     <artifactId>indy-pkg-npm</artifactId>
     <groupId>org.commonjava.indy</groupId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
@@ -29,7 +29,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>

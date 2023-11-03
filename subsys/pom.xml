@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-subsystems</artifactId>
@@ -39,13 +39,8 @@
     <module>jaxrs</module>
     <module>infinispan</module>
     <module>metrics</module>
-    <module>prefetch</module>
     <module>kafka</module>
-    <module>cpool</module>
     <module>service</module>
-    <!--
-    <module>git</module>
-    -->
   </modules>
 
 </project>

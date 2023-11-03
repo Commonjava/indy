@@ -21,17 +21,13 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-ftests-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-ftests-core</artifactId>
   <name>Indy :: Functional Tests :: Core</name>
 
   <dependencies>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-db-infinispan</artifactId>
-    </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>indy-client-core-java</artifactId>
@@ -61,12 +57,7 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
-      <artifactId>indy-content-index</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-folo-model-java</artifactId>
       <scope>provided</scope>
     </dependency>

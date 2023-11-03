@@ -21,14 +21,14 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-content-browse</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1-SNAPSHOT</version>
   </parent>
   <artifactId>indy-content-browse-model-java</artifactId>
   <name>Indy :: Add-Ons :: Directory Content Browse :: Java Domain Model</name>
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-model-core-java</artifactId>
     </dependency>
 

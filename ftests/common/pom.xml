@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-ftests-parent</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.1</version>
   </parent>
 
   <artifactId>indy-ftests-common</artifactId>
@@ -55,10 +55,6 @@
       <groupId>org.commonjava.indy</groupId>
       <artifactId>indy-bindings-jaxrs</artifactId>
       <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jsoup</groupId>
-      <artifactId>jsoup</artifactId>
     </dependency>
     <dependency>
       <groupId>org.cassandraunit</groupId>

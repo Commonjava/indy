@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-addons</artifactId>
-    <version>3.2.3</version>
+    <version>3.3.0-SNAPSHOT</version>
   </parent>
   <artifactId>indy-sli</artifactId>
   <name>Indy :: Add-Ons :: Service Level Indicators Reporting :: JAX-RS</name>
@@ -40,7 +40,7 @@
       <artifactId>indy-core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.indy</groupId>
+      <groupId>org.commonjava.indy.service</groupId>
       <artifactId>indy-model-core-java</artifactId>
     </dependency>
     <dependency>
