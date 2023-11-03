@@ -69,7 +69,7 @@
     <asyncServletVersion>3.0.19.Final</asyncServletVersion>
     <undertowVersion>2.2.27.Final</undertowVersion>
     <xnioVersion>3.8.2.Final</xnioVersion>
-    <keycloakVersion>17.0.1</keycloakVersion>
+    <keycloakVersion>22.0.3</keycloakVersion>
     <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.20</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
@@ -1056,7 +1056,7 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven</artifactId>
-        <version>3.0.3</version>
+        <version>3.8.1</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -1069,7 +1069,7 @@
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
         <artifactId>plexus-utils</artifactId>
-        <version>3.0.21</version>
+        <version>3.0.24</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
