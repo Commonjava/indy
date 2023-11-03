@@ -29,7 +29,8 @@ import javax.servlet.ServletException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * If indy download file from remote repo is not correct (lose some byte), Indy will
@@ -58,17 +59,17 @@ import static org.junit.Assert.assertThat;
  * </ul>
  */
 public class ReDownloadOnContentTransferExceptionTest
-                extends AbstractContentManagementTest
+        extends AbstractContentManagementTest
 {
     protected final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private final static String responseContent =
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<metadata>\n" + "  <groupId>org.foo</groupId>\n"
-                                    + "  <artifactId>bar</artifactId>\n" + "  <versioning>\n"
-                                    + "    <latest>1.0</latest>\n" + "    <release>1.0</release>\n" + "    <versions>\n"
-                                    + "      <version>1.0</version>\n" + "    </versions>\n"
-                                    + "    <lastUpdated>20150722164334</lastUpdated>\n" + "  </versioning>\n"
-                                    + "</metadata>\n";
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<metadata>\n" + "  <groupId>org.foo</groupId>\n"
+                    + "  <artifactId>bar</artifactId>\n" + "  <versioning>\n"
+                    + "    <latest>1.0</latest>\n" + "    <release>1.0</release>\n" + "    <versions>\n"
+                    + "      <version>1.0</version>\n" + "    </versions>\n"
+                    + "    <lastUpdated>20150722164334</lastUpdated>\n" + "  </versioning>\n"
+                    + "</metadata>\n";
 
     @Test
     public void run() throws Exception
@@ -109,19 +110,12 @@ public class ReDownloadOnContentTransferExceptionTest
         RemoteRepository remote =
                 new RemoteRepository( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, STORE, server.formatUrl( STORE ) );
 
-//        remote.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( -1 ) );
+        //        remote.setMetadata( Location.CONNECTION_TIMEOUT_SECONDS, Integer.toString( -1 ) );
         client.stores().create( remote, "adding remote", RemoteRepository.class );
 
         StoreKey sk = new StoreKey( MavenPackageTypeDescriptor.MAVEN_PKG_KEY, StoreType.remote, STORE );
-        
-        try
-        {
-            client.content().get( sk, path );
-        }
-        catch ( Exception e )
-        {
-            assertThat( e.getMessage(), notNullValue()  );
-        }
+
+        assertThat( client.content().get( sk, path ), nullValue() );
 
         String result = IOUtils.toString( client.content().get( sk, path ) );
 

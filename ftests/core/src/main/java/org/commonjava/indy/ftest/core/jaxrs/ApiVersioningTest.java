@@ -44,16 +44,14 @@ import static org.junit.Assert.assertNotEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ApiVersioningTest
-                extends AbstractIndyFunctionalTest
+        extends AbstractIndyFunctionalTest
 {
     private static final String INFO_BASE = "/test/info";
 
     private static final String ANOTHER_BASE = "/test/another";
 
     static {
-        Properties properties = System.getProperties();
-        properties.setProperty( "ENV_DEPRECATED_API_FILE", "deprecated-apis-test.properties" );
-        System.setProperties( properties );
+        System.setProperty( "ENV_DEPRECATED_API_FILE", "deprecated-apis-test.properties" );
     }
 
     @Test
@@ -83,7 +81,7 @@ public class ApiVersioningTest
             String retBody = IOUtils.toString( in );
             logger.debug( "Deprecated >>>> " + retBody );
             VersioningTestHandlerDeprecated.TestInfo info =
-                            mapper.readValue( retBody, VersioningTestHandlerDeprecated.TestInfo.class );
+                    mapper.readValue( retBody, VersioningTestHandlerDeprecated.TestInfo.class );
             assertThat( info, notNullValue() );
         }
 

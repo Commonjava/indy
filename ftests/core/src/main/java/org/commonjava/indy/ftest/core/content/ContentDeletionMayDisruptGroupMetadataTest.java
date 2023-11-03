@@ -15,13 +15,11 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import org.commonjava.indy.cassandra.testcat.CassandraTest;
 import org.jboss.byteman.contrib.bmunit.BMRule;
 import org.jboss.byteman.contrib.bmunit.BMRules;
 import org.jboss.byteman.contrib.bmunit.BMUnitConfig;
 import org.jboss.byteman.contrib.bmunit.BMUnitRunner;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.ExecutorService;
@@ -57,29 +55,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
  */
 @RunWith( BMUnitRunner.class )
 @BMUnitConfig( debug = true )
-@Category( CassandraTest.class )
 public class ContentDeletionMayDisruptGroupMetadataTest
         extends ContentDeletionUpdateGroupMetadataTest
 {
     @BMRules( rules = {
-        @BMRule(
-            name = "Create Rendezvous",
-            targetClass = "MavenMetadataGenerator",
-            targetMethod = "<init>",
-            targetLocation = "ENTRY",
-            action = "createRendezvous($0, 2)" ),
-        @BMRule(
-            name = "Wait before generateGroupFileContent return",
-            targetClass = "MavenMetadataGenerator",
-            targetMethod = "generateGroupFileContent",
-            targetLocation = "EXIT",
-            action = "debug(\"generateGroupFileContent return waiting...\"); rendezvous($0); debug(\"generateGroupFileContent return.\")" ),
-        @BMRule(
-            name = "Wait before handleContentDeletion return",
-            targetClass = "AbstractMergedContentGenerator",
-            targetMethod = "handleContentDeletion",
-            targetLocation = "EXIT",
-            action = "debug(\"handleContentDeletion return waiting...\"); rendezvous($0); debug(\"handleContentDeletion return.\")" ),
+            @BMRule(
+                    name = "Create Rendezvous",
+                    targetClass = "MavenMetadataGenerator",
+                    targetMethod = "<init>",
+                    targetLocation = "ENTRY",
+                    action = "createRendezvous($0, 2)" ),
+            @BMRule(
+                    name = "Wait before generateGroupFileContent return",
+                    targetClass = "MavenMetadataGenerator",
+                    targetMethod = "generateGroupFileContent",
+                    targetLocation = "EXIT",
+                    action = "debug(\"generateGroupFileContent return waiting...\"); rendezvous($0); debug(\"generateGroupFileContent return.\")" ),
+            @BMRule(
+                    name = "Wait before handleContentDeletion return",
+                    targetClass = "AbstractMergedContentGenerator",
+                    targetMethod = "handleContentDeletion",
+                    targetLocation = "EXIT",
+                    action = "debug(\"handleContentDeletion return waiting...\"); rendezvous($0); debug(\"handleContentDeletion return.\")" ),
     } )
     @Test
     public void run()
@@ -91,35 +88,35 @@ public class ContentDeletionMayDisruptGroupMetadataTest
 
         //**/
         // Test case delete in folo cassandra  records is affecting auditing logs so thats way it is commented out
-//        Future<String> user1 = fixedPool.submit( groupMetaCallableTask );
+        //        Future<String> user1 = fixedPool.submit( groupMetaCallableTask );
 
         /*
          * Wait for a while for user1 to reach rendezvous.
          */
-//        Thread.sleep( 3000 );
+        //        Thread.sleep( 3000 );
 
 
         //**/
         // Test case delete in folo cassandra  records is affecting auditing logs so thats way it is commented out
         /* At this point, user1 get the meta file generated. User2 will delete the meta from RemoteRepository A which
            causes the group meta file being deleted. */
-//        Future<String> user2 = fixedPool.submit( deleteCallableTask );
-//        String retCode = user2.get();
-//        assertThat( retCode, equalTo( "OK" ) );
+        //        Future<String> user2 = fixedPool.submit( deleteCallableTask );
+        //        String retCode = user2.get();
+        //        assertThat( retCode, equalTo( "OK" ) );
 
-//        sleepAndRunFileGC( 1000 );
+        //        sleepAndRunFileGC( 1000 );
 
-//        String metadata = user1.get();
-//        assertThat( metadata, equalTo( null ) );
+        //        String metadata = user1.get();
+        //        assertThat( metadata, equalTo( null ) );
 
         //**/
         // Test case delete in folo cassandra  records is affecting auditing logs so thats way it is commented out
         /* At this point, user1 get the meta file generated. User2 will delete the meta from RemoteRepository A which
            causes the group meta file being deleted. */
         // do it again
-//        user1 = fixedPool.submit( groupMetaCallableTask );
-//        metadata = user1.get();
-//        assertThat( metadata, equalTo( mergedContent ) ); // should restore the metadata. but unfortunately NFC returns null
+        //        user1 = fixedPool.submit( groupMetaCallableTask );
+        //        metadata = user1.get();
+        //        assertThat( metadata, equalTo( mergedContent ) ); // should restore the metadata. but unfortunately NFC returns null
 
         fixedPool.shutdown(); // shut down
     }

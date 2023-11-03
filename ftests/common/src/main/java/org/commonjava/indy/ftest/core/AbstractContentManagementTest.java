@@ -50,7 +50,7 @@ import org.junit.Before;
 import org.junit.Rule;
 
 public class AbstractContentManagementTest
-    extends AbstractIndyFunctionalTest
+        extends AbstractIndyFunctionalTest
 {
 
     protected static final String NFS_BASE = "/mnt/nfs/var/lib/indy/storage";
@@ -75,7 +75,7 @@ public class AbstractContentManagementTest
 
     @Before
     public void before()
-        throws Exception
+            throws Exception
     {
         if ( !createStandardTestStructures() )
         {
@@ -85,14 +85,14 @@ public class AbstractContentManagementTest
         final String changelog = "Create test structures";
 
         final HostedRepository hosted =
-            this.client.stores()
-                       .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
+                this.client.stores()
+                           .create( new HostedRepository( STORE ), changelog, HostedRepository.class );
 
         client.stores()
               .delete( remote, CENTRAL, "removing to setup test instance" );
 
         final RemoteRepository central =
-            client.stores()
+                client.stores()
                       .create( new RemoteRepository( CENTRAL, server.formatUrl( "central" ) ), changelog,
                                RemoteRepository.class );
 
@@ -127,16 +127,16 @@ public class AbstractContentManagementTest
         String storageDir = "var/lib/indy/storage";
         StoreKey storeKey = ( (KeyedLocation) location ).getKey();
 
-        File ret = cacheProvider.asAdminView().getDetachedFile( new ConcreteResource( location, path ) );
-//        if ( !isPathMappedStorageEnabled() )
-//        {
-//            ret = Paths.get( homeDir, storageDir, storeKey.getPackageType(),
-//                             storeKey.getType().singularEndpointName() + "-" + storeKey.getName(), path ).toFile();
-//        }
-//        else
-//        {
-//            ret = ( (PathMappedCacheProvider) cacheProvider ).getDetachedFile( new ConcreteResource( location, path ) );
-//        }
+        File ret;
+        if ( !isPathMappedStorageEnabled() )
+        {
+            ret = Paths.get( homeDir, storageDir, storeKey.getPackageType(),
+                             storeKey.getType().singularEndpointName() + "-" + storeKey.getName(), path ).toFile();
+        }
+        else
+        {
+            ret = ( (PathMappedCacheProvider) cacheProvider ).getDetachedFile( new ConcreteResource( location, path ) );
+        }
         logger.debug( "Get physical storage file: {}", ret );
         return ret;
     }
@@ -194,7 +194,7 @@ public class AbstractContentManagementTest
     }
 
     protected String assertMetadataContent( ArtifactStore store, String path, String expected )
-                    throws IndyClientException, IOException
+            throws IndyClientException, IOException
     {
         try (InputStream in = client.content().get( store.getKey(), path ))
         {
@@ -225,7 +225,7 @@ public class AbstractContentManagementTest
 
         StringBuilder sb = new StringBuilder();
         BufferedReader reader = new BufferedReader(
-                        new InputStreamReader( new ByteArrayInputStream( metadataXML.getBytes() ) ) );
+                new InputStreamReader( new ByteArrayInputStream( metadataXML.getBytes() ) ) );
         while ( reader.ready() )
         {
             String line = reader.readLine();

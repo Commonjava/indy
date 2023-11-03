@@ -138,12 +138,7 @@ public abstract class AbstractIndyFunctionalTest
     // Override this if your test do not access storage
     protected boolean isPathMappedStorageEnabled()
     {
-        return !isClusterTestSkipped();
-    }
-
-    private boolean isClusterTestSkipped()
-    {
-        return Boolean.parseBoolean( System.getProperty( "skipClusterFTests", "false" ) );
+        return true;
     }
 
     protected Indy createIndyClient()
@@ -331,12 +326,6 @@ public abstract class AbstractIndyFunctionalTest
         }
         else
         {
-            // TODO: For full clustering test, we would need a remove Infinispan server/cluster...
-            writeConfigFile( "conf.d/durable-state.conf", "[durable-state]\n"
-                            + "folo.storage=infinispan\n"
-                            + "store.storage=infinispan\n"
-                            + "schedule.storage=infinispan");
-
             writeConfigFile( "conf.d/scheduler.conf", "[scheduler]\nenabled=false" );
         }
     }
