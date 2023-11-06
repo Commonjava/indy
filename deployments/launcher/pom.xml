@@ -97,6 +97,13 @@
       <type>tar.gz</type>
       <classifier>confset</classifier>
     </dependency>
+    <dependency>
+      <groupId>org.commonjava.indy</groupId>
+      <artifactId>indy-content-browse-ui</artifactId>
+      <classifier>reactui</classifier>
+      <type>tar.gz</type>
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>org.commonjava.indy.rest</groupId>
@@ -170,6 +177,7 @@
       <artifactId>swagger-annotations</artifactId>
       <scope>runtime</scope>
     </dependency>
+
   </dependencies>
 
   <build>
