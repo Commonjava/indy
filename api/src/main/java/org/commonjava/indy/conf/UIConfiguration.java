@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.conf;
 
+import org.apache.commons.lang3.StringUtils;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 
@@ -36,9 +37,13 @@ public class UIConfiguration
 
     private static final Boolean DEFAULT_ENABLED = Boolean.TRUE;
 
+    private static final String DEFAULT_DISABLED_UI_RESPONSE = "Indy content service UI is disabled";
+
     private Boolean enabled;
 
     private File uiDir;
+
+    private String disabledUIResponse;
 
     public UIConfiguration()
     {
@@ -77,6 +82,17 @@ public class UIConfiguration
     public Boolean getEnabled()
     {
         return enabled == null ? DEFAULT_ENABLED : enabled;
+    }
+
+    @ConfigName( "ui.disabled.response" )
+    public void setDisabledUIResponse( final String disabledResponse )
+    {
+        this.disabledUIResponse = disabledResponse;
+    }
+
+    public String getDisabledUIResponse()
+    {
+        return StringUtils.isEmpty( disabledUIResponse ) ? DEFAULT_DISABLED_UI_RESPONSE : disabledUIResponse;
     }
 
     @ConfigName( "enabled" )

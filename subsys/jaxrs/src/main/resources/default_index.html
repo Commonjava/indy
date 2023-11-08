@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Indy Content Service</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.9/wing.min.css"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1>Indy Content Service</h1>
+  <hr/>
+
+  <div class="cards">
+    <div class="card">
+      <h5 class="card-header">About</h5>
+      <p class="card-body"><b>Indy Content Service</b> provides REST endpoints for all indy artifacts content.</p>
+    </div>
+    <div class="card">
+      <h5 class="card-header">Content retrieval</h5>
+      <p class="card-body">Content retrieval can be accessed through /api/content endpoint, for example: <a id="content-retrieval-example" href="/api/content/maven/remote/central/org/apache/maven/maven-metadata.xml"></a></p>
+    </div>
+    <div class="card">
+      <h5 class="card-header">Content listing</h5>
+      <p class="card-body">Content listing can be accessed through /browse endpoint, for example: <a id="content-list-example" href="/browse/maven/remote/central/"></a></p>
+    </div>
+  </div>
+
+
+  <div id="stats-info" style="position: fixed; bottom: 5%; text-align: center;">
+    <hr/>
+    <a target="_new" href="https://github.com/Commonjava/indy">Github Project</a> |
+    <span id="version">Version: {{ stats.version }}</span> |
+    Commit ID: <a id="commitId" target="_new" href="http://github.com/Commonjava/indy/commit/{{stats['commit-id']}}">{{ stats["commit-id"] }}</a> |
+    <span id="timestamp">Built on {{ stats["timestamp"] }} by {{ stats["builder"] }}</span>
+  </div>
+
+</div>
+
+<script type="text/javascript">
+  const setStats = stats => {
+    const versionSpan = document.getElementById('version');
+    versionSpan.innerHTML = `Version: ${stats.version}`;
+    const commitIdAnchor = document.getElementById('commitId');
+    commitIdAnchor.href = `http://github.com/Commonjava/indy/commit/${stats['commit-id']}`;
+    commitIdAnchor.innerHTML = stats['commit-id'];
+    const timestampSpan = document.getElementById('timestamp');
+    timestampSpan.innerHTML = `Built on ${stats["timestamp"]} by ${stats["builder"]}`;
+  };
+  const resetExamples = () => {
+    const host = window.location.origin
+    const contentRetrievalExam = document.getElementById("content-retrieval-example");
+    contentRetrievalExam.innerHTML = `${host}/api/content/maven/remote/central/org/apache/maven/maven-metadata.xml`;
+    const contentListExam = document.getElementById("content-list-example");
+    contentListExam.innerHTML = `${host}/browse/maven/remote/central/`;
+  };
+  const fetchStats = async () => {
+    const response = await axios.get("/api/stats/version-info");
+    if(response.status === 200){
+      const stats= response.data;
+      setStats(stats);
+    }
+  };
+  resetExamples();
+  fetchStats();
+
+</script>
+</body>
+</html>

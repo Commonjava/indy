@@ -15,7 +15,10 @@
  */
 package org.commonjava.indy.bind.jaxrs.ui;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.conf.UIConfiguration;
+import org.commonjava.indy.util.ApplicationContent;
+import org.commonjava.indy.util.ApplicationHeader;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +31,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +71,8 @@ public class UIServlet
                         .get();
         }
 
+
+
         String path;
         try
         {
@@ -82,6 +89,19 @@ public class UIServlet
                                      .toUpperCase();
 
         logger.info( "{} {}", method, path );
+        if ( !config.getEnabled() )
+        {
+            if ( ( path == null || path.endsWith( "/" ) ) && ( method.equals( "GET" ) || method.equals( "HEAD" ) ) )
+            {
+                response.setStatus( ApplicationStatus.OK.code() );
+                sendNoUIResponse( response, config.getDisabledUIResponse() );
+            }
+            else
+            {
+                response.setStatus( ApplicationStatus.NOT_FOUND.code() );
+            }
+            return;
+        }
 
         switch ( method )
         {
@@ -138,6 +158,32 @@ public class UIServlet
                 response.setStatus( ApplicationStatus.BAD_REQUEST.code() );
             }
         }
+    }
+
+    // This is used for UI disabled condition, totally means that Indy is just served as a content service.
+    private static final String DEFAULT_UI_INDEX_PAGE = "default_index.html";
+
+    private void sendNoUIResponse( final HttpServletResponse response, final String defaultContent )
+            throws IOException
+    {
+        final URL noUIResourceHtml =
+                Thread.currentThread().getContextClassLoader().getResource( DEFAULT_UI_INDEX_PAGE );
+        if ( noUIResourceHtml != null )
+        {
+            try (InputStream htmlInput = noUIResourceHtml.openStream())
+            {
+                IOUtils.copy( htmlInput, response.getOutputStream() );
+                response.addHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_html );
+                return;
+            }
+            catch ( IOException e )
+            {
+                final Logger logger = LoggerFactory.getLogger( this.getClass() );
+                logger.warn("No default UI page provided when UI disabled, will use a simple text response.");
+            }
+        }
+        response.getOutputStream().write( defaultContent.getBytes() );
+        response.addHeader( ApplicationHeader.content_type.key(), ApplicationContent.text_plain );
     }
 
     /**
