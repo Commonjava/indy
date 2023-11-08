@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.event.publisher;
 
+import org.apache.commons.codec.binary.Base64;
 import org.commonjava.event.common.EventMetadata;
 import org.commonjava.event.file.FileEvent;
 import org.commonjava.event.file.FileEventType;
@@ -48,6 +49,9 @@ import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 import java.util.Date;
 import java.util.Map;
+
+import static org.commonjava.maven.galley.util.LocationUtils.ATTR_PATH_ENCODE;
+import static org.commonjava.maven.galley.util.LocationUtils.PATH_ENCODE_BASE64;
 
 @ApplicationScoped
 public class KafkaEventPublisher
@@ -188,10 +192,16 @@ public class KafkaEventPublisher
                 if ( repo != null )
                 {
                     fileEvent.setSourceLocation( repo.getUrl() );
-                    fileEvent.setSourcePath( transfer.getPath() );
+                    String sourcePath = transfer.getPath();
+                    if ( PATH_ENCODE_BASE64.equals(repo.getMetadata(ATTR_PATH_ENCODE)) )
+                    {
+                        String p = sourcePath.replaceAll("^/*", ""); // remove leading slash if any
+                        sourcePath = new String(Base64.decodeBase64(p));
+                        logger.debug("Decode base64 path, path: {}, decoded: {}", p, sourcePath);
+                    }
+                    fileEvent.setSourcePath( sourcePath );
                 }
             }
-
         }
         catch ( final IndyWorkflowException | IndyDataException e )
         {
