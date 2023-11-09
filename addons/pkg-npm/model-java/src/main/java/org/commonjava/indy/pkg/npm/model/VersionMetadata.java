@@ -74,6 +74,8 @@ public class VersionMetadata
 
     private Map<String, Object> devDependencies;
 
+    private Map<String, String> bin;
+
     private Map<String, String> jsdomVersions;
 
     @ApiModelProperty( required = false, dataType = "Map", allowableValues = "prepare:<script>, build:<script>, start:<script>, test:<script>, precommit:<script>, commitmsg:<script>, etc." )
@@ -296,6 +298,16 @@ public class VersionMetadata
     public Map<String, Object> getDevDependencies()
     {
         return devDependencies;
+    }
+
+    public Map<String, String> getBin()
+    {
+        return bin;
+    }
+
+    public void setBin( Map<String, String> bin )
+    {
+        this.bin = bin;
     }
 
     public void setDevDependencies( Map<String, Object> devDependencies )
