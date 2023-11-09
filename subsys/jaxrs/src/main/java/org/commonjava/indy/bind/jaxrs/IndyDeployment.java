@@ -254,17 +254,14 @@ public class IndyDeployment
             DeploymentInfoUtils.mergeFromProviders( di, deploymentProviders, contextRoot, application );
         }
 
-        if ( uiConfiguration.getEnabled() )
-        {
-            // Add UI servlet at the end so its mappings don't obscure any from add-ons.
-            final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
-                                                  .setAsyncSupported( true )
-                                                  .setLoadOnStartup( 99 )
-                                                  .addMappings( UIServlet.PATHS );
+        // Add UI servlet at the end so its mappings don't obscure any from add-ons.
+        final ServletInfo uiServlet = Servlets.servlet( "UI", UIServlet.class )
+                                              .setAsyncSupported( true )
+                                              .setLoadOnStartup( 99 )
+                                              .addMappings( UIServlet.PATHS );
 
-            uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
-            di.addServlet( uiServlet );
-        }
+        uiServlet.setInstanceFactory( new ImmediateInstanceFactory<Servlet>( ui ) );
+        di.addServlet( uiServlet );
 
 
         return di;
