@@ -19,6 +19,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
+import org.commonjava.indy.model.util.DefaultPathGenerator;
 import org.commonjava.indy.util.LocationUtils;
 import org.commonjava.indy.util.PathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
@@ -36,6 +37,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.commonjava.indy.model.core.PathStyle.base64url;
 import static org.commonjava.indy.model.core.PathStyle.hashed;
 
 /**
@@ -54,6 +56,8 @@ public class IndyPathGenerator
     private Instance<StoragePathCalculator> injectedStoragePathCalculators;
 
     private Set<StoragePathCalculator> pathCalculators;
+
+    private DefaultPathGenerator defaultPathGenerator = new DefaultPathGenerator();
 
     public IndyPathGenerator(){}
 
@@ -90,29 +94,10 @@ public class IndyPathGenerator
         final KeyedLocation kl = (KeyedLocation) resource.getLocation();
         final StoreKey key = kl.getKey();
         String path = resource.getPath();
-        if ( hashed == kl.getAttribute( LocationUtils.PATH_STYLE, PathStyle.class ) )
+        PathStyle pathStyle = kl.getAttribute(LocationUtils.PATH_STYLE, PathStyle.class);
+        if ( hashed == pathStyle || base64url == pathStyle)
         {
-            File f = new File( path );
-            String dir = f.getParent();
-            if ( dir == null )
-            {
-                dir = "/";
-            }
-
-            if ( dir.length() > 1 && dir.startsWith( "/" ) )
-            {
-                dir = dir.substring( 1 );
-            }
-
-            String digest = DigestUtils.sha256Hex( dir );
-
-            logger.trace( "Using SHA-256 digest: '{}' for dir: '{}' of path: '{}'", digest, dir, path );
-
-            // Format examples:
-            // - aa/bb/aabbccddeeff001122/simple-1.0.pom
-            // - aa/bb/aabbccddeeff001122/gulp-size
-            // - 00/11/001122334455667788/gulp-size-1.3.0.tgz
-            path = String.format( "%s/%s/%s/%s", digest.substring( 0, 2 ), digest.substring( 2, 4 ), digest, f.getName() );
+            path = defaultPathGenerator.getStyledPath( path, pathStyle );
         }
         else
         {
