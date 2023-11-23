@@ -37,7 +37,7 @@ jobs:
         sonatypeSnapshots: true
 
     - name: Build the Maven verify phase
-      run: mvn -B -V clean verify -Prun-its -Pci
+      run: mvn -B -V clean verify -Prun-its -Pci --global-toolchains .github/workflows/toolchains.xml
   
   build:
     name: Build and push
@@ -70,10 +70,10 @@ jobs:
           }]
 
     - name: Build with toolchains
-      run: mvn -B -V clean install -DskipNpmConfig=false
+      run: mvn -B -V clean install -DskipNpmConfig=false --global-toolchains .github/workflows/toolchains.xml
 
     - name: Deploy the artifact
-      run: mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e
+      run: mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e --global-toolchains .github/workflows/toolchains.xml
     
     - name: Checkout tools repo
       uses: actions/checkout@v4
