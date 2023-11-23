@@ -23,19 +23,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up JDK 11 for x64
+    - name: Set up JDK 8 & 11 for x64
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
         distribution: 'temurin'
         architecture: x64
+        java-version: |
+          8
+          11
 
     - uses: s4u/maven-settings-action@v2.8.0
       with:
         sonatypeSnapshots: true
 
     - name: Build the Maven verify phase
-      run: mvn -B -V clean verify -Prun-its -Pci --global-toolchains toolchains.xml
+      run: mvn -B -V clean verify -Prun-its -Pci
   
   build:
     name: Build and push
@@ -49,12 +51,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up JDK 11 for x64
+    - name: Set up JDK 8 & 11 for x64
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
         distribution: 'temurin'
         architecture: x64
+        java-version: |
+          8
+          11
 
     - uses: s4u/maven-settings-action@v2.8.0
       with:
@@ -66,10 +70,10 @@ jobs:
           }]
 
     - name: Build with toolchains
-      run: mvn -B -V clean install -DskipNpmConfig=false --global-toolchains toolchains.xml
+      run: mvn -B -V clean install -DskipNpmConfig=false
 
     - name: Deploy the artifact
-      run: mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e --global-toolchains toolchains.xml
+      run: mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e
     
     - name: Checkout tools repo
       uses: actions/checkout@v4
