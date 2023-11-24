@@ -10,13 +10,13 @@ on:
       - main
       - master
       - '**'
+
   workflow_dispatch:
 
 jobs:
   verify:
     name: verify with maven
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' }}
     env:
       MAVEN_OPTS: "-Xmx4096m -Xms2048m -XX:MaxMetaspaceSize=4096m -Xss8m"
       SKIP_NPM_CONFIG: false
@@ -43,6 +43,7 @@ jobs:
   build:
     name: Build and push
     runs-on: ubuntu-latest
+    needs: verify
     if: ${{ github.event_name == 'push' }}
     env:
       MAVEN_OPTS: "-Xmx4096m -Xms2048m -XX:MaxMetaspaceSize=4096m -Xss8m"
@@ -102,7 +103,7 @@ jobs:
       id: buildah-build
       uses: redhat-actions/buildah-build@v2
       with:
-        image: quay.io/factory2/indy
+        image: indy
         tags: ${{ github.ref_name }}
         platforms: linux/amd64
         containerfiles: |
@@ -113,5 +114,6 @@ jobs:
       id: push-to-quay
       uses: redhat-actions/push-to-registry@v2
       with:
-        image: ${{ steps.build-image.outputs.image }}
-        tags: ${{ steps.build-image.outputs.tags }}
+        image: ${{ steps.buildah-build.outputs.image }}
+        tags: ${{ steps.buildah-build.outputs.tags }}
+        registry: quay.io/factory2
