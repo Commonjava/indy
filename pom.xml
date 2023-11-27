@@ -83,7 +83,7 @@
     <otelInstrumentationVersion>1.19.0-alpha</otelInstrumentationVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
     <datastaxVersion>3.11.3</datastaxVersion>
-    <pathmappedStorageVersion>2.5</pathmappedStorageVersion>
+    <pathmappedStorageVersion>2.6-SNAPSHOT</pathmappedStorageVersion>
     <o11yphantVersion>1.9.1</o11yphantVersion>
     <swaggerVersion>1.6.6</swaggerVersion>
     <agroalVersion>1.16</agroalVersion>
