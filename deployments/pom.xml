@@ -33,18 +33,4 @@
     <module>launcher</module>
   </modules>
 
-  <profiles>
-    <profile>
-      <id>docker</id>
-      <modules>
-        <module>docker</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>standalone</id>
-      <modules>
-        <module>standalone</module>
-      </modules>
-    </profile>
-  </profiles>
 </project>
