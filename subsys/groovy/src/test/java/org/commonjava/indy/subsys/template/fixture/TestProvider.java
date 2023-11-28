@@ -182,9 +182,9 @@ public class TestProvider
 //        return null;
 //    }
 //
-    @Produces
-    public GoldenSignalsMetricSet getGoldenSignalsMetricSet()
-    {
-        return null;
-    }
+//    @Produces
+//    public GoldenSignalsMetricSet getGoldenSignalsMetricSet()
+//    {
+//        return null;
+//    }
 }
