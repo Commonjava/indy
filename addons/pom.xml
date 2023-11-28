@@ -32,7 +32,6 @@
 
   <modules>
     <module>folo</module>
-    <module>httprox</module>
     <module>koji</module>
     <module>pkg-maven</module>
     <module>diagnostics</module>
