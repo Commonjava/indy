@@ -1,7 +1,0 @@
-{
-  "name": "Fail All Rule-Set",
-  "storeKeyPattern": "hosted:fail",
-  "ruleNames": [
-    "fail-all.groovy"
-  ]
-}
