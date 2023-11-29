@@ -34,8 +34,8 @@
     <module>folo</module>
     <module>koji</module>
     <module>pkg-maven</module>
-    <module>diagnostics</module>
     <module>pkg-npm</module>
+    <module>diagnostics</module>
     <module>path-mapped</module>
     <module>repo-proxy</module>
     <module>schedule</module>
