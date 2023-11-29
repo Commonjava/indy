@@ -79,7 +79,7 @@ jobs:
     - name: Checkout tools repo
       uses: actions/checkout@v4
       with:
-        repository: Shokakucarrier/commonjava-images
+        repository: Commonjava/commonjava-images
         path: commonjava-images
 
     - name: Locate artifacts
