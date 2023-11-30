@@ -59,7 +59,6 @@
 
     <!-- thirdparty projects -->
     <javaVersion>11</javaVersion>
-    <slf4j-version>1.7.36</slf4j-version>
     <infinispanVersion>9.4.24.Final</infinispanVersion>
     <protostreamVersion>4.3.0.Final</protostreamVersion>
     <gsonVersion>2.9.1</gsonVersion>
@@ -73,7 +72,7 @@
     <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.20</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
-    <logbackVersion>1.2.12</logbackVersion>
+    <logbackVersion>1.4.13</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>3.1.9.Final</weldVersion>
     <jacksonVersion>2.15.2</jacksonVersion>
@@ -95,7 +94,7 @@
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.16</galleyVersion>
     <weftVersion>1.22</weftVersion>
-    <bomVersion>28</bomVersion>
+    <bomVersion>29-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
