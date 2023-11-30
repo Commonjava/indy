@@ -94,7 +94,7 @@ jobs:
       uses: redhat-actions/podman-login@v1
       with:
         username: ${{ secrets.QUAY_USERNAME }}
-        password: ${{ secrets.QUAY_TOKEN }}
+        password: ${{ secrets.QUAY_ROBOT_TOKEN }}
         registry: quay.io
 
     - name: Buildah build
