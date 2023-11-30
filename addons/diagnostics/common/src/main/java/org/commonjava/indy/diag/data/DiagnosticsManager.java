@@ -38,11 +38,13 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MonitorInfo;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.nio.charset.Charset;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -153,13 +155,13 @@ public class DiagnosticsManager
         logger.info( "Writing diagnostic bundle to: '{}'", out );
 
         Appender<ILoggingEvent> appender = rootLogger.getAppender( FILE_LOGGER );
-        if ( appender != null && (appender instanceof FileAppender) )
+        if ( appender instanceof FileAppender )
         {
             try(ZipOutputStream zip = new ZipOutputStream( new FileOutputStream( out ) ) )
             {
-                File dir = new File( ( (FileAppender) appender ).getFile() ).getParentFile();
+                File dir = new File( ( (FileAppender<?>) appender ).getFile() ).getParentFile();
 
-                for ( File f : dir.listFiles( file -> file.getName().endsWith( ".log" ) ) )
+                for ( File f : Objects.requireNonNull( dir.listFiles( file -> file.getName().endsWith( ".log" ) ) ) )
                 {
                     String name = LOGS_DIR + "/" + f.getName();
                     logger.info( "Adding {} to bundle zip: {}", name, out );
@@ -175,7 +177,6 @@ public class DiagnosticsManager
                 zip.putNextEntry( new ZipEntry( THREAD_DUMP_FILE ) );
                 zip.write( getThreadDumpString().getBytes() );
                 zip.flush();
-                zip.close();
             }
         }
         else
@@ -200,7 +201,7 @@ public class DiagnosticsManager
 
     private void zipRepositoryFiles( ZipOutputStream zip ) throws IOException
     {
-        Set<ArtifactStore> stores = null;
+        Set<ArtifactStore> stores;
         try
         {
             stores = storeDataManager.getAllArtifactStores();
@@ -218,7 +219,7 @@ public class DiagnosticsManager
             logger.debug( "Adding {} to repo zip", path );
             zip.putNextEntry( new ZipEntry( path ) );
             String json = serializer.writeValueAsString( store );
-            IOUtils.copy( toInputStream( json ), zip );
+            IOUtils.copy( toInputStream( json, Charset.defaultCharset() ), zip );
         }
     }
 
