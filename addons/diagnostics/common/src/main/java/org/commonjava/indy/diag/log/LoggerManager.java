@@ -31,9 +31,7 @@ import java.util.List;
 @ApplicationScoped
 public class LoggerManager
 {
-    private final org.slf4j.Logger LOGGER = LoggerFactory.getLogger( this.getClass() );
-
-    private final static List VALID_LEVELS = Arrays.asList( "TRACE", "DEBUG", "INFO", "WARN", "ERROR" );
+    private final static List<String> VALID_LEVELS = Arrays.asList( "TRACE", "DEBUG", "INFO", "WARN", "ERROR" );
 
     private List<String> getAppenders( Logger logger )
     {
