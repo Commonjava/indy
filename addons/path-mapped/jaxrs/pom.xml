@@ -44,11 +44,6 @@
     </dependency>
 
     <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <scope>compile</scope>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-shaded</artifactId>
       <scope>compile</scope>
