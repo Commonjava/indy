@@ -15,6 +15,11 @@
  */
 package org.commonjava.indy.pkg.npm.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+import java.util.Map;
+
 public class Dist
 {
 
@@ -22,16 +27,36 @@ public class Dist
 
     private final String tarball;
 
+    private final String integrity;
+
+    private final Integer fileCount;
+
+    private final Long unpackedSize;
+
+    private final List<Map<String, String>> signatures;
+
+    @JsonProperty( "npm-signature" )
+    private final String npmSignature;
+
     protected Dist()
     {
         this.shasum = null;
         this.tarball = null;
+        this.integrity = null;
+        this.fileCount = null;
+        this.unpackedSize = null;
+        this.signatures = null;
+        this.npmSignature = null;
     }
-
-    public Dist( final String shasum, final String tarball )
+    public Dist( final String tarball )
     {
-        this.shasum = shasum;
         this.tarball = tarball;
+        this.shasum = null;
+        this.integrity = null;
+        this.fileCount = null;
+        this.unpackedSize = null;
+        this.signatures = null;
+        this.npmSignature = null;
     }
 
     public String getShasum()
@@ -43,4 +68,30 @@ public class Dist
     {
         return tarball;
     }
+
+    public String getIntegrity()
+    {
+        return integrity;
+    }
+
+    public Integer getFileCount()
+    {
+        return fileCount;
+    }
+
+    public Long getUnpackedSize()
+    {
+        return unpackedSize;
+    }
+
+    public List<Map<String, String>> getSignatures()
+    {
+        return signatures;
+    }
+
+    public String getNpmSignature()
+    {
+        return npmSignature;
+    }
+
 }

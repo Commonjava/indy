@@ -325,7 +325,7 @@ public class PackageMetadataGenerator
                 {
                     String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
                     //logger.debug( "Generate dist tarball: {}", tarball );
-                    versionMetadata.setDist( new Dist( null, tarball ) );
+                    versionMetadata.setDist( new Dist(  tarball ) );
                 }
             }
             catch ( IOException e )
