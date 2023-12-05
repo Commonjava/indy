@@ -72,6 +72,7 @@
     <bouncycastleVersion>1.67</bouncycastleVersion>
     <bytemanVersion>4.0.20</bytemanVersion>
     <kafkaVersion>3.1.1</kafkaVersion>
+    <slf4jVersion>2.0.7</slf4jVersion>
     <logbackVersion>1.4.13</logbackVersion>
     <logbackContribVersion>0.1.5</logbackContribVersion>
     <weldVersion>3.1.9.Final</weldVersion>
@@ -87,6 +88,7 @@
     <swaggerVersion>1.6.6</swaggerVersion>
     <agroalVersion>1.16</agroalVersion>
     <groovyVersion>3.0.13</groovyVersion>
+    <mavenVersion>3.8.1</mavenVersion>
 
     <!-- commonjava/redhat projects -->
     <indyModelVersion>1.5-SNAPSHOT</indyModelVersion>
@@ -94,7 +96,6 @@
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.16</galleyVersion>
     <weftVersion>1.22</weftVersion>
-    <bomVersion>29-SNAPSHOT</bomVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
@@ -106,6 +107,8 @@
     <auditQueryVersion>0.13.1</auditQueryVersion>
     <annotationVersion>1.3.2</annotationVersion>
     <activationVersion>1.2.0</activationVersion>
+    <junitVersion>4.13.2</junitVersion>
+    <hamcrestVersion>2.2</hamcrestVersion>
 
     <!-- <enforceBestPractices>false</enforceBestPractices> -->
     <enforceStandards>false</enforceStandards>
@@ -171,14 +174,6 @@
         <groupId>org.apache.httpcomponents</groupId>
         <artifactId>httpcore</artifactId>
         <version>${httpcoreVersion}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.commonjava.boms</groupId>
-        <artifactId>web-commons-bom</artifactId>
-        <version>${bomVersion}</version>
-        <type>pom</type>
-        <scope>import</scope>
       </dependency>
 
       <dependency>
@@ -1044,7 +1039,7 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven</artifactId>
-        <version>3.8.1</version>
+        <version>${mavenVersion}</version>
         <scope>import</scope>
         <type>pom</type>
       </dependency>
@@ -1194,6 +1189,11 @@
         <artifactId>commons-beanutils</artifactId>
         <version>1.9.4</version>
       </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.11.0</version>
+      </dependency>
 
       <dependency>
         <groupId>org.apache.maven.plugin-tools</groupId>
@@ -1204,13 +1204,13 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
-        <version>3.8.1</version>
+        <version>${mavenVersion}</version>
         <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-plugin-api</artifactId>
-        <version>3.0.4</version>
+        <version>${mavenVersion}</version>
       </dependency>
 
       <dependency>
@@ -1328,6 +1328,32 @@
         <artifactId>kafka-streams-test-utils</artifactId>
         <version>${kafkaVersion}</version>
         <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-ext</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${slf4jVersion}</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
@@ -1473,6 +1499,17 @@
         <groupId>com.google.code.gson</groupId>
         <artifactId>gson</artifactId>
         <version>${gsonVersion}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junitVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-core</artifactId>
+        <version>${hamcrestVersion}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

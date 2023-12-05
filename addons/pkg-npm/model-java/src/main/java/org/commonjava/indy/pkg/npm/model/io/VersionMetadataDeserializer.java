@@ -79,6 +79,7 @@ public class VersionMetadataDeserializer extends StdDeserializer<VersionMetadata
 
         vm.setDependencies( parseObject( mapper, vNode.get( "dependencies" ), Map.class ) );
         vm.setDevDependencies( parseObject( mapper, vNode.get( "devDependencies" ), Map.class ) );
+        vm.setDependencies( parseObject( mapper, vNode.get( "bin" ), Map.class ) );
 
         vm.setMaintainers( parseList( mapper, vNode.get( "maintainers" ), UserInfo.class));
         vm.setLicenses( parseList( mapper, vNode.get( "licenses" ), License.class ) );
