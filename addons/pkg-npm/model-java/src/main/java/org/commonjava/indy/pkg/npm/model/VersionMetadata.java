@@ -125,6 +125,12 @@ public class VersionMetadata
     @JsonProperty( "_defaultsLoaded" )
     private Boolean defaultsLoaded;
 
+    @JsonProperty( "private" )
+    private Boolean pri;
+
+    @JsonProperty( "_hasShrinkwrap" )
+    private Boolean hasShrinkwrap;
+
     public VersionMetadata()
     {
     }
@@ -503,6 +509,26 @@ public class VersionMetadata
     public void setDefaultsLoaded( Boolean defaultsLoaded )
     {
         this.defaultsLoaded = defaultsLoaded;
+    }
+
+    public Boolean getPri()
+    {
+        return pri;
+    }
+
+    public void setPri( Boolean pri )
+    {
+        this.pri = pri;
+    }
+
+    public Boolean getHasShrinkwrap()
+    {
+        return hasShrinkwrap;
+    }
+
+    public void setHasShrinkwrap( Boolean hasShrinkwrap )
+    {
+        this.hasShrinkwrap = hasShrinkwrap;
     }
 
     @Override
