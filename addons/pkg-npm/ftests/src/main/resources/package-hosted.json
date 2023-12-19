@@ -1,7 +1,7 @@
 {
-  "_id": "jquery",
+  "_id": "kie",
   "_rev": "503-dea6298026b47a40bc7e38ad234e119f",
-  "name": "jquery",
+  "name": "kie",
   "description": "hosted description",
   "versions": {
     "0.2.2": {

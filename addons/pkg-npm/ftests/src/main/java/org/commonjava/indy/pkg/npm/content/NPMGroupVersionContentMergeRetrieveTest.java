@@ -62,7 +62,7 @@ public class NPMGroupVersionContentMergeRetrieveTest
 
     private static final String PUBLIC_SHARED_IMPORTS_GROUP = "public+shared-imports";
 
-    private static final String PATH = "jquery";
+    private static final String PATH = "kie";
 
     @Test
     public void test()
@@ -126,7 +126,6 @@ public class NPMGroupVersionContentMergeRetrieveTest
         assertThat( publicVersion.getNodeVersion(), equalTo( "12.22.12" ) );
         assertThat( publicVersion.getNpmVersion(), equalTo( "6.14.16" ) );
         assertThat( publicVersion.getNpmUser().getName(), equalTo( "ginxo" ) );
-        assertThat( publicVersion.getNpmOperationalInternal().getHost(), equalTo( "s3://npm-registry-packages" ) );
         assertThat( publicVersion.getHasShrinkwrap(), equalTo( true ) );
         assertThat( publicVersion.getAuthor().getName(), equalTo( "Enrique Mingorance Cano" ) );
         assertThat( publicVersion.getRepository().getUrl(),
@@ -152,7 +151,6 @@ public class NPMGroupVersionContentMergeRetrieveTest
         assertNull( mergedVersion.getNodeVersion() );
         assertNull( mergedVersion.getNpmVersion() );
         assertNull( mergedVersion.getNpmUser() );
-        assertNull( mergedVersion.getNpmOperationalInternal() );
         assertNull( mergedVersion.getHasShrinkwrap() );
         assertThat( mergedVersion.getAuthor().getName(), equalTo( "Enrique Mingorance Cano <emingora@redhat.com>" ) );
         assertThat( mergedVersion.getRepository().getUrl(), equalTo( "git@github.com:kiegroup/lock-treatment-tool" ) );
@@ -186,7 +184,6 @@ public class NPMGroupVersionContentMergeRetrieveTest
         assertThat( mergedVersion2.getNodeVersion(), equalTo( "12.22.12" ) );
         assertThat( mergedVersion2.getNpmVersion(), equalTo( "6.14.16" ) );
         assertThat( mergedVersion2.getNpmUser().getName(), equalTo( "ginxo" ) );
-        assertThat( mergedVersion2.getNpmOperationalInternal().getHost(), equalTo( "s3://npm-registry-packages" ) );
         assertThat( mergedVersion2.getHasShrinkwrap(), equalTo( true ) );
         assertThat( mergedVersion2.getAuthor().getName(), equalTo( "Enrique Mingorance Cano" ) );
         assertThat( mergedVersion2.getRepository().getUrl(),

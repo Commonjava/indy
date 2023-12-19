@@ -28,8 +28,6 @@ import org.commonjava.indy.pkg.npm.model.Directories;
 import org.commonjava.indy.pkg.npm.model.Dist;
 import org.commonjava.indy.pkg.npm.model.Engines;
 import org.commonjava.indy.pkg.npm.model.License;
-import org.commonjava.indy.pkg.npm.model.NpmJsonOpts;
-import org.commonjava.indy.pkg.npm.model.NpmOperationalInternal;
 import org.commonjava.indy.pkg.npm.model.Repository;
 import org.commonjava.indy.pkg.npm.model.UserInfo;
 import org.commonjava.indy.pkg.npm.model.VersionMetadata;
@@ -74,8 +72,7 @@ public class VersionMetadataDeserializer extends StdDeserializer<VersionMetadata
         vm.setTitle( parseValue( vNode, "title" ) );
         vm.setDeprecated( parseValue( vNode, "deprecated" ) );
         vm.setLib( parseValue( vNode, "lib" ) );
-        vm.setShasum( parseValue( vNode, "_shasum" ) );
-        vm.setFrom( parseValue( vNode, "_from" ) );
+        vm.setUnderscoreId( parseValue( vNode, "_id" ) );
         vm.setNpmVersion( parseValue( vNode, "_npmVersion" ) );
         vm.setNodeVersion( parseValue( vNode, "_nodeVersion" ) );
 
@@ -90,13 +87,8 @@ public class VersionMetadataDeserializer extends StdDeserializer<VersionMetadata
         vm.setBin( parseObject( mapper, vNode.get( "bin" ), Map.class ) );
         vm.setJsdomVersions( parseObject( mapper, vNode.get( "jsdomVersions" ), Map.class ) );
         vm.setScripts( parseObject( mapper, vNode.get( "scripts" ), Map.class ) );
-        vm.setEngineSupported( parseObject( mapper, vNode.get( "_engineSupported" ), Boolean.class ) );
-        vm.setNpmUser( parseObject( mapper, vNode.get( "_npmUser" ), UserInfo.class ) );
-        vm.setNpmJsonOpts( parseObject( mapper, vNode.get( "_npmJsonOpts" ), NpmJsonOpts.class ) );
-        vm.setNpmOperationalInternal(
-                parseObject( mapper, vNode.get( "_npmOperationalInternal" ), NpmOperationalInternal.class ) );
-        vm.setDefaultsLoaded( parseObject( mapper, vNode.get( "_defaultsLoaded" ), Boolean.class ) );
         vm.setPri( parseObject( mapper, vNode.get( "private" ), Boolean.class ) );
+        vm.setNpmUser( parseObject( mapper, vNode.get( "_npmUser" ), UserInfo.class ) );
         vm.setHasShrinkwrap( parseObject( mapper, vNode.get( "_hasShrinkwrap" ), Boolean.class ) );
 
         vm.setKeywords( parseList( mapper, vNode.get( "keywords" ), String.class ) );

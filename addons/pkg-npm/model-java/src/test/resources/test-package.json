@@ -29,7 +29,6 @@
     "lib": "lib",
     "main": "./dist/node-jquery.js",
     "version": "1.5.1",
-    "_id": "jquery@1.5.1",
     "engines": {
       "node": "*"
     },
@@ -76,7 +75,6 @@
       "contributors": false,
       "serverjs": false
     },
-    "_id": "jquery@1.6.2",
     "devDependencies": {},
     "engines": {
       "node": "*"
