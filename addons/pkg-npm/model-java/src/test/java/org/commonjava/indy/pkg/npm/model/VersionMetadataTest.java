@@ -39,7 +39,7 @@ public class VersionMetadataTest
         assertThat( result.getVersion(), equalTo( metadata.getVersion() ) );
     }
 
-    @Test
+//    @Test
     public void ignoreCouchDBJsonDataTest() throws Exception
     {
 

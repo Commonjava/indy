@@ -1,0 +1,61 @@
+{
+  "_id": "kie",
+  "_rev": "503-dea6298026b47a40bc7e38ad234e119f",
+  "name": "kie",
+  "description": "hosted description",
+  "versions": {
+    "0.2.2": {
+      "name" : "@kie/lock-treatment-tool",
+      "description" : "Npm (package-lock-json, npm-shrinkwrap.json), Yarn lock and Pnpm lock files treatment tool",
+      "main" : "dist/index.js",
+      "version" : "0.2.2",
+      "homepage" : "https://github.com/kiegroup/lock-treatment-tool",
+      "keywords" : [ "yarn.lock", "package.json", "npm-shrinkwrap.json", "treatment", "hostname", "modify", "registry" ],
+      "author" : {
+        "name" : "Enrique Mingorance Cano <emingora@redhat.com>"
+      },
+      "repository" : {
+        "type" : "git",
+        "url" : "git@github.com:kiegroup/lock-treatment-tool"
+      },
+      "bugs" : {
+        "url" : "https://github.com/kiegroup/lock-treatment-tool/issues"
+      },
+      "license" : {
+        "type" : "Apache-2.0"
+      },
+      "dependencies" : {
+        "line-reader" : "^0.4.0",
+        "yargs" : "^17.5.0"
+      },
+      "devDependencies" : {
+        "@zeit/ncc" : "^0.22.3",
+        "eslint" : "^8.15.0",
+        "eslint-config-airbnb-base" : "^15.0.0",
+        "eslint-plugin-header" : "^3.0.0",
+        "eslint-plugin-import" : "^2.18.2",
+        "eslint-plugin-jest" : "^26.1.5",
+        "husky" : "^8.0.1",
+        "jest" : "^28.1.0",
+        "rimraf" : "^3.0.0",
+        "uuid" : "^8.3.2"
+      },
+      "scripts" : {
+        "prepare" : "husky install",
+        "test" : "jest && rimraf 'test/resources/**/execution-*'",
+        "lint" : "eslint '**/*.js'",
+        "lint:fix" : "eslint '**/*.js' --ignore-pattern node_modules/ --fix",
+        "prepublish" : "npm test",
+        "test:performance" : "node test/perf/timing.js && rimraf 'test/resources/**/execution-*'",
+        "ncc-build" : "ncc build --minify index.js"
+      },
+      "dist" : {
+        "tarball" : "http://indy-gateway-indy.apps.ocp-c1.prod.psi.redhat.com/api/folo/track/build-A4IYDNESAZQAA/npm/hosted/shared-imports/@kie/lock-treatment-tool/-/lock-treatment-tool-0.2.2.tgz"
+      },
+      "engines" : [ {
+        "node" : ">=12.13.0"
+      } ],
+      "files" : [ "dist/index.js" ]
+    }
+  }
+}

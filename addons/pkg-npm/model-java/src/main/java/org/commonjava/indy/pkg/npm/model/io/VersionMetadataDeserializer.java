@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.commonjava.indy.pkg.npm.model.Bugs;
+import org.commonjava.indy.pkg.npm.model.Commitplease;
 import org.commonjava.indy.pkg.npm.model.Directories;
 import org.commonjava.indy.pkg.npm.model.Dist;
 import org.commonjava.indy.pkg.npm.model.Engines;
@@ -56,35 +57,46 @@ public class VersionMetadataDeserializer extends StdDeserializer<VersionMetadata
         final JsonNode vNode = mapper.readTree( jsonParser );
 
         VersionMetadata vm = new VersionMetadata( parseValue( vNode, "name" ), parseValue( vNode, "version" ) );
-        vm.setDescription( parseValue( vNode, "description" ) );
 
         JsonNode repoNode = vNode.get( "repository" );
         if ( repoNode instanceof ArrayNode )
         {
             repoNode = repoNode.get( 0 );
         }
-        vm.setRepository( new Repository( parseValue( repoNode, "type"), parseValue( repoNode, "url") ) );
+        vm.setRepository( new Repository( parseValue( repoNode, "type" ), parseValue( repoNode, "url" ) ) );
+        vm.setDescription( parseValue( vNode, "description" ) );
+        vm.setMain( parseValue( vNode, "main" ) );
+        vm.setUrl( parseValue( vNode, "url" ) );
+        vm.setHomepage( parseValue( vNode, "homepage" ) );
+        vm.setGitHead( parseValue( vNode, "gitHead" ) );
+        vm.setTitle( parseValue( vNode, "title" ) );
+        vm.setDeprecated( parseValue( vNode, "deprecated" ) );
+        vm.setLib( parseValue( vNode, "lib" ) );
+        vm.setUnderscoreId( parseValue( vNode, "_id" ) );
+        vm.setNpmVersion( parseValue( vNode, "_npmVersion" ) );
+        vm.setNodeVersion( parseValue( vNode, "_nodeVersion" ) );
 
-        vm.setAuthor( parseObject( mapper, vNode.get( "author" ), UserInfo.class ));
+        vm.setAuthor( parseObject( mapper, vNode.get( "author" ), UserInfo.class ) );
         vm.setBugs( parseObject( mapper, vNode.get( "bugs" ), Bugs.class ) );
         vm.setDist( parseObject( mapper, vNode.get( "dist" ), Dist.class ) );
         vm.setDirectories( parseObject( mapper, vNode.get( "directories" ), Directories.class ) );
-        vm.setKeywords( parseList( mapper, vNode.get( "keywords" ), String.class ) );
+        vm.setCommitplease( parseObject( mapper, vNode.get( "commitplease" ), Commitplease.class ) );
         vm.setLicense( parseObject( mapper, vNode.get( "license" ), License.class ) );
-        vm.setMain( parseValue( vNode, "main" ) );
-        vm.setUrl( parseValue( vNode, "url" ) );
-
-        vm.setContributors( parseList( mapper, vNode.get( "contributors" ), UserInfo.class ));
-        vm.setEngines( parseList( mapper, vNode.get( "engines" ), Engines.class ));
-
         vm.setDependencies( parseObject( mapper, vNode.get( "dependencies" ), Map.class ) );
         vm.setDevDependencies( parseObject( mapper, vNode.get( "devDependencies" ), Map.class ) );
-        vm.setDependencies( parseObject( mapper, vNode.get( "bin" ), Map.class ) );
-
-        vm.setMaintainers( parseList( mapper, vNode.get( "maintainers" ), UserInfo.class));
-        vm.setLicenses( parseList( mapper, vNode.get( "licenses" ), License.class ) );
-
+        vm.setBin( parseObject( mapper, vNode.get( "bin" ), Map.class ) );
+        vm.setJsdomVersions( parseObject( mapper, vNode.get( "jsdomVersions" ), Map.class ) );
         vm.setScripts( parseObject( mapper, vNode.get( "scripts" ), Map.class ) );
+        vm.setPri( parseObject( mapper, vNode.get( "private" ), Boolean.class ) );
+        vm.setNpmUser( parseObject( mapper, vNode.get( "_npmUser" ), UserInfo.class ) );
+        vm.setHasShrinkwrap( parseObject( mapper, vNode.get( "_hasShrinkwrap" ), Boolean.class ) );
+
+        vm.setKeywords( parseList( mapper, vNode.get( "keywords" ), String.class ) );
+        vm.setContributors( parseList( mapper, vNode.get( "contributors" ), UserInfo.class ) );
+        vm.setEngines( parseList( mapper, vNode.get( "engines" ), Engines.class ) );
+        vm.setMaintainers( parseList( mapper, vNode.get( "maintainers" ), UserInfo.class ) );
+        vm.setLicenses( parseList( mapper, vNode.get( "licenses" ), License.class ) );
+        vm.setFiles( parseList( mapper, vNode.get( "files" ), String.class ) );
 
         return vm;
     }

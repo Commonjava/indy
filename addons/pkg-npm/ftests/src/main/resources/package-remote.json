@@ -1,0 +1,114 @@
+{
+  "_id": "kie",
+  "_rev": "503-dea6298026b47a40bc7e38ad234e119f",
+  "name": "kie",
+  "description": "remote description",
+  "versions": {
+    "0.2.2": {
+      "name": "@kie/lock-treatment-tool",
+      "version": "0.2.2",
+      "description": "Npm (package-lock-json, npm-shrinkwrap.json), Yarn lock and Pnpm lock files treatment tool",
+      "main": "dist/index.js",
+      "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/kiegroup/lock-treatment-tool.git"
+      },
+      "keywords": [
+        "yarn.lock",
+        "package.json",
+        "npm-shrinkwrap.json",
+        "treatment",
+        "hostname",
+        "modify",
+        "registry"
+      ],
+      "author": {
+        "name": "Enrique Mingorance Cano",
+        "email": "emingora@redhat.com"
+      },
+      "license": "Apache-2.0",
+      "private": false,
+      "bugs": {
+        "url": "https://github.com/kiegroup/lock-treatment-tool/issues"
+      },
+      "homepage": "https://github.com/kiegroup/lock-treatment-tool",
+      "scripts": {
+        "prepare": "husky install",
+        "test": "jest && rimraf 'test/resources/**/execution-*'",
+        "lint": "eslint '**/*.js'",
+        "lint:fix": "eslint '**/*.js' --ignore-pattern node_modules/ --fix",
+        "prepublish": "npm test",
+        "test:performance": "node test/perf/timing.js && rimraf 'test/resources/**/execution-*'",
+        "ncc-build": "ncc build --minify index.js"
+      },
+      "bin": {
+        "locktt": "dist/index.js"
+      },
+      "engines": {
+        "node": ">=12.13.0"
+      },
+      "dependencies": {
+        "line-reader": "^0.4.0",
+        "yargs": "^17.5.0"
+      },
+      "devDependencies": {
+        "@zeit/ncc": "^0.22.3",
+        "eslint": "^8.15.0",
+        "eslint-config-airbnb-base": "^15.0.0",
+        "eslint-plugin-header": "^3.0.0",
+        "eslint-plugin-import": "^2.18.2",
+        "eslint-plugin-jest": "^26.1.5",
+        "husky": "^8.0.1",
+        "jest": "^28.1.0",
+        "rimraf": "^3.0.0",
+        "uuid": "^8.3.2"
+      },
+      "gitHead": "1f3ca5f32242e5854d45dcbc35c7c7c1852f8601",
+      "_id": "@kie/lock-treatment-tool@0.2.2",
+      "_nodeVersion": "12.22.12",
+      "_npmVersion": "6.14.16",
+      "dist": {
+        "integrity": "sha512-1sRuiDBqW8jw1N1HlgPNrU/GhSoshiRQtDvu+RusIIS48vLt7gSidocCOrzw51vxes3Ph0Nf7DQ4dqx8fdNCbA==",
+        "shasum": "5fa2f797f12176f0ae6c3ac993f7fa75aa1bf92e",
+        "tarball": "http://indy-gateway.indy.svc.cluster.local/api/folo/track/build-A4IYDNESAZQAA/npm/remote/npmjs/@kie/lock-treatment-tool/-/lock-treatment-tool-0.2.2.tgz",
+        "fileCount": 6,
+        "unpackedSize": 300837,
+        "signatures": [
+          {
+            "keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA",
+            "sig": "MEUCIHXV7WLcC1x1IyGJK7Ey6x/FESN0NJD1l4p5udYLUwrOAiEAh49fvjv81L35Ew0Eqx34ntUzHVkXhP9NiMZJeBTbaQw="
+          }
+        ],
+        "npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJjPYd6ACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2VmqpDA/7Bkyz2YhWOplYrDd83kQSG3X9YeUOxxU6AkSLy3YJ8FNhc+Bg\r\nbiF8FQh68Zwqgcm9l7CdN5vPxLS/RKfooolN7gBvyBvMYAAkcl+kI7TVY8Qo\r\niP6hVeu3KmhAQ0mk84oGoteO5BbFRMbp2/QUJ5XcgyM43hgQ49xYbV8l76nw\r\nQWIgov+rkyQXxbf6KJbEIJ/n8kEs1DWVk1Y49Vcczye1hZ1AKiY8Kr1Otyoc\r\nA6pAACp1oOtPv41pJQt52wYP/SPalJ3WjAkatpsdo8OtCilz3AhFPOV0KShQ\r\nQzyJtPLdXw/hTqspQpTWmtw3rTKXMVWTKgan3vpJWIEKhf+8EAFRhagRL5qC\r\nkNcQn+Y38IvCxexRVO9azLYqKxFMF1WHK8uinrh0DZgMerAYftRDzHOV27Qd\r\nHCMIN5v1/7q/U0k6hxAFOWvzNwyQRO42XPEmZljJQcQ3CJPO9tXVLhs2tM+V\r\nUCLauBqNTmSTKYeMXy4LGlGxA/d4/Ed6hoiIY6RjndHq7oDRh7H2fJ4RUzE2\r\nO+pd9ZpHQw3hwDLd2GMe7kGQ/QFNLPjQbYX61rE6wvU/u3qk6uiwrAu3oWWU\r\nn//Y7zqdyoezSoQVyMoC8nqGmOzvilbgCA2hkN6AGmjqgpB7/Hdcp5UcJO9L\r\nWidmQ4hgyMUPtearb2tAExRXuiJNFVHp0gg=\r\n=qTSq\r\n-----END PGP SIGNATURE-----\r\n"
+      },
+      "_npmUser": {
+        "name": "ginxo",
+        "email": "ginxo@hotmail.com"
+      },
+      "directories": {},
+      "maintainers": [
+        {
+          "name": "ginxo",
+          "email": "ginxo@hotmail.com"
+        },
+        {
+          "name": "mwinkler",
+          "email": "mwinkler@redhat.com"
+        },
+        {
+          "name": "almope",
+          "email": "almorale@redhat.com"
+        },
+        {
+          "name": "mareknovotny",
+          "email": "hotmana76@gmail.com"
+        }
+      ],
+      "_npmOperationalInternal": {
+        "host": "s3://npm-registry-packages",
+        "tmp": "tmp/lock-treatment-tool_0.2.2_1664976762290_0.9915356315406025"
+      },
+      "_hasShrinkwrap": true
+    }
+  }
+}

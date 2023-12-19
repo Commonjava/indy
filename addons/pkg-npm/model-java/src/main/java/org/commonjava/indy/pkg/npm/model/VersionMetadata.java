@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 @ApiModel( description = "Specify all the corresponding versions metadata for the package." )
-@JsonIgnoreProperties( "_id" )
 public class VersionMetadata
                 implements Serializable, Comparable<VersionMetadata>
 {
@@ -124,6 +123,15 @@ public class VersionMetadata
 
     @JsonProperty( "_defaultsLoaded" )
     private Boolean defaultsLoaded;
+
+    @JsonProperty( "private" )
+    private Boolean pri;
+
+    @JsonProperty( "_hasShrinkwrap" )
+    private Boolean hasShrinkwrap;
+
+    @JsonProperty( "_id" )
+    private String underscoreId;
 
     public VersionMetadata()
     {
@@ -503,6 +511,36 @@ public class VersionMetadata
     public void setDefaultsLoaded( Boolean defaultsLoaded )
     {
         this.defaultsLoaded = defaultsLoaded;
+    }
+
+    public Boolean getPri()
+    {
+        return pri;
+    }
+
+    public void setPri( Boolean pri )
+    {
+        this.pri = pri;
+    }
+
+    public Boolean getHasShrinkwrap()
+    {
+        return hasShrinkwrap;
+    }
+
+    public void setHasShrinkwrap( Boolean hasShrinkwrap )
+    {
+        this.hasShrinkwrap = hasShrinkwrap;
+    }
+
+    public String getUnderscoreId()
+    {
+        return underscoreId;
+    }
+
+    public void setUnderscoreId( String underscoreId )
+    {
+        this.underscoreId = underscoreId;
     }
 
     @Override
