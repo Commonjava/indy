@@ -126,7 +126,7 @@ public class PathMappedGroupRepositoryFilter
         subSets.forEach( subSet -> {
             logger.debug( "Get file system containing, strategyPath: {}, subSet: {}", strategyPath, subSet );
             Set<String> st = pathMappedFileManager.getFileSystemContainingDirectory( subSet, strategyPath );
-            if ( st == null )
+            if ( st == null || st.isEmpty() )
             {
                 // query failed but those candidates may contain the target path so we add all subSet candidates
                 logger.warn( "Get fileSystems query failed, add subSet candidates" );
