@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import org.apache.commons.io.IOUtils;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -54,7 +53,6 @@ import org.junit.rules.TemporaryFolder;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -141,6 +139,47 @@ public class PackageMetadataGeneratorTest
         assertNotNull(metadataFile);
 
         verifyMetadata( metadataFile );
+
+        // Check the package metadata after generation.
+        Transfer after = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
+        assertNotNull(after);
+    }
+
+    @Test
+    public void testSingleBinFieldWhenGenerateFromTarball() throws Exception
+    {
+        ChangeSummary summary = new ChangeSummary( "test","Init NPM hosted repo." );
+        final HostedRepository hostedRepository = new HostedRepository( NPM_PKG_KEY, "npm-builds" );
+        initStore(hostedRepository, summary);
+
+        final KeyedLocation location = LocationUtils.toLocation( hostedRepository );
+
+        storeFile( location, "jquery/-/jquery-9.0.5.tgz", "tarball/version-bin-1.tgz");
+        storeFile( location, "jquery/-/jquery-9.0.6.tgz", "tarball/version-bin-2.tgz");
+        storeFile( location, "jquery/9.0.5", "metadata/version-bin-1.json" );
+        storeFile( location, "jquery/9.0.6", "metadata/version-bin-2.json" );
+
+        final String jqueryMetadataPath = "jquery/package.json";
+
+        // Check the package metadata before generation.
+        Transfer before = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
+        assertNull(before);
+
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, jqueryMetadataPath, new EventMetadata(  ) );
+        assertNotNull(metadataFile);
+
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        try ( InputStream input = metadataFile.openInputStream() )
+        {
+            PackageMetadata packageMetadata = mapper.readValue( input, PackageMetadata.class );
+
+            assertNotNull( packageMetadata );
+            assertEquals( 2, packageMetadata.getVersions().size() );
+            assertEquals( 1, packageMetadata.getVersions().get( "9.0.5" ).getBin().size() );
+            assertEquals( 1, packageMetadata.getVersions().get( "9.0.6" ).getBin().size() );
+            assertEquals("./lib/json.js", packageMetadata.getVersions().get("9.0.5").getBin().get( "json" ));
+            assertEquals("./lib/json.js", packageMetadata.getVersions().get("9.0.6").getBin().get( "json" ));
+        }
 
         // Check the package metadata after generation.
         Transfer after = fileManager.retrieve( hostedRepository, jqueryMetadataPath );

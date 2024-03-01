@@ -15,24 +15,27 @@
  */
 package org.commonjava.indy.pkg.npm.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.commonjava.indy.pkg.npm.model.converter.ObjectToBinConverter;
 import org.commonjava.indy.pkg.npm.model.converter.ObjectToLicenseConverter;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import static org.commonjava.indy.pkg.npm.model.converter.ObjectToBinConverter.SINGLE_BIN;
+
 @ApiModel( description = "Specify all the corresponding versions metadata for the package." )
 public class VersionMetadata
-                implements Serializable, Comparable<VersionMetadata>
+        implements Serializable, Comparable<VersionMetadata>
 {
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty( required = true, dataType = "String", value = "The name and version together form an identifier that is assumed to be completely unique." )
+    @ApiModelProperty( required = true, dataType = "String",
+                       value = "The name and version together form an identifier that is assumed to be completely unique." )
     private String name;
 
     private String title;
@@ -41,7 +44,8 @@ public class VersionMetadata
 
     private String main;
 
-    @ApiModelProperty( required = true, dataType = "String", value = "The name and version together form an identifier that is assumed to be completely unique." )
+    @ApiModelProperty( required = true, dataType = "String",
+                       value = "The name and version together form an identifier that is assumed to be completely unique." )
     private String version;
 
     private String url;
@@ -59,25 +63,28 @@ public class VersionMetadata
     @ApiModelProperty( required = false, dataType = "Repository", value = "Specify the place where your code lives." )
     private Repository repository;
 
-    @ApiModelProperty( required = false, dataType = "Bugs", value = "The issue tracker and / or the email address to which issues should be reported." )
+    @ApiModelProperty( required = false, dataType = "Bugs",
+                       value = "The issue tracker and / or the email address to which issues should be reported." )
     private Bugs bugs;
 
     @Deprecated
     @ApiModelProperty( value = "These styles are now deprecated. Instead, use SPDX expressions." )
     private List<License> licenses;
 
-    @JsonDeserialize(converter = ObjectToLicenseConverter.class)
+    @JsonDeserialize( converter = ObjectToLicenseConverter.class )
     private License license;
 
     private Map<String, String> dependencies;
 
     private Map<String, Object> devDependencies;
 
+    @JsonDeserialize( converter = ObjectToBinConverter.class )
     private Map<String, String> bin;
 
     private Map<String, String> jsdomVersions;
 
-    @ApiModelProperty( required = false, dataType = "Map", allowableValues = "prepare:<script>, build:<script>, start:<script>, test:<script>, precommit:<script>, commitmsg:<script>, etc." )
+    @ApiModelProperty( required = false, dataType = "Map",
+                       allowableValues = "prepare:<script>, build:<script>, start:<script>, test:<script>, precommit:<script>, commitmsg:<script>, etc." )
     private Map<String, Object> scripts;
 
     private Dist dist;
@@ -308,19 +315,30 @@ public class VersionMetadata
         return devDependencies;
     }
 
+    public void setDevDependencies( Map<String, Object> devDependencies )
+    {
+        this.devDependencies = devDependencies;
+    }
+
     public Map<String, String> getBin()
     {
+        if ( null == bin )
+        {
+            return null;
+        }
+        String value = bin.get( SINGLE_BIN );
+        if ( null != value )
+        {
+            bin.remove( SINGLE_BIN );
+            // ref https://docs.npmjs.com/cli/v7/configuring-npm/package-json#bin
+            bin.put( name, value );
+        }
         return bin;
     }
 
     public void setBin( Map<String, String> bin )
     {
         this.bin = bin;
-    }
-
-    public void setDevDependencies( Map<String, Object> devDependencies )
-    {
-        this.devDependencies = devDependencies;
     }
 
     public Map<String, String> getJsdomVersions()
