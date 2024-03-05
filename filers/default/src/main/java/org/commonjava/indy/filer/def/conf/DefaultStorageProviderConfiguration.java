@@ -38,6 +38,12 @@ public class DefaultStorageProviderConfiguration
 
     public static final String STORAGE_DIR = "indy.storage.dir";
 
+    public static final String STORAGE_S3 = "s3";
+
+    public static final String STORAGE_NFS = "nfs";
+
+    public static final String DEFAULT_STORAGE = STORAGE_NFS;
+
     public static final String NFS_STORAGE_DIR = "indy.storage.nfs.dir";
 
     private File storageBasedir;
@@ -45,6 +51,10 @@ public class DefaultStorageProviderConfiguration
     private File legacyStorageBasedir;
 
     private File nfsStoreBasedir;
+
+    private String storageType;
+
+    private String bucketName;
 
     private boolean storageTimeoutEnabled = true;
 
@@ -218,6 +228,31 @@ public class DefaultStorageProviderConfiguration
     public void setLegacyStorageBasedir( File legacyStorageBasedir )
     {
         this.legacyStorageBasedir = legacyStorageBasedir;
+    }
+
+    public String getStorageType()
+    {
+        if (storageType == null) {
+            return DEFAULT_STORAGE;
+        }
+        return storageType;
+    }
+
+    @ConfigName( "storage.type" )
+    public void setStorageType( String storageType )
+    {
+        this.storageType = storageType;
+    }
+
+    public String getBucketName()
+    {
+        return bucketName;
+    }
+
+    @ConfigName( "storage.bucket.name" )
+    public void setBucketName( String bucketName )
+    {
+        this.bucketName = bucketName;
     }
 
     public boolean isStorageTimeoutEnabled()
