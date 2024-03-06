@@ -56,12 +56,15 @@ import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
+import org.commonjava.storage.pathmapped.core.S3PhysicalStore;
 import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
 import org.commonjava.storage.pathmapped.metrics.MeasuredPathDB;
 import org.commonjava.storage.pathmapped.spi.PathDB;
 import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -236,7 +239,21 @@ public class DefaultGalleyStorageProvider
         }
 
         File legacyBaseDir = config.getLegacyStorageBasedir();
-        PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot, legacyBaseDir );
+        String storageType = config.getStorageType();
+        PhysicalStore physicalStore;
+        if (DefaultStorageProviderConfiguration.STORAGE_NFS.equals( storageType )) {
+            physicalStore = new LegacyReadonlyPhysicalStore( storeRoot, legacyBaseDir );
+        } else  {
+            try {
+                S3Client s3Client = S3Client.builder().build();
+                String bucketName = config.getBucketName();
+                physicalStore = new S3PhysicalStore( s3Client, bucketName );
+            } catch ( S3Exception e ) {
+                logger.error( "Ran into error during storage init e: ", e);
+                throw e;
+            }
+
+        }
 
         logger.info( "Create cacheProviderFactory, pathDB: {}, physicalStore: {}", pathDB, physicalStore );
         PathMappedCacheProviderConfig cacheProviderConfig =
