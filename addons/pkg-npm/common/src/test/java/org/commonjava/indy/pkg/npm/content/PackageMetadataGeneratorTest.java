@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
+import org.apache.commons.io.IOUtils;
 import org.commonjava.cdi.util.weft.PoolWeftExecutorService;
 import org.commonjava.cdi.util.weft.WeftExecutorService;
 import org.commonjava.indy.audit.ChangeSummary;
@@ -154,18 +155,18 @@ public class PackageMetadataGeneratorTest
 
         final KeyedLocation location = LocationUtils.toLocation( hostedRepository );
 
-        storeFile( location, "jquery/-/jquery-9.0.5.tgz", "tarball/version-bin-1.tgz");
-        storeFile( location, "jquery/-/jquery-9.0.6.tgz", "tarball/version-bin-2.tgz");
-        storeFile( location, "jquery/9.0.5", "metadata/version-bin-1.json" );
-        storeFile( location, "jquery/9.0.6", "metadata/version-bin-2.json" );
+        storeFile( location, "json/-/json-9.0.5.tgz", "tarball/version-bin-1.tgz");
+        storeFile( location, "json/-/json-9.0.6.tgz", "tarball/version-bin-2.tgz");
+        storeFile( location, "json/9.0.5", "metadata/version-bin-1.json" );
+        storeFile( location, "json/9.0.6", "metadata/version-bin-2.json" );
 
-        final String jqueryMetadataPath = "jquery/package.json";
+        final String jsonMetadataPath = "json/package.json";
 
         // Check the package metadata before generation.
-        Transfer before = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
+        Transfer before = fileManager.retrieve( hostedRepository, jsonMetadataPath );
         assertNull(before);
 
-        Transfer metadataFile = generator.generateFileContent( hostedRepository, jqueryMetadataPath, new EventMetadata(  ) );
+        Transfer metadataFile = generator.generateFileContent( hostedRepository, jsonMetadataPath, new EventMetadata(  ) );
         assertNotNull(metadataFile);
 
         final IndyObjectMapper mapper = new IndyObjectMapper( true );
@@ -175,14 +176,14 @@ public class PackageMetadataGeneratorTest
 
             assertNotNull( packageMetadata );
             assertEquals( 2, packageMetadata.getVersions().size() );
-            assertEquals( 1, packageMetadata.getVersions().get( "9.0.5" ).getBin().size() );
-            assertEquals( 1, packageMetadata.getVersions().get( "9.0.6" ).getBin().size() );
-            assertEquals("./lib/json.js", packageMetadata.getVersions().get("9.0.5").getBin().get( "json" ));
-            assertEquals("./lib/json.js", packageMetadata.getVersions().get("9.0.6").getBin().get( "json" ));
+            assertNotNull( packageMetadata.getVersions().get( "9.0.5" ).getBin() );
+            assertNotNull( packageMetadata.getVersions().get( "9.0.6" ).getBin() );
+            assertEquals("./lib/json.js", packageMetadata.getVersions().get("9.0.5").getBin().toString() );
+            assertEquals("{json=./lib/json.js}", packageMetadata.getVersions().get("9.0.6").getBin().toString() );
         }
 
         // Check the package metadata after generation.
-        Transfer after = fileManager.retrieve( hostedRepository, jqueryMetadataPath );
+        Transfer after = fileManager.retrieve( hostedRepository, jsonMetadataPath );
         assertNotNull(after);
     }
 

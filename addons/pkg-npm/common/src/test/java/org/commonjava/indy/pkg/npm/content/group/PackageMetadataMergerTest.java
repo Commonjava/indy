@@ -155,6 +155,9 @@ public class PackageMetadataMergerTest
         assertThat( keywords, notNullValue() );
         assertThat( keywords.size(), equalTo( 4 ) );
         assertThat( keywords.contains( "javascript" ), equalTo( true ) );
+
+        assertThat( merged.getVersions().get( "1.5.1" ).getBin().toString(), equalTo( "./lib/jquery.js" ) );
+        assertThat( merged.getVersions().get( "1.6.2" ).getBin().toString(), equalTo( "{jquery=./lib/jquery.js}" ) );
     }
 
     @Test
