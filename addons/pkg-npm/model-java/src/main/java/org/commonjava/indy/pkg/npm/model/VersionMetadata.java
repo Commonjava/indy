@@ -19,14 +19,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import org.commonjava.indy.pkg.npm.model.converter.ObjectToBinConverter;
 import org.commonjava.indy.pkg.npm.model.converter.ObjectToLicenseConverter;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import static org.commonjava.indy.pkg.npm.model.converter.ObjectToBinConverter.SINGLE_BIN;
 
 @ApiModel( description = "Specify all the corresponding versions metadata for the package." )
 public class VersionMetadata
