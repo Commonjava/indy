@@ -78,8 +78,7 @@ public class VersionMetadata
 
     private Map<String, Object> devDependencies;
 
-    @JsonDeserialize( converter = ObjectToBinConverter.class )
-    private Map<String, String> bin;
+    private Object bin;
 
     private Map<String, String> jsdomVersions;
 
@@ -320,23 +319,12 @@ public class VersionMetadata
         this.devDependencies = devDependencies;
     }
 
-    public Map<String, String> getBin()
+    public Object getBin()
     {
-        if ( null == bin )
-        {
-            return null;
-        }
-        String value = bin.get( SINGLE_BIN );
-        if ( null != value )
-        {
-            bin.remove( SINGLE_BIN );
-            // ref https://docs.npmjs.com/cli/v7/configuring-npm/package-json#bin
-            bin.put( name, value );
-        }
         return bin;
     }
 
-    public void setBin( Map<String, String> bin )
+    public void setBin( Object bin )
     {
         this.bin = bin;
     }

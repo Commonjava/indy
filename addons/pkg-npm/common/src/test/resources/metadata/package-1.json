@@ -29,6 +29,7 @@
       "lib": "lib",
       "main": "./dist/node-jquery.js",
       "version": "1.5.1",
+      "bin": "./lib/jquery.js",
       "_id": "jquery@1.5.1",
       "engines": {
         "node": "*"

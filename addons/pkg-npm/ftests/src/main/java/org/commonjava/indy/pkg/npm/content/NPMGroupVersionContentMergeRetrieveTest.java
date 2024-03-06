@@ -110,7 +110,7 @@ public class NPMGroupVersionContentMergeRetrieveTest
         // This public group version metadata in package metadata will follow npmjs remote
         VersionMetadata publicVersion = mergedPublic.getVersions().get( "0.2.2" );
         assertThat( publicVersion, notNullValue() );
-        assertThat( publicVersion.getBin().get( "locktt" ), equalTo( "dist/index.js" ) );
+        assertThat( publicVersion.getBin().toString(), equalTo( "{locktt=dist/index.js}" ) );
         assertThat( publicVersion.getMaintainers().size(), equalTo( 4 ) );
         assertThat(
                 publicVersion.getDist().getTarball().contains( "lock-treatment-tool/-/lock-treatment-tool-0.2.2.tgz" ),
@@ -168,7 +168,7 @@ public class NPMGroupVersionContentMergeRetrieveTest
                 mapper.readValue( IOUtils.toString( sharedGroupInput2 ), PackageMetadata.class );
         VersionMetadata mergedVersion2 = mergedShared2.getVersions().get( "0.2.2" );
         assertThat( mergedVersion2, notNullValue() );
-        assertThat( mergedVersion2.getBin().get( "locktt" ), equalTo( "dist/index.js" ) );
+        assertThat( mergedVersion2.getBin().toString(), equalTo( "{locktt=dist/index.js}" ) );
         assertThat( mergedVersion2.getMaintainers().size(), equalTo( 4 ) );
         assertThat(
                 mergedVersion2.getDist().getTarball().contains( "lock-treatment-tool/-/lock-treatment-tool-0.2.2.tgz" ),
