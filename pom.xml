@@ -1800,6 +1800,7 @@
               </configuration>
             </execution>
 
+            <!--
             <execution>
               <id>config ssl</id>
               <goals>
@@ -1823,6 +1824,7 @@
                 <arguments>config set registry ${env.NPMREGISTRY}</arguments>
               </configuration>
             </execution>
+            -->
 
             <execution>
               <id>npm install</id>
@@ -1846,6 +1848,7 @@
               </configuration>
             </execution>
 
+            <!--
             <execution>
               <id>delete ssl</id>
               <goals>
@@ -1869,6 +1872,7 @@
                 <arguments>config delete registry</arguments>
               </configuration>
             </execution>
+            -->
           </executions>
         </plugin>
 
