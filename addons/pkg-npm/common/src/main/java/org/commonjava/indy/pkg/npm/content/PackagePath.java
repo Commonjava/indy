@@ -24,7 +24,7 @@ public class PackagePath
 
     private String tarPath;
 
-    private Boolean isScoped;
+    private Boolean scoped;
 
     private String packageName;
 
@@ -43,7 +43,7 @@ public class PackagePath
         String[] pathParts = tarPath.split( "/" );
         if ( tarPath.startsWith( "@" ) )
         {
-            isScoped = Boolean.TRUE;
+            scoped = Boolean.TRUE;
             scopedName = pathParts[0];
             packageName = pathParts[1];
             if ( pathParts.length == 4 && "-".equals( pathParts[2] ) )
@@ -58,7 +58,7 @@ public class PackagePath
         }
         else
         {
-            isScoped = Boolean.FALSE;
+            scoped = Boolean.FALSE;
             packageName = pathParts[0];
             if ( pathParts.length == 3 && "-".equals( pathParts[1] ) )
             {
@@ -84,12 +84,12 @@ public class PackagePath
 
     public Boolean isScoped()
     {
-        return isScoped;
+        return scoped;
     }
 
     public void setScoped( Boolean scoped )
     {
-        isScoped = scoped;
+        this.scoped = scoped;
     }
 
     public String getPackageName()
@@ -150,7 +150,7 @@ public class PackagePath
     @Override
     public String toString()
     {
-        return "PackagePath{" + "tarPath='" + tarPath + '\'' + ", isScoped=" + isScoped + ", packageName='"
+        return "PackagePath{" + "tarPath='" + tarPath + '\'' + ", scoped=" + scoped + ", packageName='"
                         + packageName + '\'' + ", version='" + version + '\'' + ", scopedName='" + scopedName + '\''
                         + '}';
     }
