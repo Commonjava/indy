@@ -1,0 +1,35 @@
+name: Sync workflow
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      REPO_OWNER: "Commonjava"
+      REPO_NAME: "indy"
+      USER_EMAIL: "nos-bot@redhat.com"
+      USER: "sync-bot"
+    steps:
+      - name: Checkout Fork Repo
+        uses: actions/checkout@v2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Add Remote Upstream Repo
+        run: |
+          git config user.email $USER_EMAIL
+          git config user.name $USER
+          git remote add upstream $GITHUB_SERVER_URL/$REPO_OWNER/$REPO_NAME.git
+          git remote -v
+          git fetch upstream
+          git checkout master
+          git merge --allow-unrelated-histories upstream/master
+      - name: Push/Sync Changes to Fork Repo
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
