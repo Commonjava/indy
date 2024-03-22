@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.pkg.npm.jaxrs;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -475,6 +476,10 @@ public class NPMContentAccessHandler
         try
         {
             ObjectMapper mapper = new ObjectMapper();
+            // Enlarge the max length for a single string value inside of the json
+            mapper.getFactory()
+                  .setStreamReadConstraints(
+                          StreamReadConstraints.builder().maxStringLength( Integer.MAX_VALUE ).build() );
             JsonNode root = mapper.readTree( transfer.openInputStream( true ) );
 
             String versionPath = null;

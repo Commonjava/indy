@@ -15,9 +15,15 @@
  */
 package org.commonjava.indy.pkg.npm.model;
 
+import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.junit.Test;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -71,5 +77,21 @@ public class PackageMetadataTest
         assertThat( jsonResult.contains( "_rev" ), equalTo( false ) );
         assertThat( jsonResult.contains( "_id" ), equalTo( false ) );
         assertThat( jsonResult.contains( "_attachments" ), equalTo( false ) );
+    }
+
+    @Test
+    public void testLargeJson() throws IOException
+    {
+        ObjectMapper mapper = new ObjectMapper();
+        // read ~40MB json file
+        try (InputStream input = this.getClass().getClassLoader().getResourceAsStream( "large-stream.json"))
+        {
+            mapper.getFactory()
+                  .setStreamReadConstraints(
+                          StreamReadConstraints.builder().maxStringLength( Integer.MAX_VALUE ).build() );
+            JsonNode root = mapper.readTree( input );
+            JsonNode idnode = root.path( "_id" );
+            assertThat( idnode.asText(), equalTo( "@janus-idp/backstage-plugin-orchestrator" ));
+        }
     }
 }
