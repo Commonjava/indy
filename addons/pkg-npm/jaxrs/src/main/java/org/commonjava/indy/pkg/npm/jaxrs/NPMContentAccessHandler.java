@@ -16,6 +16,7 @@
 package org.commonjava.indy.pkg.npm.jaxrs;
 
 import com.fasterxml.jackson.core.StreamReadConstraints;
+import com.fasterxml.jackson.core.exc.StreamConstraintsException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.codec.binary.Base64;
@@ -120,6 +121,13 @@ public class NPMContentAccessHandler
 
             // generate .http-metadata.json for hosted repo to resolve npm header requirements
             generateHttpMetadataHeaders( metadataFile, generated, request, response );
+        }
+        catch ( final StreamConstraintsException e )
+        {
+            logger.error( String.format(
+                    "Failed to upload due to violation of Jackson stream constraint: %s to: %s. Reason: %s", path, name,
+                    e.getMessage() ), e );
+            response = responseHelper.formatResponse( e, builderModifier );
         }
         catch ( final IndyWorkflowException | IOException e )
         {
@@ -461,6 +469,7 @@ public class NPMContentAccessHandler
     }
 
     private List<Transfer> generateNPMContentsFromTransfer( final Transfer transfer, final EventMetadata eventMetadata )
+            throws StreamConstraintsException
     {
         if ( transfer == null || !transfer.exists() )
         {
@@ -526,9 +535,18 @@ public class NPMContentAccessHandler
             tarballTarget = transfers.getCacheReference( new ConcreteResource( resource.getLocation(), tarballPath ) );
 
         }
+        catch ( final StreamConstraintsException e )
+        {
+            // Refer to https://www.javadoc.io/static/com.fasterxml.jackson.core/jackson-core/2.15.2/com/fasterxml/jackson/core/exc/StreamConstraintsException.html
+            logger.error( String.format(
+                    "[NPM] Json node parse failed due to violation of Jackson stream constraint: %s. Reason: %s",
+                    resource, e.getMessage() ), e );
+            throw e;
+        }
         catch ( final IOException e )
         {
-            logger.error( String.format( "[NPM] Json node parse failed for resource: %s. Reason: %s", resource, e.getMessage() ), e );
+            logger.error( String.format( "[NPM] Json node parse failed for resource: %s. Reason: %s", resource,
+                                         e.getMessage() ), e );
         }
 
         if ( versionTarget == null || tarballTarget == null )
