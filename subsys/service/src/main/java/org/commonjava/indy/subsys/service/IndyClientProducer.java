@@ -83,7 +83,8 @@ public class IndyClientProducer
                         new KeycloakTokenAuthenticator( serviceConfig.getKeycloakAuthUrl(),
                                                         serviceConfig.getKeycloakAuthRealm(),
                                                         serviceConfig.getKeycloakClientId(),
-                                                        serviceConfig.getKeycloakClientSecret() );
+                                                        serviceConfig.getKeycloakClientSecret(),
+                                                        serviceConfig.getRefreshTokenTimeSkew() );
                 client = builder.setAuthenticator( authenticator ).build();
             }
             else
