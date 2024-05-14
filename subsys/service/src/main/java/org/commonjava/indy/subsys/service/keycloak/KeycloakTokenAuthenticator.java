@@ -46,6 +46,8 @@ public class KeycloakTokenAuthenticator
 
     private final String keycloakClientSecret;
 
+    private final long refreshTokenTimeSkew;
+
     private Configuration config;
 
     private String cachedToken;
@@ -53,12 +55,13 @@ public class KeycloakTokenAuthenticator
     private Long cachedTokenExpireAtInSecs;
 
     public KeycloakTokenAuthenticator( String keycloakAuthUrl, String keycloakAuthRealm, String keycloakClientId,
-                                       String keycloakClientSecret )
+                                       String keycloakClientSecret, long refreshTokenTimeSkew )
     {
         this.keycloakAuthUrl = keycloakAuthUrl;
         this.keycloakAuthRealm = keycloakAuthRealm;
         this.keycloakClientId = keycloakClientId;
         this.keycloakClientSecret = keycloakClientSecret;
+        this.refreshTokenTimeSkew = refreshTokenTimeSkew;
     }
 
     @Override
@@ -79,7 +82,7 @@ public class KeycloakTokenAuthenticator
             return false;
         }
         final long nowSecs = System.currentTimeMillis() / 1000;
-        return nowSecs > cachedTokenExpireAtInSecs;
+        return nowSecs + refreshTokenTimeSkew > cachedTokenExpireAtInSecs;
     }
 
     private Configuration getKeycloakClientCfg()

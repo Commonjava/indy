@@ -27,6 +27,8 @@ import java.io.InputStream;
 public class RepositoryServiceConfig
         implements IndyConfigInfo
 {
+    private static final long DEFAULT_REFRESH_TOKEN_TIME_SKEW = 30;
+
     private Boolean enabled = Boolean.FALSE;
 
     private String serviceUrl;
@@ -42,6 +44,10 @@ public class RepositoryServiceConfig
     private String keycloakClientId;
 
     private String keycloakClientSecret;
+
+    // The refresh token time skew, in seconds. If this property is set, the configured number of seconds is added
+    // to the current time when checking if the authorization token should be refreshed.
+    private long refreshTokenTimeSkew = DEFAULT_REFRESH_TOKEN_TIME_SKEW;
 
     public Boolean isEnabled()
     {
@@ -129,6 +135,17 @@ public class RepositoryServiceConfig
     public void setKeycloakClientSecret( String keycloakClientSecret )
     {
         this.keycloakClientSecret = keycloakClientSecret;
+    }
+
+    public long getRefreshTokenTimeSkew()
+    {
+        return refreshTokenTimeSkew;
+    }
+
+    @ConfigName( "keycloak.auth.refresh-token-time-skew" )
+    public void setRefreshTokenTimeSkew(long refreshTokenTimeSkew)
+    {
+        this.refreshTokenTimeSkew = refreshTokenTimeSkew;
     }
 
     @Override
