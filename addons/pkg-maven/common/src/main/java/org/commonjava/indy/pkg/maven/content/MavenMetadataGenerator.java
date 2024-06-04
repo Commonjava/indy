@@ -42,7 +42,6 @@ import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.core.content.AbstractMergedContentGenerator;
 import org.commonjava.indy.core.content.group.GroupMergeHelper;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -59,6 +58,7 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -172,7 +172,7 @@ public class MavenMetadataGenerator
     // don't need to inject since it's only used internally
     private final Locker<String> mergerLocks = new Locker<>();
 
-    private static final int THREAD_WAITING_TIME_SECONDS = 300;
+    private static final int THREAD_WAITING_TIME_SECONDS = 240;
 
     protected MavenMetadataGenerator()
     {
@@ -627,7 +627,9 @@ public class MavenMetadataGenerator
             return master;
         }
 
-        logger.info( "The group metadata generation is not successful for path: {} in group: {}", path, group );
+        logger.info(
+                "The group metadata generation is not successful for path: {} in group: {}, incrementalResult.merged: {}, incrementalResult.result: {}, incrementalResult.missing: {}. ",
+                path, group, incrementalResult.merged, incrementalResult.result, incrementalResult.missing );
         return null;
     }
 
@@ -677,6 +679,8 @@ public class MavenMetadataGenerator
                 logger.trace( "Ending metadata generation: {}:{}", store.getKey(), toMergePath );
             }
 
+            logger.warn( "Transfer {}:{} not existed during maven metadata generator generateMissing.", store.getKey(),
+                         toMergePath );
             return new MetadataResult( store, null );
         };
     }
@@ -867,6 +871,8 @@ public class MavenMetadataGenerator
                 }
                 else
                 {
+                    logger.warn( "Transfer {}:{} not existed during maven metadata generator downloadMissing.",
+                                 store.getKey(), toMergePath );
                     return new MetadataResult( store, null );
                 }
             }
