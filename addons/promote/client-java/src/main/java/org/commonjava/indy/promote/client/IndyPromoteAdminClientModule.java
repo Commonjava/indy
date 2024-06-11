@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.commonjava.indy.client.core.util.UrlUtils.buildUrl;
+import static org.commonjava.indy.promote.client.IndyPromoteClientModule.PROMOTE_BASEPATH;
 
 public class IndyPromoteAdminClientModule
         extends IndyClientModule
 {
-
-    public static final String PROMOTE_ADMIN_BASEPATH = "admin/promotion";
+    public static final String PROMOTE_ADMIN_BASEPATH = PROMOTE_BASEPATH + "/admin";
 
     public static final String VALIDATION_BASEPATH = PROMOTE_ADMIN_BASEPATH + "/validation";
 
@@ -56,6 +56,8 @@ public class IndyPromoteAdminClientModule
     public static final String VALIDATION_RULESET_GET_BY_STOREKEY_PATH = VALIDATION_RULESET_BASEPATH + "/storekey";
 
     public static final String VALIDATION_RULESET_GET_BY_NAME_PATH = VALIDATION_RULESET_BASEPATH + "/named";
+
+    public static final String TRACKING = PROMOTE_ADMIN_BASEPATH + "/tracking";
 
     public boolean reloadRules()
             throws IndyClientException
@@ -108,5 +110,11 @@ public class IndyPromoteAdminClientModule
             throws IndyClientException
     {
         return http.get( buildUrl( VALIDATION_RULESET_GET_BY_STOREKEY_PATH, key.toString() ), ValidationRuleSet.class );
+    }
+
+    public void deleteTrackingRecords( final String trackingId )
+            throws IndyClientException
+    {
+        http.delete( buildUrl( TRACKING, trackingId ) );
     }
 }

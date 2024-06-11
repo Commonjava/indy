@@ -56,7 +56,7 @@ import java.util.function.Supplier;
 import static org.commonjava.indy.util.ApplicationContent.application_json;
 
 @Api( value = "Promote administration resource to manage configurations for content promotion." )
-@Path( "/api/admin/promotion" )
+@Path( "/api/promotion/admin" )
 @Produces( { application_json } )
 @REST
 public class PromoteAdminResource
