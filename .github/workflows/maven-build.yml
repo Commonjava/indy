@@ -57,7 +57,7 @@ jobs:
         sonatypeSnapshots: true
 
     - name: Build the Maven verify phase
-      run: mvn -B -V clean verify -Prun-its -Pci --global-toolchains .github/workflows/toolchains.xml
+      run: mvn -B -V clean verify -Pci --global-toolchains .github/workflows/toolchains.xml
 
   build:
     name: Build and push

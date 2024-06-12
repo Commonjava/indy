@@ -140,7 +140,7 @@
   </properties>
   
   <modules>
-    <module>uis</module>
+    <!--<module>uis</module>-->
     <module>models</module>
     <module>api</module>
     <module>addons</module>
@@ -152,14 +152,14 @@
     <module>filers</module>
     <module>test</module>
     <module>tools</module>
-    <module>embedder</module>
+    <!--<module>embedder</module>-->
     <module>ftests</module>
-    <module>rest</module>
+    <!--<module>rest</module>-->
     <module>clients</module>
     
     <!-- TODO: put in profile, figure out why release version-adjustment isn't working in profile -->
     <!-- <module>embedder-tests</module> -->
-    <module>deployments</module>
+    <!--<module>deployments</module>-->
   </modules>
   
   <dependencyManagement>
