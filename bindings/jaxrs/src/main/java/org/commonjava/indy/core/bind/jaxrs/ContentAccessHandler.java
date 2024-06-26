@@ -380,13 +380,14 @@ public class ContentAccessHandler
 
                     responseHelper.setInfoHeaders( builder, item, sk, path, true, contentType,
                                     httpMetadata );
-    
-                    if(!path.endsWith("/")) {
-                        // Content hashing headers
-                        builder.header(ApplicationHeader.md5.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.MD5));
-                        builder.header(ApplicationHeader.sha1.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1));
-                    }
-                    
+
+                    // Remove this to avoid reading file for checksum digest during HEAD request
+//                    if(!path.endsWith("/")) {
+//                        // Content hashing headers
+//                        builder.header(ApplicationHeader.md5.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.MD5));
+//                        builder.header(ApplicationHeader.sha1.key(), contentDigester.digest(sk, path, new EventMetadata()).getDigests().get(ContentDigest.SHA_1));
+//                    }
+
                     if ( builderModifier != null )
                     {
                         builderModifier.accept( builder );
