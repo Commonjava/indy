@@ -33,11 +33,15 @@ public class IndyDurableStateConfig
 
     public static final String SECTION_NAME = "durable-state";
 
+    @Deprecated
     public static final String STORAGE_INFINISPAN = "infinispan";
 
+    @Deprecated
     public static final String STORAGE_CASSANDRA = "cassandra";
 
     public static final String STORAGE_SERVICE = "service";
+
+    public static final String STORAGE_STANDALONE = "standalone";
 
     private String foloStorage;
 

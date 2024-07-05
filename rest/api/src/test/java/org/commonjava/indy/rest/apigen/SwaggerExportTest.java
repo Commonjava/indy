@@ -96,7 +96,7 @@ public class SwaggerExportTest
             throws IOException
     {
         writeConfigFile( "main.conf", "standalone=true\n" + "[durable-state]\n" + "folo.storage=infinispan\n"
-                + "store.storage=infinispan\n" );
+                + "store.storage=standalone\n" );
     }
 
 }

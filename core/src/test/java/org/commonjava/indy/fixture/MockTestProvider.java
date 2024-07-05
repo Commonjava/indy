@@ -18,6 +18,9 @@ package org.commonjava.indy.fixture;
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
 import org.commonjava.cdi.util.weft.config.DefaultWeftConfig;
 import org.commonjava.cdi.util.weft.config.WeftConfig;
+import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.db.common.inject.Standalone;
+import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
@@ -26,8 +29,10 @@ import org.commonjava.o11yphant.metrics.TrafficClassifier;
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
 import org.commonjava.o11yphant.trace.TracerConfiguration;
 
+import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 
 @ApplicationScoped
@@ -99,5 +104,13 @@ public class MockTestProvider
     public TrafficClassifier getTrafficClassifier()
     {
         return null;
+    }
+
+    @Produces
+    @Standalone
+    @Default
+    public StoreDataManager getStoreDataManager()
+    {
+        return new MemoryStoreDataManager( true );
     }
 }
