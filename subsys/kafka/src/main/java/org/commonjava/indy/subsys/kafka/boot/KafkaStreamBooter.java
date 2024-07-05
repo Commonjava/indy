@@ -59,6 +59,10 @@ public class KafkaStreamBooter
 
     private static final long DEFAULT_KAFKA_STREAM_CLOSE_TIMEOUT = 5 * 60 * 3000L;
 
+    private static final long RECONNECT_BACKOFF_MS = 60 * 1000L;
+
+    private static final long RECONNECT_BACKOFF_MAX_MS = 30 * 60 * 1000L;
+
     private KafkaStreams streams;
 
     @Override
@@ -133,6 +137,8 @@ public class KafkaStreamBooter
         props.putIfAbsent( StreamsConfig.APPLICATION_ID_CONFIG, config.getGroup() );
         props.putIfAbsent( StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers() );
         props.putIfAbsent( StreamsConfig.BUFFERED_RECORDS_PER_PARTITION_CONFIG, config.getRecordsPerPartition() );
+        props.putIfAbsent( StreamsConfig.RECONNECT_BACKOFF_MS_CONFIG, RECONNECT_BACKOFF_MS );
+        props.putIfAbsent( StreamsConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, RECONNECT_BACKOFF_MAX_MS );
 
         logger.info( "Kafka props: {}", props );
         return props;
