@@ -4,6 +4,7 @@
                                 urn:infinispan:config:store:jdbc:9.4 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-9.4.xsd"
             xmlns="urn:infinispan:config:9.4"
             xmlns:jdbc="urn:infinispan:config:store:jdbc:9.4">
+<!-- This ispn configuration is deprecated due because current indy is not using jdbc based cache -->
 
   <cache-container default-cache="local" name="IndyCacheManager" shutdown-hook="DEFAULT" statistics="true">
     <local-cache-configuration name="local-template" statistics="true">
