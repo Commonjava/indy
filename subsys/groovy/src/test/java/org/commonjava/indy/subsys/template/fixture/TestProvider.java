@@ -21,8 +21,14 @@ import org.commonjava.cdi.util.weft.config.WeftConfig;
 import org.commonjava.indy.action.UserLifecycleManager;
 import org.commonjava.indy.action.fixture.AlternativeUserLifecycleManager;
 import org.commonjava.indy.content.IndyPathGenerator;
+import org.commonjava.indy.data.ArtifactStoreValidateData;
+import org.commonjava.indy.data.NoOpStoreEventDispatcher;
 import org.commonjava.indy.data.StoreDataManager;
+import org.commonjava.indy.data.StoreEventDispatcher;
+import org.commonjava.indy.data.StoreValidator;
+import org.commonjava.indy.db.common.inject.Standalone;
 import org.commonjava.indy.mem.data.MemoryStoreDataManager;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.maven.galley.cache.FileCacheProvider;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
@@ -41,6 +47,7 @@ import org.junit.rules.TemporaryFolder;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.io.IOException;
@@ -78,6 +85,10 @@ public class TestProvider
 
     private UserLifecycleManager userLifecycleManager;
 
+    private StoreEventDispatcher eventDispatcher;
+
+    private StoreValidator storeValidator;
+
     @PostConstruct
     public void setup()
     {
@@ -90,6 +101,8 @@ public class TestProvider
         weftConfig = new DefaultWeftConfig();
         globalHttpConfiguration = new GlobalHttpConfiguration();
         userLifecycleManager = new AlternativeUserLifecycleManager();
+        eventDispatcher = new NoOpStoreEventDispatcher();
+        storeValidator = artifactStore -> null;
 
         temp = new TemporaryFolder();
         try
@@ -123,9 +136,21 @@ public class TestProvider
     }
 
     @Produces
+    @Standalone
+    @Default
     public StoreDataManager getStoreDataManager()
     {
         return storeDataManager;
+    }
+
+    @Produces
+    public StoreValidator getStoreValidator(){
+        return storeValidator;
+    }
+
+    @Produces
+    public StoreEventDispatcher getEventDispatcher(){
+        return eventDispatcher;
     }
 
     @Produces

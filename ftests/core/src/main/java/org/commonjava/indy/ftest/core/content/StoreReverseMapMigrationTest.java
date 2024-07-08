@@ -15,15 +15,14 @@
  */
 package org.commonjava.indy.ftest.core.content;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.client.core.IndyClientException;
 import org.commonjava.indy.ftest.core.AbstractContentManagementTest;
+import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.HostedRepository;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.test.fixture.core.CoreServerFixture;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.Test;
@@ -78,26 +77,32 @@ public class StoreReverseMapMigrationTest
     Group gX = new Group( PKG_TYPE_MAVEN, groupX, hostedA.getKey(), hostedB.getKey() );
     Group gY = new Group( PKG_TYPE_MAVEN,groupY, gX.getKey() );
 
-    @Override
-    protected void initTestData( CoreServerFixture fixture )
-            throws IOException
-    {
-        ObjectMapper mapper = new IndyObjectMapper( true );
-
-        writeDataFile( "indy/maven/hosted/" + repoA + ".json", mapper.writeValueAsString( hostedA ) );
-        writeDataFile( "indy/maven/hosted/" + repoB + ".json", mapper.writeValueAsString( hostedB ) );
-        writeDataFile( "indy/maven/hosted/" + repoC + ".json", mapper.writeValueAsString( hostedC ) );
-
-        writeDataFile( "indy/maven/group/" + groupX + ".json", mapper.writeValueAsString( gX ) );
-        writeDataFile( "indy/maven/group/" + groupY + ".json", mapper.writeValueAsString( gY ) );
-
-        super.initTestData( fixture );
-    }
+//    @Override
+//    protected void initTestData( CoreServerFixture fixture )
+//            throws IOException
+//    {
+//        ObjectMapper mapper = new IndyObjectMapper( true );
+//
+//        writeDataFile( "indy/maven/hosted/" + repoA + ".json", mapper.writeValueAsString( hostedA ) );
+//        writeDataFile( "indy/maven/hosted/" + repoB + ".json", mapper.writeValueAsString( hostedB ) );
+//        writeDataFile( "indy/maven/hosted/" + repoC + ".json", mapper.writeValueAsString( hostedC ) );
+//
+//        writeDataFile( "indy/maven/group/" + groupX + ".json", mapper.writeValueAsString( gX ) );
+//        writeDataFile( "indy/maven/group/" + groupY + ".json", mapper.writeValueAsString( gY ) );
+//
+//        super.initTestData( fixture );
+//    }
 
     @Test
     public void run()
             throws Exception
     {
+        createStore( hostedA );
+        createStore( hostedB );
+        createStore( hostedC );
+
+        createStore( gX );
+        createStore( gY );
         /* @formatter:off */
         final String repoAContent = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
             "<metadata>\n" +
@@ -227,7 +232,7 @@ public class StoreReverseMapMigrationTest
     private HostedRepository createHostedStorePath( final HostedRepository hosted, final String path, final String content )
             throws Exception
     {
-        if(StringUtils.isNotBlank( content ))
+        if ( StringUtils.isNotBlank( content ) )
         {
             client.content().store( hosted.getKey(), path, new ByteArrayInputStream( content.getBytes() ) );
         }
@@ -253,6 +258,19 @@ public class StoreReverseMapMigrationTest
         {
             logger.error( e.getMessage(), e );
             fail( "Downloaded XML not equal to expected XML" );
+        }
+    }
+
+    private void createStore( ArtifactStore hosted )
+            throws IOException
+    {
+        try
+        {
+            client.stores().create( hosted, "", ArtifactStore.class );
+        }
+        catch ( IndyClientException e )
+        {
+            throw new IOException( e );
         }
     }
 

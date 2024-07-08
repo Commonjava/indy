@@ -13,11 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.commonjava.indy.infinispan.data;
+package org.commonjava.indy.db.service;
 
 import org.commonjava.indy.core.conf.IndyDurableStateConfig;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.indy.db.common.inject.Clustered;
 import org.commonjava.indy.db.common.inject.Serviced;
 import org.commonjava.indy.db.common.inject.Standalone;
 
@@ -26,10 +25,6 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 
-/**
- * @deprecated The store management functions has been extracted into Repository Service, which is maintained in "ServiceStoreDataManager"
- */
-@Deprecated
 @ApplicationScoped
 public class StoreDataManagerProvider
 {
@@ -39,22 +34,21 @@ public class StoreDataManagerProvider
 
     @Produces
     @Default
-    public StoreDataManager getStoreDataManager(
-            @Standalone StoreDataManager ispnStoreDataManager,
-            @Serviced StoreDataManager serviceStoreDataManager )
+    public StoreDataManager getStoreDataManager( @Standalone StoreDataManager standaloneStoreDataManager,
+                                                 @Serviced StoreDataManager serviceStoreDataManager )
     {
-        if ( IndyDurableStateConfig.STORAGE_INFINISPAN.equals( durableStateConfig.getStoreStorage() ) )
+        if ( IndyDurableStateConfig.STORAGE_STANDALONE.equals( durableStateConfig.getStoreStorage() ) )
         {
-            return ispnStoreDataManager;
+            return standaloneStoreDataManager;
         }
-        else if ( IndyDurableStateConfig.STORAGE_SERVICE.equals( durableStateConfig.getStoreStorage()) )
+        if ( IndyDurableStateConfig.STORAGE_SERVICE.equals( durableStateConfig.getStoreStorage() ) )
         {
             return serviceStoreDataManager;
         }
         else
         {
             throw new RuntimeException(
-                            "Invalid configuration for store manager:" + durableStateConfig.getStoreStorage() );
+                    "Invalid configuration for store manager:" + durableStateConfig.getStoreStorage() );
         }
     }
 }

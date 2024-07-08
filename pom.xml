@@ -269,11 +269,6 @@
       </dependency>
       <dependency>
         <groupId>org.commonjava.indy</groupId>
-        <artifactId>indy-db-infinispan</artifactId>
-        <version>3.3.7-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>org.commonjava.indy</groupId>
         <artifactId>indy-bindings-jaxrs</artifactId>
         <version>3.3.7-SNAPSHOT</version>
       </dependency>

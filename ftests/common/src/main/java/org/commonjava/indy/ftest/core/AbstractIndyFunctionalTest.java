@@ -306,7 +306,7 @@ public abstract class AbstractIndyFunctionalTest
                 + "schedule.partition.range=3600000\nschedule.rate.period=3" );
 
         writeConfigFile( "conf.d/durable-state.conf",
-                         "[durable-state]\n" + "folo.storage=infinispan\n" + "store.storage=infinispan\n"
+                         "[durable-state]\n" + "folo.storage=infinispan\n" + "store.storage=standalone\n"
                                  + "schedule.storage=infinispan" );
 
         writeConfigFile( "conf.d/kafka.conf",
