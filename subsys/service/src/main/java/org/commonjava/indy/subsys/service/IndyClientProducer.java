@@ -21,6 +21,7 @@ import org.commonjava.indy.client.core.IndyClientModule;
 import org.commonjava.indy.client.core.auth.IndyClientAuthenticator;
 import org.commonjava.indy.client.core.module.IndyStoreQueryClientModule;
 import org.commonjava.indy.client.core.module.IndyStoresClientModule;
+import org.commonjava.indy.client.core.o11y.trace.ClientTracerConfiguration;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
 import org.commonjava.indy.subsys.service.config.RepositoryServiceConfig;
@@ -69,14 +70,25 @@ public class IndyClientProducer
         Collection<IndyClientModule> modules =
                 Arrays.asList( new IndyStoresClientModule(), new IndyStoreQueryClientModule() );
 
+
         try
         {
+
             final Indy.Builder builder = Indy.builder()
                                              .setLocation( config )
                                              .setObjectMapper( new IndyObjectMapper( Collections.emptySet() ) )
-                                             .setExistedTraceConfig( indyTraceConfig )
                                              .setMdcCopyMappings( Collections.emptyMap() )
                                              .setModules( modules.toArray( new IndyClientModule[0] ) );
+            if ( indyTraceConfig != null && indyTraceConfig.isEnabled() )
+            {
+                ClientTracerConfiguration clientTracerConfig = new ClientTracerConfiguration();
+                clientTracerConfig.setEnabled( true );
+                clientTracerConfig.setConsoleTransport( indyTraceConfig.isConsoleTransport() );
+                clientTracerConfig.setGrpcHeaders( indyTraceConfig.getGrpcHeaders() );
+                clientTracerConfig.setGrpcUri( indyTraceConfig.getGrpcEndpointUri() );
+                clientTracerConfig.setGrpcResources( indyTraceConfig.getResources() );
+                builder.setTraceConfiguration( clientTracerConfig );
+            }
             if ( serviceConfig.isAuthEnabled() )
             {
                 IndyClientAuthenticator authenticator =
@@ -85,13 +97,14 @@ public class IndyClientProducer
                                                         serviceConfig.getKeycloakClientId(),
                                                         serviceConfig.getKeycloakClientSecret(),
                                                         serviceConfig.getRefreshTokenTimeSkew() );
-                client = builder.setAuthenticator( authenticator ).build();
+                builder.setAuthenticator( authenticator );
             }
             else
             {
-                client = builder.setPasswordManager( new MemoryPasswordManager() ).build();
+                builder.setPasswordManager( new MemoryPasswordManager() );
             }
 
+            client = builder.build();
         }
         catch ( IndyClientException e )
         {
