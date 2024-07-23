@@ -40,6 +40,10 @@ public class KafkaConfig
 
     private static final Integer DEFAULT_RECORDS_PER_PARTITION = 1000;
 
+    private static final Long DEFAULT_RECONNECT_BACKOFF_MS = 60 * 1000L;
+
+    private static final Long DEFAULT_RECONNECT_BACKOFF_MAX_MS = 30 * 60 * 1000L;
+
     private static final boolean DEFAULT_ENABLED = true;
 
     private static final boolean DEFAULT_TRACE = false;
@@ -57,6 +61,10 @@ public class KafkaConfig
     private String fileEventTopic;
 
     private Boolean tracing;
+
+    private Long reconnectBackoff;
+
+    private Long reconnectBackoffMax;
 
     public KafkaConfig()
     {
@@ -144,6 +152,28 @@ public class KafkaConfig
     public void setTracing( boolean tracing )
     {
         this.tracing = tracing;
+    }
+
+    public Long getReconnectBackoff()
+    {
+        return reconnectBackoff == null ? DEFAULT_RECONNECT_BACKOFF_MS : reconnectBackoff;
+    }
+
+    @ConfigName( "kafka.reconnect.backoff" )
+    public void setReconnectBackoff( Long reconnectBackoff )
+    {
+        this.reconnectBackoff = reconnectBackoff;
+    }
+
+    public Long getReconnectBackoffMax()
+    {
+        return reconnectBackoffMax == null ? DEFAULT_RECONNECT_BACKOFF_MAX_MS : reconnectBackoffMax;
+    }
+
+    @ConfigName( "kafka.reconnect.backoff.max" )
+    public void setReconnectBackoffMax( Long reconnectBackoffMax )
+    {
+        this.reconnectBackoffMax = reconnectBackoffMax;
     }
 
     @Override

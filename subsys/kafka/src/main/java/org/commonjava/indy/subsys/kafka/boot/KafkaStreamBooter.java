@@ -133,6 +133,8 @@ public class KafkaStreamBooter
         props.putIfAbsent( StreamsConfig.APPLICATION_ID_CONFIG, config.getGroup() );
         props.putIfAbsent( StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, config.getBootstrapServers() );
         props.putIfAbsent( StreamsConfig.BUFFERED_RECORDS_PER_PARTITION_CONFIG, config.getRecordsPerPartition() );
+        props.putIfAbsent( StreamsConfig.RECONNECT_BACKOFF_MS_CONFIG, config.getReconnectBackoff() );
+        props.putIfAbsent( StreamsConfig.RECONNECT_BACKOFF_MAX_MS_CONFIG, config.getReconnectBackoffMax() );
 
         logger.info( "Kafka props: {}", props );
         return props;
