@@ -92,7 +92,7 @@
 
     <!-- commonjava/redhat projects -->
     <indyModelVersion>1.5</indyModelVersion>
-    <indyClientVersion>3.3.3-SNAPSHOT</indyClientVersion>
+    <indyClientVersion>3.3.3</indyClientVersion>
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.16</galleyVersion>
     <weftVersion>1.22</weftVersion>
