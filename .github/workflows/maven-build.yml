@@ -36,7 +36,6 @@ jobs:
   verify:
     name: verify with maven
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'push' }}
     env:
       MAVEN_OPTS: "-Xmx4096m -Xms2048m -XX:MaxMetaspaceSize=4096m -Xss8m"
       SKIP_NPM_CONFIG: false
