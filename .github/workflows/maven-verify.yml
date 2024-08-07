@@ -1,0 +1,49 @@
+#
+# Copyright (C) 2011-2023 Red Hat, Inc. (https://github.com/Commonjava/indy)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# This workflow will build a Java project with Maven
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: maven verify
+
+on: [pull_request]
+
+jobs:
+  verify:
+    name: verify with maven
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'push' }}
+    env:
+      MAVEN_OPTS: "-Xmx4096m -Xms2048m -XX:MaxMetaspaceSize=4096m -Xss8m"
+      SKIP_NPM_CONFIG: false
+      NPMREGISTRY: https://registry.npmjs.org
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 11 for x64
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        architecture: x64
+        java-version: |
+          11
+
+    - uses: s4u/maven-settings-action@v2.8.0
+      with:
+        sonatypeSnapshots: true
+
+    - name: Build the Maven verify phase
+      run: mvn -B -V clean verify -Prun-its -Pci --global-toolchains .github/workflows/toolchains.xml
