@@ -17,48 +17,11 @@
 # This workflow will build a Java project with Maven
 # For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
 
-name: build on maven
+name: maven push
 
-on:
-  watch:
-    types: [started]
-  pull_request:
-    types: [opened, reopened, edited, synchronize, ready_for_review]
-  push:
-    branches:
-      - main
-      - master
-      - '**'
-
-  workflow_dispatch:
+on: [push]
 
 jobs:
-  verify:
-    name: verify with maven
-    runs-on: ubuntu-latest
-    env:
-      MAVEN_OPTS: "-Xmx4096m -Xms2048m -XX:MaxMetaspaceSize=4096m -Xss8m"
-      SKIP_NPM_CONFIG: false
-      NPMREGISTRY: https://registry.npmjs.org
-    steps:
-    - uses: actions/checkout@v4
-
-    - name: Set up JDK 8 & 11 for x64
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        architecture: x64
-        java-version: |
-          8
-          11
-
-    - uses: s4u/maven-settings-action@v2.8.0
-      with:
-        sonatypeSnapshots: true
-
-    - name: Build the Maven verify phase
-      run: mvn -B -V clean verify -Prun-its -Pci --global-toolchains .github/workflows/toolchains.xml
-
   build:
     name: Build and push
     runs-on: ubuntu-latest
@@ -71,13 +34,12 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - name: Set up JDK 8 & 11 for x64
+    - name: Set up JDK 11 for x64
       uses: actions/setup-java@v3
       with:
         distribution: 'temurin'
         architecture: x64
         java-version: |
-          8
           11
 
     - uses: s4u/maven-settings-action@v2.8.0
