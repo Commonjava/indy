@@ -95,7 +95,7 @@
     <indyClientVersion>3.4.0-SNAPSHOT</indyClientVersion>
     <atlasVersion>1.1.1</atlasVersion>
     <galleyVersion>1.16</galleyVersion>
-    <weftVersion>1.22</weftVersion>
+    <weftVersion>1.24</weftVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
