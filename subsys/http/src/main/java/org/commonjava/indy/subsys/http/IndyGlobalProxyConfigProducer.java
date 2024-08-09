@@ -1,15 +1,12 @@
 package org.commonjava.indy.subsys.http;
 
-import org.commonjava.indy.subsys.http.conf.IndyHttpConfig;
 import org.commonjava.indy.subsys.http.util.IndySiteConfigLookup;
-import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
-import org.commonjava.maven.galley.transport.htcli.conf.ProxyConfig;
+import org.commonjava.maven.galley.transport.htcli.conf.GlobalProxyConfig;
 import org.commonjava.util.jhttpc.model.SiteConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.util.ArrayList;
@@ -19,35 +16,31 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.subsys.http.conf.IndyHttpConfig.DEFAULT_SITE;
 
 @ApplicationScoped
-public class IndyGlobalHttpConfigurationProducer
+public class IndyGlobalProxyConfigProducer
 {
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     @Inject
-    private IndyHttpConfig config;
-
-    @Inject
     private IndySiteConfigLookup siteConfigLookup;
 
-    private GlobalHttpConfiguration globalHttpConfiguration;
+    private GlobalProxyConfig globalProxyConfig;
 
     private SiteConfig defaultSiteConfig;
 
     @Produces
-    @Default
-    public GlobalHttpConfiguration getGlobalHttpConfiguration()
+    public GlobalProxyConfig getGlobalProxyConfig()
     {
         defaultSiteConfig = siteConfigLookup.lookup( DEFAULT_SITE );
         if ( defaultSiteConfig != null && defaultSiteConfig.getProxyHost() != null )
         {
-            setUpGlobalHttpConfiguration();
+            setupGlobalProxyConfig();
         }
-        return globalHttpConfiguration;
+        return globalProxyConfig;
     }
 
-    private void setUpGlobalHttpConfiguration()
+    private void setupGlobalProxyConfig()
     {
-        logger.info( "Setup global http configuration" );
+        logger.debug( "Setup global proxy config, host: {}", defaultSiteConfig.getProxyHost() );
         final String allowTypes = defaultSiteConfig.getProxyAllowHttpJobTypes();
         final List<String> list = new ArrayList<>();
         if ( isNotBlank( allowTypes ) )
@@ -62,7 +55,7 @@ public class IndyGlobalHttpConfigurationProducer
                 }
             }
         }
-        ProxyConfig proxyConfig = new ProxyConfig()
+        globalProxyConfig = new GlobalProxyConfig()
         {
             @Override
             public String getHost()
@@ -88,6 +81,5 @@ public class IndyGlobalHttpConfigurationProducer
                 return list;
             }
         };
-        globalHttpConfiguration = new GlobalHttpConfiguration( proxyConfig );
     }
 }

@@ -38,6 +38,7 @@ import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
+import org.commonjava.maven.galley.transport.htcli.conf.GlobalProxyConfig;
 import org.junit.rules.TemporaryFolder;
 
 import javax.annotation.PostConstruct;
@@ -48,6 +49,8 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.Assert.fail;
 
@@ -187,7 +190,6 @@ public class TestProvider
     }
 
     @Produces
-    @Alternative
     public GlobalHttpConfiguration getGlobalHttpConfiguration()
     {
         return globalHttpConfiguration;
