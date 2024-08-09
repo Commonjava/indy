@@ -315,6 +315,7 @@ public abstract class AbstractIndyFunctionalTest
 
         writeConfigFile( "conf.d/folo.conf", "[folo]\nfolo.cassandra=true" + "\nfolo.cassandra.keyspace=folo"
                 + "\ntrack.group.content=True" );
+        writeConfigFile( "conf.d/http.conf", "[http]\nproxy.host=proxy.com" + "\nproxy.port=3128" );
 
         if ( isSchedulerEnabled() )
         {
