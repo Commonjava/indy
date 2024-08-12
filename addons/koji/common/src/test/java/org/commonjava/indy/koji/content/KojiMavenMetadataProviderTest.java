@@ -333,7 +333,7 @@ public class KojiMavenMetadataProviderTest
         GalleyCore galley = new GalleyCoreBuilder(
                 new FileCacheProviderFactory( temp.newFolder( "cache" ) ) ).withEnabledTransports(
                 new HttpClientTransport( new HttpImpl( new org.commonjava.maven.galley.auth.MemoryPasswordManager() ),
-                                         new IndyObjectMapper( true ), new GlobalHttpConfiguration(), null, null ) ).build();
+                                         new IndyObjectMapper( true ), new GlobalHttpConfiguration().getGlobalProxyConfig(), null, null ) ).build();
 
         WeftExecutorService rescanService =
                         new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
