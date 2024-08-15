@@ -80,6 +80,14 @@ public class IndyGlobalProxyConfigProducer
             {
                 return list;
             }
+
+            @Override
+            public String toString()
+            {
+                return String.format( "GlobalProxyConfig [host=%s, port=%s, allowHttpJobTypes=%s]", getHost(),
+                                      getPort(), allowTypes );
+            }
         };
+        logger.debug( "Global proxy config produced: {}", globalProxyConfig );
     }
 }
