@@ -20,7 +20,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.commonjava.indy.bind.jaxrs.IndyDeployment;
 import org.commonjava.indy.bind.jaxrs.util.REST;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.slf4j.Logger;
@@ -42,17 +41,16 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriInfo;
 
 import static org.commonjava.indy.IndyContentConstants.CHECK_CACHE_ONLY;
+import static org.commonjava.indy.content.DownloadManager.ROOT_PATH;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_CONTENT_REST_BASE_PATH;
 import static org.commonjava.indy.model.core.GenericPackageTypeDescriptor.GENERIC_PKG_KEY;
-import static org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor.MAVEN_PKG_KEY;
 
-@Api( value = "Maven Content Access and Storage",
-      description = "Handles retrieval and management of Maven artifact content. This is the main point of access for Maven/Gradle users." )
+@Api( value = "generic-http Content Access and Storage" )
 @Path( "/api/content/generic-http/{type: (hosted|group|remote)}/{name}" )
 @ApplicationScoped
 @REST
 public class GenericContentAccessResource
-        implements PackageContentAccessResource
+                implements PackageContentAccessResource
 {
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
@@ -71,13 +69,13 @@ public class GenericContentAccessResource
 
     @Override
     @ApiOperation( "Store content under the given artifact store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ), @ApiResponse( code = 400,
-                                                                                                            message = "No appropriate storage location was found in the specified store (this store, or a member if a group is specified)." ) } )
+    @ApiResponses( { @ApiResponse( code = 201, message = "Content was stored successfully" ),
+        @ApiResponse( code = 400, message = "No appropriate storage location found in the specified store." ) } )
     @PUT
     @Path( "/{path: (.+)?}" )
     public Response doCreate(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "path" ) String path, final @Context UriInfo uriInfo,
             final @Context HttpServletRequest request )
     {
@@ -89,10 +87,21 @@ public class GenericContentAccessResource
                                                                    .build( GENERIC_PKG_KEY, type, name ) );
     }
 
+    @ApiOperation( "Store '/' in the given artifact store by handling the '/' as special filepath" )
+    @PUT
+    @Path( "/" )
+    public Response doCreate(
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, final @Context UriInfo uriInfo,
+            final @Context HttpServletRequest request )
+    {
+        return doCreate( type, name, ROOT_PATH, uriInfo, request );
+    }
+
     @Override
     @ApiOperation( "Delete content under the given store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
-                           @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
+                    @ApiResponse( code = 204, message = "Content was deleted successfully" ) } )
     @DELETE
     @Path( "/{path: (.*)}" )
     public Response doDelete(
@@ -105,55 +114,60 @@ public class GenericContentAccessResource
     }
 
     @Override
-    @ApiOperation( "Store content under the given store (type/name) and path." )
-    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ), @ApiResponse( code = 200,
-                                                                                                     message = "Header metadata for content (or rendered listing when path ends with '/index.html' or '/'" ), } )
+    @ApiOperation( "Check content under the given store and path." )
+    @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
+                    @ApiResponse( code = 200, message = "Get header metadata for content" ), } )
     @HEAD
     @Path( "/{path: (.*)}" )
     public Response doHead(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            final @PathParam( "path" ) String path, @QueryParam( CHECK_CACHE_ONLY ) final Boolean cacheOnly,
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @PathParam( "path" ) String path, final @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly,
             @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
     {
         final String baseUri = uriInfo.getBaseUriBuilder().path( GENERIC_CONTENT_REST_BASE_PATH ).build().toString();
-        return handler.doHead( GENERIC_PKG_KEY, type, name, path, cacheOnly, baseUri, request,
-                               new EventMetadata() );
+        return handler.doHead( GENERIC_PKG_KEY, type, name, path, cacheOnly, baseUri, request, new EventMetadata(),
+                               null, false );
+    }
+
+    @ApiOperation( "Check '/' in the given artifact store by handling the '/' as special filepath" )
+    @HEAD
+    @Path( "/" )
+    public Response doHead(
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @QueryParam( CHECK_CACHE_ONLY ) Boolean cacheOnly, @Context final UriInfo uriInfo,
+            @Context final HttpServletRequest request )
+    {
+        return doHead( type, name, ROOT_PATH, cacheOnly, uriInfo, request );
     }
 
     @Override
     @ApiOperation( "Retrieve Maven artifact content under the given artifact store (type/name) and path." )
     @ApiResponses( { @ApiResponse( code = 404, message = "Content is not available" ),
-                           @ApiResponse( code = 200, response = String.class,
-                                         message = "Rendered content listing (when path ends with '/index.html' or '/')" ),
-                           @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
+                    @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
     @GET
     @Path( "/{path: (.*)}" )
     public Response doGet(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name,
             final @PathParam( "path" ) String path, @Context final UriInfo uriInfo,
             @Context final HttpServletRequest request )
     {
         final String baseUri = uriInfo.getBaseUriBuilder().path( GENERIC_CONTENT_REST_BASE_PATH ).build().toString();
-
-        return handler.doGet( GENERIC_PKG_KEY, type, name, path, baseUri, request, new EventMetadata() );
+        return handler.doGet( GENERIC_PKG_KEY, type, name, path, baseUri, request, new EventMetadata(), null, false );
     }
 
     @Override
-    @ApiOperation( "Retrieve root listing under the given artifact store (type/name)." )
-    @ApiResponses( { @ApiResponse( code = 200, response = String.class, message = "Rendered root content listing" ),
-                           @ApiResponse( code = 200, response = StreamingOutput.class, message = "Content stream" ), } )
+    @ApiOperation( "Retrieve '/' in the given artifact store by handling the '/' as special filepath" )
     @GET
     @Path( "/" )
     public Response doGet(
-            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" )
-                    String type, final @ApiParam( required = true ) @PathParam( "name" ) String name,
-            @Context final UriInfo uriInfo, @Context final HttpServletRequest request )
+            final @ApiParam( allowableValues = "hosted,group,remote", required = true ) @PathParam( "type" ) String type,
+            final @ApiParam( required = true ) @PathParam( "name" ) String name, @Context final UriInfo uriInfo,
+            @Context final HttpServletRequest request )
     {
-        final String baseUri = uriInfo.getBaseUriBuilder().path( GENERIC_CONTENT_REST_BASE_PATH ).build().toString();
-
-        return handler.doGet( GENERIC_PKG_KEY, type, name, "", baseUri, request, new EventMetadata() );
+        return doGet( type, name, ROOT_PATH, uriInfo, request );
     }
 
 }

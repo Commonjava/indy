@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.content;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.commonjava.indy.model.core.PathStyle;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -32,11 +31,11 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
-import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.commonjava.indy.content.DownloadManager.ROOT_PATH;
 import static org.commonjava.indy.model.core.PathStyle.base64url;
 import static org.commonjava.indy.model.core.PathStyle.hashed;
 
@@ -97,13 +96,19 @@ public class IndyPathGenerator
         PathStyle pathStyle = kl.getAttribute(LocationUtils.PATH_STYLE, PathStyle.class);
         if ( hashed == pathStyle || base64url == pathStyle)
         {
-            path = defaultPathGenerator.getStyledPath( path, pathStyle );
+            final String rawPath = path;
+            path = defaultPathGenerator.getStyledPath( rawPath, pathStyle );
+            // Add special handling for generic-http stores' root by removing the trailing '/' from the hashed path
+            if ( ROOT_PATH.equals( rawPath ) && path.endsWith( ROOT_PATH ) )
+            {
+                path = path.substring( 0, path.length() - 1 );
+            }
+            logger.trace( "Get styled path: {}, rawPath: {}", path, rawPath );
         }
         else
         {
             AtomicReference<String> pathref = new AtomicReference<>( path );
             pathCalculators.forEach( c -> pathref.set( c.calculateStoragePath( key, pathref.get() ) ) );
-
             path = pathref.get();
         }
 
