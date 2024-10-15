@@ -45,6 +45,8 @@ public class CassandraConfig
 
     private int writeRetries = 3;
 
+    private long constantDelayMs = 60000;
+
     public CassandraConfig()
     {
     }
@@ -150,6 +152,17 @@ public class CassandraConfig
     public void setWriteRetries( int writeRetries )
     {
         this.writeRetries = writeRetries;
+    }
+
+    public long getConstantDelayMs()
+    {
+        return constantDelayMs;
+    }
+
+    @ConfigName( "cassandra.reconnect.delay" )
+    public void setConstantDelayMs( long constantDelayMs )
+    {
+        this.constantDelayMs = constantDelayMs;
     }
 
     @Override
