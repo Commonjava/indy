@@ -18,8 +18,10 @@ package org.commonjava.indy.pathmapped.cache;
 import com.datastax.driver.core.BoundStatement;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.ResultSetFuture;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.google.common.collect.Lists;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.StartupAction;
@@ -302,7 +304,7 @@ public class PathMappedMavenGACache
         BoundStatement bound = preparedStoresIncrement.bind();
         bound.setSet( 0, set );
         bound.setString( 1, ga );
-        session.execute( bound );
+        executeSession( bound );
         inMemoryCache.remove( ga ); // clear to force reloading
     }
 
@@ -313,11 +315,11 @@ public class PathMappedMavenGACache
         bound.setString( 1, ga );
         if ( isAsync )
         {
-            session.executeAsync( bound );
+            executeSession ( bound, true, ResultSetFuture.class );
         }
         else
         {
-            session.execute( bound );
+            executeSession( bound );
         }
         inMemoryCache.remove( ga ); // clear to force reloading
     }
@@ -393,7 +395,7 @@ public class PathMappedMavenGACache
         }
         // query db
         BoundStatement bound = preparedQueryByGA.bind( gaPath );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         Row row = result.one();
         if ( row != null )
         {
@@ -425,5 +427,42 @@ public class PathMappedMavenGACache
             }
         }
         return false;
+    }
+
+    private ResultSet executeSession ( BoundStatement bind )
+    {
+        return executeSession ( bind, false, ResultSet.class );
+    }
+
+    private <T> T executeSession ( BoundStatement bind, boolean isAsync, Class<T> type )
+    {
+        boolean exception = false;
+        T trackingRecord = null;
+        try
+        {
+            if ( session == null || session.isClosed() )
+            {
+                cassandraClient.close();
+                cassandraClient.init();
+                this.init();
+            }
+            trackingRecord = type.cast( isAsync ? session.executeAsync( bind ) : session.execute( bind ) );
+        }
+        catch ( NoHostAvailableException e )
+        {
+            exception = true;
+            logger.error( "Cannot connect to host, reconnect once more with new session.", e );
+        }
+        finally
+        {
+            if ( exception )
+            {
+                cassandraClient.close();
+                cassandraClient.init();
+                this.init();
+                trackingRecord = type.cast( isAsync ? session.executeAsync( bind ) : session.execute( bind ) );
+            }
+        }
+        return trackingRecord;
     }
 }

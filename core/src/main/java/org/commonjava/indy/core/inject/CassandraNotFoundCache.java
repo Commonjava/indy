@@ -20,6 +20,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
@@ -177,7 +178,7 @@ public class CassandraNotFoundCache
 
         BoundStatement bound = preparedInsert.bind( key.toString(), resource.getPath(), curDate, timeoutDate,
                                                     timeoutInSeconds );
-        session.execute( bound );
+        executeSession( bound );
         inMemoryCache.put( resource, DUMB_CACHE_VALUE, timeoutInSeconds, TimeUnit.SECONDS );
     }
 
@@ -191,7 +192,7 @@ public class CassandraNotFoundCache
         }
         StoreKey key = getResourceKey( resource );
         BoundStatement bound = preparedExistQuery.bind( key.toString(), resource.getPath() );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         Row row = result.one();
         if ( row == null )
         {
@@ -217,7 +218,7 @@ public class CassandraNotFoundCache
     {
         StoreKey key = ( (KeyedLocation) location ).getKey();
         BoundStatement bound = preparedDeleteByStore.bind( key.toString() );
-        session.execute( bound );
+        executeSession( bound );
         clearInMemoryCache( location );
     }
 
@@ -246,7 +247,7 @@ public class CassandraNotFoundCache
     {
         StoreKey key = getResourceKey( resource );
         BoundStatement bound = preparedDelete.bind( key.toString(), resource.getPath() );
-        session.execute( bound );
+        executeSession( bound );
         inMemoryCache.remove( resource );
     }
 
@@ -272,7 +273,7 @@ public class CassandraNotFoundCache
         logger.debug( "[NFC] getMissing for {}", location );
         StoreKey key = ( (KeyedLocation) location ).getKey();
         BoundStatement bound = preparedQueryByStore.bind( key.toString() );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         int count = 0;
         Set<String> matches = new HashSet<>();
         for ( Row row : result )
@@ -315,7 +316,7 @@ public class CassandraNotFoundCache
     public long getSize( StoreKey storeKey )
     {
         BoundStatement bound = preparedCountByStore.bind( storeKey.toString() );
-        ResultSet result = session.execute( bound );
+        ResultSet result = executeSession( bound );
         return result.one().get( 0, Long.class );
     }
 
@@ -330,5 +331,37 @@ public class CassandraNotFoundCache
     {
         KeyedLocation location = (KeyedLocation) resource.getLocation();
         return location.getKey();
+    }
+
+    private ResultSet executeSession ( BoundStatement bind )
+    {
+        boolean exception = false;
+        ResultSet trackingRecord = null;
+        try
+        {
+            if ( session == null || session.isClosed() )
+            {
+                cassandraClient.close();
+                cassandraClient.init();
+                this.start();
+            }
+            trackingRecord = session.execute( bind );
+        }
+        catch ( NoHostAvailableException e )
+        {
+            exception = true;
+            logger.error( "Cannot connect to host, reconnect once more with new session.", e );
+        }
+        finally
+        {
+            if ( exception )
+            {
+                cassandraClient.close();
+                cassandraClient.init();
+                this.start();
+                trackingRecord = session.execute( bind );
+            }
+        }
+        return trackingRecord;
     }
 }
