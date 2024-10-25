@@ -61,7 +61,7 @@ public class CassandraClient
     }
 
     @PostConstruct
-    private void init()
+    public void init()
     {
         if ( !config.isEnabled() )
         {
@@ -116,18 +116,15 @@ public class CassandraClient
         } );
     }
 
-    private volatile boolean closed;
-
     public void close()
     {
-        if ( !closed && cluster != null && sessions != null )
+        if ( cluster != null && sessions != null )
         {
             logger.info( "Close cassandra client" );
             sessions.entrySet().forEach( e -> e.getValue().close() );
             sessions.clear();
             cluster.close();
             cluster = null;
-            closed = true;
         }
     }
 

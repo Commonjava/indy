@@ -20,6 +20,7 @@ import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import com.datastax.driver.mapping.Mapper;
 import com.datastax.driver.mapping.MappingManager;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -224,7 +225,7 @@ public class ScheduleDB
     public DtxSchedule querySchedule( String storeKey, String jobName )
     {
         BoundStatement bound = preparedSingleScheduleQuery.bind( storeKey, jobName );
-        ResultSet resultSet = session.execute( bound );
+        ResultSet resultSet = executeSession( bound );
 
         Row row = resultSet.one();
 
@@ -240,7 +241,7 @@ public class ScheduleDB
         Collection<DtxExpiration> expirations = new ArrayList<>(  );
 
         BoundStatement bound = preparedExpiredQuery.bind( pid );
-        ResultSet resultSet = session.execute( bound );
+        ResultSet resultSet = executeSession( bound );
         resultSet.forEach( row -> {
             expirations.add( toDtxExpiration( row ) );
         } );
@@ -260,7 +261,7 @@ public class ScheduleDB
                                                                            .equals( expiration.getScheduleUID() ) )
                 {
                     BoundStatement boundU = preparedExpiredUpdate.bind( schedule.getStoreKey(), schedule.getJobName() );
-                    session.execute( boundU );
+                    executeSession( boundU );
 
                     logger.debug( "Expired entry: {}", schedule );
                     eventDispatcher.fire( new ScheduleTriggerEvent( schedule.getJobType(), schedule.getPayload() ) );
@@ -273,7 +274,7 @@ public class ScheduleDB
     {
         Collection<DtxSchedule> schedules = new ArrayList<>(  );
         BoundStatement bound = preparedScheduleByTypeQuery.bind( jobType );
-        ResultSet resultSet = session.execute( bound );
+        ResultSet resultSet = executeSession( bound );
         resultSet.forEach( row -> {
             schedules.add(toDtxSchedule(row));
         } );
@@ -284,7 +285,7 @@ public class ScheduleDB
     {
         Collection<DtxSchedule> schedules = new ArrayList<>(  );
         BoundStatement bound = preparedScheduleByStoreKeyQuery.bind( storeKey );
-        ResultSet resultSet = session.execute( bound );
+        ResultSet resultSet = executeSession( bound );
         resultSet.forEach( row -> {
             schedules.add(toDtxSchedule(row));
         } );
@@ -295,7 +296,7 @@ public class ScheduleDB
     {
         Collection<DtxSchedule> schedules = new ArrayList<>(  );
         BoundStatement bound = preparedScheduleByStoreKeyAndTypeQuery.bind( storeKey, jobType );
-        ResultSet resultSet = session.execute( bound );
+        ResultSet resultSet = executeSession( bound );
         resultSet.forEach( row -> {
             DtxSchedule schedule = toDtxSchedule( row );
             if ( !expired && !schedule.getExpired() )
@@ -342,4 +343,35 @@ public class ScheduleDB
         return null;
     }
 
+    private ResultSet executeSession ( BoundStatement bind )
+    {
+        boolean exception = false;
+        ResultSet trackingRecord = null;
+        try
+        {
+            if ( session == null || session.isClosed() )
+            {
+                client.close();
+                client.init();
+                this.init();
+            }
+            trackingRecord = session.execute( bind );
+        }
+        catch ( NoHostAvailableException e )
+        {
+            exception = true;
+            logger.error( "Cannot connect to host, reconnect once more with new session.", e );
+        }
+        finally
+        {
+            if ( exception )
+            {
+                client.close();
+                client.init();
+                this.init();
+                trackingRecord = session.execute( bind );
+            }
+        }
+        return trackingRecord;
+    }
 }
