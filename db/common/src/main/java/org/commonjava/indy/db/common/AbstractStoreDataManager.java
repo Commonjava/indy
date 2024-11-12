@@ -46,6 +46,7 @@ import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -493,7 +494,12 @@ public abstract class AbstractStoreDataManager
             return false;
         }
 
-        logger.debug( "Put {} to stores map", k );
+        logger.info( "Put {} to stores, {}", k, summary );
+        if ( summary != null )
+        {
+            store.setMetadata( ArtifactStore.METADATA_CHANGELOG,
+                               String.format( "%s, %s", summary.getSummary(), new Date() ));
+        }
         final ArtifactStore old = putArtifactStoreInternal( store.getKey(), store );
 
         try
