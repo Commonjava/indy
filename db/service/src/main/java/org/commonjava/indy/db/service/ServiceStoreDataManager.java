@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @SuppressWarnings( "unchecked" )
@@ -413,6 +414,17 @@ public class ServiceStoreDataManager
     protected Indy getIndyClient()
     {
         return this.client;
+    }
+
+    @Override
+    protected void postStore( final ArtifactStore store, final ArtifactStore original, final ChangeSummary summary,
+                              final boolean exists, final boolean fireEvents, final EventMetadata eventMetadata )
+                    throws IndyDataException
+    {
+        super.postStore( store, original, summary, exists, fireEvents, eventMetadata );
+        logger.info( "Remove from store cache, {}", store.getKey() );
+        BasicCacheHandle<StoreKey, ArtifactStore> cache = cacheProducer.getBasicCache( ARTIFACT_STORE );
+        cache.remove( store.getKey() );
     }
 
     private ArtifactStore computeIfAbsent( StoreKey key, Supplier<ArtifactStore> storeProvider, int expirationMins,
