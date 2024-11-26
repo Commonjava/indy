@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 
+import static org.commonjava.indy.core.content.ContentMetadataGenerator.FORCE_CHECKSUM_AND_WRITE;
 import static org.commonjava.maven.galley.io.ChecksummingTransferDecorator.FORCE_CHECKSUM;
 
 /**
@@ -127,11 +128,18 @@ public class DefaultContentDigester
             return new TransferMetadata( Collections.emptyMap(), 0L );
         }
 
-        TransferMetadata meta = getContentMetadata( transfer );
-        if ( meta != null )
+        if ( Boolean.parseBoolean( String.valueOf( eventMetadata.get( FORCE_CHECKSUM_AND_WRITE ) ) ) )
         {
-            logger.debug( "Get transferMetadata: {}", meta );
-            return meta;
+            removeMetadata( transfer );
+        }
+        else
+        {
+            TransferMetadata meta = getContentMetadata( transfer );
+            if ( meta != null )
+            {
+                logger.debug( "Get transferMetadata: {}", meta );
+                return meta;
+            }
         }
 
         String cacheKey = generateCacheKey( transfer );
