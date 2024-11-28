@@ -92,6 +92,7 @@ import static org.apache.commons.io.IOUtils.closeQuietly;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.LOCAL_SNAPSHOT_VERSION_PART;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.generateUpdateTimestamp;
 import static org.commonjava.atlas.maven.ident.util.SnapshotUtils.getCurrentTimestamp;
+import static org.commonjava.indy.core.content.PathMaskChecker.checkMask;
 import static org.commonjava.indy.core.content.PathMaskChecker.checkMavenMetadataMask;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_EXISTS;
 import static org.commonjava.indy.core.content.group.GroupMergeHelper.GROUP_METADATA_GENERATED;
@@ -856,8 +857,13 @@ public class MavenMetadataGenerator
             try
             {
                 logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );
+                if ( !checkMask( store, toMergePath ) )
+                {
+                    logger.debug( "Transfer {}:{} skipped due to checkMask during maven metadata generator downloadMissing.",
+                                  store.getKey(), toMergePath );
+                    return null;
+                }
                 Transfer memberMetaTxfr = fileManager.retrieveRaw( store, toMergePath, new EventMetadata() );
-
                 if ( exists( memberMetaTxfr ) )
                 {
                     final MetadataXpp3Reader reader = new MetadataXpp3Reader();
