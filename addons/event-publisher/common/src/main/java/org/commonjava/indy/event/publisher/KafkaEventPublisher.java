@@ -50,6 +50,7 @@ import javax.inject.Inject;
 import java.util.Date;
 import java.util.Map;
 
+import static org.commonjava.indy.core.content.ContentMetadataGenerator.FORCE_CHECKSUM_AND_WRITE;
 import static org.commonjava.maven.galley.util.LocationUtils.ATTR_PATH_ENCODE;
 import static org.commonjava.maven.galley.util.LocationUtils.PATH_ENCODE_BASE64;
 
@@ -156,6 +157,7 @@ public class KafkaEventPublisher
 
             fileEvent.setTimestamp( new Date() );
 
+            galleyMetadata.set( FORCE_CHECKSUM_AND_WRITE, Boolean.FALSE );
             TransferMetadata artifactData = contentDigester.digest( affectedStore, path, galleyMetadata );
             fileEvent.setMd5( artifactData.getDigests().get( ContentDigest.MD5 ) );
             fileEvent.setSha1( artifactData.getDigests().get( ContentDigest.SHA_1 ) );
