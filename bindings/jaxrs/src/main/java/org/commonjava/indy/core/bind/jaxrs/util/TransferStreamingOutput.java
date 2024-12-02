@@ -65,7 +65,6 @@ public class TransferStreamingOutput
         {
             CountingOutputStream cout = new CountingOutputStream( out );
             IOUtils.copy( stream, cout );
-            cout.flush(); // ensure any remaining data is written to the output stream
 
             Logger logger = LoggerFactory.getLogger( getClass() );
             logger.trace( "Wrote: {} bytes", cout.getByteCount() );
