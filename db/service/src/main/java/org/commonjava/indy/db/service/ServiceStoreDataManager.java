@@ -55,7 +55,9 @@ import java.util.stream.Stream;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
+import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
 @SuppressWarnings( "unchecked" )
@@ -142,8 +144,12 @@ public class ServiceStoreDataManager
             try
             {
                 Class<ArtifactStore> storeCls = (Class<ArtifactStore>) key.getType().getStoreClass();
-                client.module( IndyStoresClientModule.class )
-                      .create( store, String.format( "Create store %s", key ), storeCls );
+                String changelog = store.getMetadata( METADATA_CHANGELOG );
+                if ( isBlank(changelog) )
+                {
+                    changelog = String.format( "Create store %s", key );
+                }
+                client.module( IndyStoresClientModule.class ).create( store, changelog, storeCls );
                 return store;
             }
             catch ( IndyClientException e )
