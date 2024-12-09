@@ -321,9 +321,10 @@ public class PackageMetadataGenerator
                 }
 
                 // Generate tarball url if missing
-                if ( versionMetadata.getDist() == null )
+                String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
+ 
+                if ( versionMetadata.getDist() == null || !versionMetadata.getDist().getTarball().equals(tarball) )
                 {
-                    String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
                     //logger.debug( "Generate dist tarball: {}", tarball );
                     versionMetadata.setDist( new Dist(  tarball ) );
                 }
