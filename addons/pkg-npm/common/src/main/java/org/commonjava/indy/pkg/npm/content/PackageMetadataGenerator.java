@@ -321,11 +321,18 @@ public class PackageMetadataGenerator
                 }
 
                 // Generate tarball url if missing
-                if ( versionMetadata.getDist() == null || !versionMetadata.getDist().getTarball().endsWith(packagePath.getTarPath()) )
+                String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
+                if ( versionMetadata.getDist() == null )
                 {
-                    String tarball = "http://indy/" + packagePath.getTarPath(); // here we use mock host. indy will amend it with the right hostname
                     //logger.debug( "Generate dist tarball: {}", tarball );
-                    versionMetadata.setDist( new Dist(  tarball ) );
+                    versionMetadata.setDist( new Dist( tarball ) );
+                } else {
+                    if ( !versionMetadata.getDist().getTarball().endsWith(packagePath.getTarPath()) )
+                    {
+                        versionMetadata.setDist( new Dist( tarball, versionMetadata.getDist().getShasum(), versionMetadata.getDist().getIntegrity(),
+                                                           versionMetadata.getDist().getFileCount(), versionMetadata.getDist().getUnpackedSize(),
+                                                           versionMetadata.getDist().getSignatures(), versionMetadata.getDist().getNpmSignature() ) );
+                    }
                 }
             }
             catch ( IOException e )
