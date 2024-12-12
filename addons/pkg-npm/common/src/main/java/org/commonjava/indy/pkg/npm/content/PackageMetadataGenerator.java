@@ -327,11 +327,12 @@ public class PackageMetadataGenerator
                     //logger.debug( "Generate dist tarball: {}", tarball );
                     versionMetadata.setDist( new Dist( tarball ) );
                 } else {
+                    // Detect bad tarball and replace with correct one
                     if ( versionMetadata.getDist().getTarball() == null || !versionMetadata.getDist().getTarball().endsWith(packagePath.getTarPath()) )
                     {
-                        versionMetadata.setDist( new Dist( tarball, versionMetadata.getDist().getShasum(), versionMetadata.getDist().getIntegrity(),
-                                                           versionMetadata.getDist().getFileCount(), versionMetadata.getDist().getUnpackedSize(),
-                                                           versionMetadata.getDist().getSignatures(), versionMetadata.getDist().getNpmSignature() ) );
+                        Dist dist = versionMetadata.getDist();
+                        dist.setTarball( tarball );
+                        versionMetadata.setDist( dist );
                     }
                 }
             }

@@ -25,7 +25,7 @@ public class Dist
 
     private final String shasum;
 
-    private final String tarball;
+    private String tarball;
 
     private final String integrity;
 
@@ -59,17 +59,6 @@ public class Dist
         this.npmSignature = null;
     }
 
-    public Dist( final String tarball, final String shasum, final String integrity, final Integer fileCount, final Long unpackedSize, final List<Map<String, String>> signatures, final String npmSignature )
-    {
-        this.tarball = tarball;
-        this.shasum = shasum;
-        this.integrity = integrity;
-        this.fileCount = fileCount;
-        this.unpackedSize = unpackedSize;
-        this.signatures = signatures;
-        this.npmSignature = npmSignature;
-    }
-
     public String getShasum()
     {
         return shasum;
@@ -78,6 +67,11 @@ public class Dist
     public String getTarball()
     {
         return tarball;
+    }
+
+    public void setTarball( String tarball )
+    {
+        this.tarball = tarball;
     }
 
     public String getIntegrity()
