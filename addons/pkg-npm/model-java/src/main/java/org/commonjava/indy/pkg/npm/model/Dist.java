@@ -25,7 +25,7 @@ public class Dist
 
     private final String shasum;
 
-    private final String tarball;
+    private String tarball;
 
     private final String integrity;
 
@@ -67,6 +67,11 @@ public class Dist
     public String getTarball()
     {
         return tarball;
+    }
+
+    public void setTarball( String tarball )
+    {
+        this.tarball = tarball;
     }
 
     public String getIntegrity()
