@@ -327,7 +327,7 @@ public class PackageMetadataGenerator
                     //logger.debug( "Generate dist tarball: {}", tarball );
                     versionMetadata.setDist( new Dist( tarball ) );
                 } else {
-                    if ( !versionMetadata.getDist().getTarball().endsWith(packagePath.getTarPath()) )
+                    if ( versionMetadata.getDist().getTarball() == null || !versionMetadata.getDist().getTarball().endsWith(packagePath.getTarPath()) )
                     {
                         versionMetadata.setDist( new Dist( tarball, versionMetadata.getDist().getShasum(), versionMetadata.getDist().getIntegrity(),
                                                            versionMetadata.getDist().getFileCount(), versionMetadata.getDist().getUnpackedSize(),
