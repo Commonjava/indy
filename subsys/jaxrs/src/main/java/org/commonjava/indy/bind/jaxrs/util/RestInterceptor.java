@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.bind.jaxrs.util;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.interceptor.AroundInvoke;
@@ -23,6 +24,8 @@ import javax.interceptor.InvocationContext;
 import javax.ws.rs.Path;
 import java.nio.file.Paths;
 
+import static java.lang.System.currentTimeMillis;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.commonjava.indy.util.RequestContextHelper.REST_CLASS;
 import static org.commonjava.indy.util.RequestContextHelper.REST_CLASS_PATH;
 import static org.commonjava.indy.util.RequestContextHelper.REST_ENDPOINT_PATH;
@@ -34,17 +37,24 @@ import static org.commonjava.indy.util.RequestContextHelper.setContext;
 @REST
 public class RestInterceptor
 {
+    /**
+     * Interceptor decorating MDC. Log the beginning/end of REST request and time elapsed.
+     */
     @AroundInvoke
     public Object operation( InvocationContext context ) throws Exception
     {
+        final Logger logger = LoggerFactory.getLogger( context.getTarget().getClass() );
+
         Class<?> targetClass = context.getTarget().getClass();
-        Path classAnno = null;
+        Path classAnno;
         do
         {
             classAnno = targetClass.getAnnotation( Path.class );
             targetClass = targetClass.getSuperclass();
         }
         while( classAnno == null && targetClass != null );
+
+        String endpointPath = null;
 
         if ( getContext( REST_CLASS ) == null )
         {
@@ -64,15 +74,29 @@ public class RestInterceptor
                 String methodPath = methAnno.value();
                 setContext( REST_METHOD_PATH, methodPath );
 
-                String endpointPath = Paths.get( classPath, methodPath ).toString();
+                endpointPath = Paths.get( classPath, methodPath ).toString();
                 setContext( REST_ENDPOINT_PATH, endpointPath );
             }
         }
 
-        LoggerFactory.getLogger( context.getTarget().getClass() ).trace( "Interceptor decorating MDC." );
+        //logger.trace( "Interceptor decorating MDC." );
 
-        return context.proceed();
+        final boolean isEndpoint = isNotBlank( endpointPath );
+        final long begin = currentTimeMillis();
+        try
+        {
+            if ( isEndpoint )
+            {
+                logger.info( "Start REST: {}", endpointPath );
+            }
+            return context.proceed();
+        }
+        finally
+        {
+            if ( isEndpoint )
+            {
+                logger.info( "End REST: {}, elapsed: {}ms", endpointPath, ( currentTimeMillis() - begin ) );
+            }
+        }
     }
-
-
 }
