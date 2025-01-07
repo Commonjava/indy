@@ -20,7 +20,7 @@
     <parent>
         <artifactId>indy-event-publisher</artifactId>
         <groupId>org.commonjava.indy</groupId>
-    <version>3.4.2-SNAPSHOT</version>
+    <version>3.4.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
