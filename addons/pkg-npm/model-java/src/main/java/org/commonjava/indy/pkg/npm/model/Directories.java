@@ -35,83 +35,83 @@ public class Directories
 
     private static final String TEST = "test";
 
-    private Map<String, String> directoriesMap = new HashMap<String, String>();
+    private Map<String, Object> directoriesMap = new HashMap<String, Object>();
 
     protected Directories()
     {
     }
 
-    public String getLib()
+    public Object getLib()
     {
         return directoriesMap.get( LIB );
     }
 
-    public void setLib( String lib )
+    public void setLib( Object lib )
     {
         directoriesMap.put( LIB, lib );
     }
 
-    public String getBin()
+    public Object getBin()
     {
         return directoriesMap.get( BIN );
     }
 
-    public void setBin( String bin )
+    public void setBin( Object bin )
     {
         directoriesMap.put( BIN, bin );
     }
 
-    public String getMan()
+    public Object getMan()
     {
         return directoriesMap.get( MAN );
     }
 
-    public void setMan( String man )
+    public void setMan( Object man )
     {
         directoriesMap.put( MAN, man );
     }
 
-    public String getDoc()
+    public Object getDoc()
     {
         return directoriesMap.get( DOC );
     }
 
-    public void setDoc( String doc )
+    public void setDoc( Object doc )
     {
         directoriesMap.put( DOC, doc );
     }
 
-    public String getExample()
+    public Object getExample()
     {
         return directoriesMap.get( EXAMPLE );
     }
 
-    public void setExample( String example )
+    public void setExample( Object example )
     {
         directoriesMap.put( EXAMPLE, example );
     }
 
-    public String getTest()
+    public Object getTest()
     {
         return directoriesMap.get( TEST );
     }
 
-    public void setTest( String test )
+    public void setTest( Object test )
     {
         directoriesMap.put( TEST, test );
     }
 
-    public Map<String, String> fetchDirectoriesMap()
+    public Map<String, Object> fetchDirectoriesMap()
     {
         return directoriesMap;
     }
 
-    public String getDirectory( String name )
+    public Object getDirectory( String name )
     {
         return directoriesMap.get( name );
     }
 
-    public void putDirectory( String name, String value )
+    public void putDirectory( String name, Object value )
     {
         directoriesMap.put( name, value );
     }

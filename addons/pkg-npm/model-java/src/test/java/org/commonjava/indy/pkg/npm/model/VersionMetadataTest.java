@@ -20,8 +20,12 @@ import org.commonjava.indy.model.core.io.IndyObjectMapper;
 import org.commonjava.indy.pkg.npm.model.io.PackageSerializerModule;
 import org.junit.Test;
 
+import java.net.URL;
+import java.nio.charset.Charset;
+
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.fail;
 
 public class VersionMetadataTest
 {
@@ -75,5 +79,25 @@ public class VersionMetadataTest
         assertThat( version.getScripts().get( "test" ), equalTo( "vows test/*-test.js" ) );
         assertThat( version.getLicenses().get( 0 ).getType(), equalTo( "GPLv2" ) );
         assertThat( version.getDist().getTarball(), equalTo( "https://registry.npmjs.org/tmp/-/tmp-0.0.4.tgz" ) );
+    }
+
+    //@Test
+    public void deserializeVersionMetadataTest() throws Exception
+    {
+        // Update this url for the specific package version
+        String url = "https://repository.engineering.redhat.com/nexus/repository/registry.npmjs.org/eslint-plugin-react/7.37.3";
+
+        final IndyObjectMapper mapper = new IndyObjectMapper( true );
+        mapper.registerModule( new PackageSerializerModule() );
+               String json = IOUtils.toString( new URL(url), Charset.defaultCharset() );
+
+        try
+        {
+            mapper.readValue(json, VersionMetadata.class);
+        }
+        catch (Exception e)
+        {
+            fail("Unexpected exception was thrown:" + e.getMessage());
+        }
     }
 }
