@@ -31,6 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Set;
 
 public class TestCacheProvider
     implements CacheProvider
@@ -298,5 +299,23 @@ public class TestCacheProvider
     public void stopReporting()
     {
         lockingSupport.stopReporting();
+    }
+
+    @Override
+    public Set<String> getProxySitesCache()
+    {
+        return null;
+    }
+
+    @Override
+    public boolean isProxySite( String s )
+    {
+        return false;
+    }
+
+    @Override
+    public void saveProxySite( String s )
+    {
+
     }
 }

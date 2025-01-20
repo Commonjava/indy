@@ -23,17 +23,13 @@ import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderConfig;
-import org.commonjava.o11yphant.metrics.api.Meter;
-import org.commonjava.o11yphant.metrics.api.MetricRegistry;
-import org.commonjava.o11yphant.metrics.api.Timer;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
+import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.GalleyInitException;
 import org.commonjava.maven.galley.cache.CacheProviderFactory;
 import org.commonjava.maven.galley.cache.partyline.PartyLineCacheProviderFactory;
+import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderConfig;
 import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderFactory;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.io.ChecksummingTransferDecorator;
@@ -54,10 +50,14 @@ import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.io.TransferDecorator;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDecorator;
+import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
+import org.commonjava.o11yphant.metrics.api.Meter;
+import org.commonjava.o11yphant.metrics.api.MetricRegistry;
+import org.commonjava.o11yphant.metrics.api.Timer;
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
-import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
 import org.commonjava.storage.pathmapped.metrics.MeasuredPathDB;
+import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
 import org.commonjava.storage.pathmapped.spi.PathDB;
 import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
@@ -75,6 +75,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -82,10 +83,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
-import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.*;
+import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_HOST;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_KEYSPACE;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_PASS;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_PORT;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_REPLICATION_FACTOR;
+import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.PROP_CASSANDRA_USER;
 
 @SuppressWarnings( "unused" )
 @ApplicationScoped
@@ -148,6 +154,8 @@ public class DefaultGalleyStorageProvider
 
     private CacheProviderFactory cacheProviderFactory;
 
+    PathDB pathDB = null;
+
     public DefaultGalleyStorageProvider()
     {
     }
@@ -205,7 +213,6 @@ public class DefaultGalleyStorageProvider
 
         logger.info( "Initializing Cassandra-based path-mapping database for content storage." );
 
-        PathDB pathDB = null;
         PathMappedStorageConfig pathMappedStorageConfig = getPathMappedStorageConfig();
         if ( cassandraClient != null )
         {
@@ -411,4 +418,35 @@ public class DefaultGalleyStorageProvider
 
         return cacheProvider;
     }
+
+    public Set<String> getProxySitesCache()
+    {
+        return pathDB.getProxySitesCache();
+    }
+
+    public List<String> getProxySiteList()
+    {
+        return pathDB.getProxySiteList();
+    }
+
+    public boolean isProxySite( String site )
+    {
+        return pathDB.isProxySite( site );
+    }
+
+    public void saveProxySite( String site )
+    {
+        pathDB.saveProxySite( site );
+    }
+
+    public void deleteProxySite( String site )
+    {
+        pathDB.deleteProxySite( site );
+    }
+
+    public void deleteAllProxySite()
+    {
+        pathDB.deleteAllProxySite();
+    }
+
 }
