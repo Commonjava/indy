@@ -24,6 +24,7 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
+import org.commonjava.maven.galley.proxy.NoOpProxySitesCache;
 import org.commonjava.maven.galley.transport.htcli.internal.HttpDownload;
 import org.commonjava.maven.galley.transport.htcli.model.SimpleHttpLocation;
 import org.commonjava.o11yphant.metrics.DefaultMetricRegistry;
@@ -154,7 +155,7 @@ public class MavenContentFilteringTransferDecoratorTest
         assertThat( transfer.exists(), equalTo( false ) );
 
         HttpDownload dl = new HttpDownload( url, location, transfer, new HashMap<>(), new EventMetadata(),
-                                            fixture.getHttp().getHttp(), new ObjectMapper(), true, metricRegistry, metricConfig );
+                                            fixture.getHttp().getHttp(), new ObjectMapper(), true, metricRegistry, metricConfig, new NoOpProxySitesCache() );
 
         return dl.call().getTransfer();
     }
