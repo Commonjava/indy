@@ -34,10 +34,12 @@ import org.commonjava.maven.galley.io.NoOpTransferDecorator;
 import org.commonjava.maven.galley.io.SpecialPathManagerImpl;
 import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
+import org.commonjava.maven.galley.proxy.NoOpProxySitesCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.maven.galley.spi.proxy.ProxySitesCache;
 import org.commonjava.maven.galley.spi.transport.TransportManager;
 import org.commonjava.maven.galley.transport.TransportManagerImpl;
 import org.commonjava.maven.galley.transport.htcli.HttpClientTransport;
@@ -60,6 +62,8 @@ public class GalleyFixture
 
     private final NotFoundCache nfc;
 
+    private final ProxySitesCache proxySitesCache;
+
     private final SpecialPathManager specialPathManager;
 
     private final ExecutorService batchExecutor;
@@ -74,6 +78,7 @@ public class GalleyFixture
         executor = Executors.newFixedThreadPool( 2 );
         batchExecutor = Executors.newFixedThreadPool( 2 );
         nfc = new MemoryNotFoundCache();
+        proxySitesCache = new NoOpProxySitesCache();
         specialPathManager = new SpecialPathManagerImpl();
 
         TransportManagerConfig transportManagerConfig = new TransportManagerConfig();
@@ -121,4 +126,8 @@ public class GalleyFixture
         return nfc;
     }
 
+    public ProxySitesCache getProxySitesCache()
+    {
+        return proxySitesCache;
+    }
 }

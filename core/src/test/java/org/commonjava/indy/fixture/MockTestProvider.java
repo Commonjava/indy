@@ -24,6 +24,8 @@ import org.commonjava.indy.mem.data.MemoryStoreDataManager;
 import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
+import org.commonjava.maven.galley.proxy.NoOpProxySitesCache;
+import org.commonjava.maven.galley.spi.proxy.ProxySitesCache;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
 import org.commonjava.o11yphant.metrics.TrafficClassifier;
 import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
@@ -112,5 +114,11 @@ public class MockTestProvider
     public StoreDataManager getStoreDataManager()
     {
         return new MemoryStoreDataManager( true );
+    }
+
+    @Produces
+    public ProxySitesCache getProxySitesCache()
+    {
+        return new NoOpProxySitesCache();
     }
 }

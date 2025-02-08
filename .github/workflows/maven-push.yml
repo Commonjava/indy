@@ -24,7 +24,7 @@ on: [push]
 jobs:
   build:
     name: Build and push
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       MAVEN_OPTS: "-Xmx4096m -Xms2048m -XX:MaxMetaspaceSize=4096m -Xss8m"
       SKIP_NPM_CONFIG: false

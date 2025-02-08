@@ -22,7 +22,9 @@ import org.commonjava.indy.model.core.io.ModuleSet;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
+import org.commonjava.maven.galley.proxy.NoOpProxySitesCache;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.maven.galley.spi.proxy.ProxySitesCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -98,4 +100,9 @@ public class CoreProvider
     @Default
     public NotFoundCache getNotFoundCache() { return notFoundCache; }
 
+    @Produces
+    public ProxySitesCache getPCache()
+    {
+        return new NoOpProxySitesCache();
+    }
 }
