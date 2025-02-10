@@ -79,6 +79,7 @@ public class ContentBrowseHeadRequestTest extends AbstractIndyFunctionalTest {
             HttpHead httpNpmHeadSubReq = new HttpHead(REMOTE_NPM_TEST_SUB_URL);
             HttpResources npmSubResponse = client.execute(httpNpmHeadSubReq);
             assertThat(200, is(npmSubResponse.getStatusCode()));
+            assertNotNull( npmSubResponse.getStatusCode() );
 
 
 
