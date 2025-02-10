@@ -23,6 +23,7 @@ import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.maven.galley.spi.proxy.ProxySitesCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +62,8 @@ public class CoreProvider
 
     private IndyObjectMapper objectMapper;
 
+    private ProxySitesCache proxySitesCache;
+
     public CoreProvider()
     {
     }
@@ -69,6 +72,7 @@ public class CoreProvider
     public void init()
     {
         this.objectMapper = new IndyObjectMapper( objectMapperModules, objectMapperModuleSets );
+        this.proxySitesCache = new MemoryProxySitesCache();
 
         String nfcProvider = indyConfiguration.getNfcProvider();
         logger.info( "Apply nfc provider: {}", nfcProvider );
@@ -97,5 +101,12 @@ public class CoreProvider
     @Produces
     @Default
     public NotFoundCache getNotFoundCache() { return notFoundCache; }
+
+    @Produces
+    @Default
+    public ProxySitesCache getProxySitesCache()
+    {
+        return proxySitesCache;
+    }
 
 }

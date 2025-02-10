@@ -34,23 +34,21 @@ import org.commonjava.maven.galley.event.NoOpFileEventManager;
 import org.commonjava.maven.galley.io.NoOpTransferDecorator;
 import org.commonjava.maven.galley.io.TransferDecoratorManager;
 import org.commonjava.maven.galley.nfc.MemoryNotFoundCache;
+import org.commonjava.maven.galley.proxy.NoOpProxySitesCache;
 import org.commonjava.maven.galley.spi.cache.CacheProvider;
 import org.commonjava.maven.galley.spi.event.FileEventManager;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
+import org.commonjava.maven.galley.spi.proxy.ProxySitesCache;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
-import org.commonjava.maven.galley.transport.htcli.conf.GlobalProxyConfig;
 import org.junit.rules.TemporaryFolder;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.Produces;
 import javax.inject.Inject;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.fail;
 
@@ -64,6 +62,8 @@ public class TestProvider
     private IndyPathGenerator indyPathGenerator;
 
     private NotFoundCache nfc;
+
+    private ProxySitesCache proxySitesCache;
 
     private StoreDataManager storeDataManager;
 
@@ -94,6 +94,7 @@ public class TestProvider
     {
         storeDataManager = new MemoryStoreDataManager( true );
         nfc = new MemoryNotFoundCache();
+        proxySitesCache = new NoOpProxySitesCache();
         objectMapper = new IndyObjectMapper( false );
         fileEventManager = new NoOpFileEventManager();
         transferDecorator = new NoOpTransferDecorator();
@@ -133,6 +134,12 @@ public class TestProvider
     public NotFoundCache getNfc()
     {
         return nfc;
+    }
+
+    @Produces
+    public ProxySitesCache getProxySitesCache()
+    {
+        return proxySitesCache;
     }
 
     @Produces
