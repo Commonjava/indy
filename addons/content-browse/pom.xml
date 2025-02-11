@@ -31,8 +31,8 @@
     <module>common</module>
     <module>jaxrs</module>
     <module>ftests</module>
-    <module>ui</module>
     <!--
+    <module>ui</module>
     <module>client-java</module>
     -->
   </modules>
