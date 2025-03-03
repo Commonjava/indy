@@ -21,7 +21,7 @@
   <parent>
     <groupId>org.commonjava.indy</groupId>
     <artifactId>indy-repo-proxy</artifactId>
-    <version>3.4.3</version>
+    <version>3.4.4-SNAPSHOT</version>
   </parent>
 
   <artifactId>indy-ftests-repo-proxy</artifactId>
