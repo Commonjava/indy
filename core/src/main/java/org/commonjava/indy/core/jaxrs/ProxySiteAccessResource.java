@@ -74,6 +74,7 @@ public class ProxySiteAccessResource
     public Response doCreate( @PathParam( "site" ) final String site, @Context final HttpServletRequest request,
                               @Context final UriInfo uriInfo )
     {
+        logger.info( "Save Proxy Site: {}", site );
         proxySitesCache.saveProxySite( site );
         return Response.created( uriInfo.getRequestUri() ).build();
     }
