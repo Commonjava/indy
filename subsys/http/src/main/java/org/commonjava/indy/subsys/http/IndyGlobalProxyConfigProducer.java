@@ -56,20 +56,6 @@ public class IndyGlobalProxyConfigProducer
     private void setupGlobalProxyConfig()
     {
         logger.debug( "Setup global proxy config, host: {}", defaultSiteConfig.getProxyHost() );
-        final String allowTypes = defaultSiteConfig.getProxyAllowHttpJobTypes();
-        final List<String> list = new ArrayList<>();
-        if ( isNotBlank( allowTypes ) )
-        {
-            String[] toks = allowTypes.split( "," );
-            for ( String s : toks )
-            {
-                s = s.trim();
-                if ( isNotBlank( s ) )
-                {
-                    list.add( s );
-                }
-            }
-        }
         globalProxyConfig = new GlobalProxyConfig()
         {
             @Override
@@ -93,16 +79,40 @@ public class IndyGlobalProxyConfigProducer
             @Override
             public List<String> getAllowHttpJobTypes()
             {
-                return list;
+                return getList( defaultSiteConfig.getProxyAllowHttpJobTypes() );
+            }
+
+            @Override
+            public List<String> getEgressSites()
+            {
+                return getList( defaultSiteConfig.getEgressSites() );
             }
 
             @Override
             public String toString()
             {
                 return String.format( "GlobalProxyConfig [host=%s, port=%s, allowHttpJobTypes=%s]", getHost(),
-                                      getPort(), allowTypes );
+                                      getPort(), defaultSiteConfig.getProxyAllowHttpJobTypes() );
             }
         };
         logger.debug( "Global proxy config produced: {}", globalProxyConfig );
+    }
+
+    private List<String> getList( String value )
+    {
+        final List<String> list = new ArrayList<>();
+        if ( isNotBlank( value ) )
+        {
+            String[] toks = value.split( "," );
+            for ( String s : toks )
+            {
+                s = s.trim();
+                if ( isNotBlank( s ) )
+                {
+                    list.add( s );
+                }
+            }
+        }
+        return list;
     }
 }

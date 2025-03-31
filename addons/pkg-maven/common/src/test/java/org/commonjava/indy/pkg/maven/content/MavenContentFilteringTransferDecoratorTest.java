@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -155,7 +156,7 @@ public class MavenContentFilteringTransferDecoratorTest
         assertThat( transfer.exists(), equalTo( false ) );
 
         HttpDownload dl = new HttpDownload( url, location, transfer, new HashMap<>(), new EventMetadata(),
-                                            fixture.getHttp().getHttp(), new ObjectMapper(), true, metricRegistry, metricConfig, new NoOpProxySitesCache() );
+                                            fixture.getHttp().getHttp(), new ObjectMapper(), true, metricRegistry, metricConfig, new ArrayList<>(), new NoOpProxySitesCache() );
 
         return dl.call().getTransfer();
     }

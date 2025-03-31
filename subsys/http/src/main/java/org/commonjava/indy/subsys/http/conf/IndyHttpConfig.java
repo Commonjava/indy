@@ -60,6 +60,8 @@ public class IndyHttpConfig
 
     public static final String PROXY_ALLOW_HTTP_JOB_TYPES = "proxy.allow.http.job.types";
 
+    public static final String EGRESS_SITES = "egress.sites";
+
     public static final String TRUST_TYPE = "trust.type";
 
     public static final String KEY_CERT_PEM = "key.cert.pem";
@@ -105,6 +107,7 @@ public class IndyHttpConfig
                 case PROXY_PORT:
                 case PROXY_USER:
                 case PROXY_ALLOW_HTTP_JOB_TYPES:
+                case EGRESS_SITES:
                 case TRUST_TYPE:
                 case KEY_CERT_PEM:
                 case KEY_CERT_PEM_PATH:
@@ -226,6 +229,9 @@ public class IndyHttpConfig
                 break;
             case PROXY_ALLOW_HTTP_JOB_TYPES:
                 siteConfigBuilder.withProxyAllowHttpJobTypes( value );
+                break;
+            case EGRESS_SITES:
+                siteConfigBuilder.withEgressSites( value );
                 break;
             case TRUST_TYPE:
                 siteConfigBuilder.withTrustType( SiteTrustType.getType( value ) );
