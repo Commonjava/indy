@@ -94,14 +94,14 @@
     <indyModelVersion>1.5</indyModelVersion>
     <indyClientVersion>3.4.0</indyClientVersion>
     <atlasVersion>1.1.4</atlasVersion>
-    <galleyVersion>1.19</galleyVersion>
+    <galleyVersion>1.20-SNAPSHOT</galleyVersion>
     <weftVersion>1.24</weftVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
     <partylineVersion>1.16</partylineVersion>
     <kojijiVersion>2.13</kojijiVersion>
     <rwxVersion>2.3</rwxVersion>
-    <jhttpcVersion>1.14</jhttpcVersion>
+    <jhttpcVersion>1.15-SNAPSHOT</jhttpcVersion>
     <httpTestserverVersion>1.5.1</httpTestserverVersion>
     <propulsorVersion>1.5</propulsorVersion>
     <auditQueryVersion>0.13.1</auditQueryVersion>
