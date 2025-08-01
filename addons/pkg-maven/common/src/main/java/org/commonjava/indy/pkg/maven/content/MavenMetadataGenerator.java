@@ -814,6 +814,8 @@ public class MavenMetadataGenerator
         detectOverloadVoid( () -> metadataProviders.forEach( provider -> svc.submit( ()->{
             try
             {
+                logger.info("Start to get metadata {} from the provider: {}", toMergePath, provider.getClass().getSimpleName());
+
                 return provider.getMetadata( group.getKey(), toMergePath );
             }
             catch ( IndyWorkflowException e )
@@ -832,6 +834,8 @@ public class MavenMetadataGenerator
             svc.drain( metadata -> {
                 if ( metadata != null )
                 {
+                    logger.info("Merging the metadata {} from the provider.", toMergePath);
+
                     merger.merge( master, metadata, group, toMergePath );
                 }
             } );
