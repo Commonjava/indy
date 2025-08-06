@@ -40,11 +40,14 @@ jobs:
         java-version: |
           11
 
-    - uses: s4u/maven-settings-action@v2.8.0
+    - uses: s4u/maven-settings-action@v3.1.0
       with:
         servers: |
           [{
-              "id": "sonatype-nexus-snapshots",
+              "name": "Central Portal Snapshots",
+              "id": "central-portal-snapshots",
+              "url": "https://central.sonatype.com/repository/maven-snapshots/",
+              "snapshots": {"enabled":true},
               "username": "${{ secrets.SONATYPE_BOT_USERNAME }}",
               "password": "${{ secrets.SONATYPE_BOT_TOKEN }}"
           }]
