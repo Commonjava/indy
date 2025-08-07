@@ -44,10 +44,7 @@ jobs:
       with:
         servers: |
           [{
-              "name": "Central Portal Snapshots",
               "id": "central-portal-snapshots",
-              "url": "https://central.sonatype.com/repository/maven-snapshots/",
-              "snapshots": {"enabled":true},
               "username": "${{ secrets.SONATYPE_BOT_USERNAME }}",
               "password": "${{ secrets.SONATYPE_BOT_TOKEN }}"
           }]
