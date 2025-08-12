@@ -179,8 +179,31 @@ public class DefaultDownloadManager
         {
             try
             {
-                final List<ListingResult> results = transfers.listAll(
-                        locationExpander.expand( new VirtualResource( LocationUtils.toLocations( store ), path ) ), eventMetadata );
+                List<ArtifactStore> members;
+                try
+                {
+                    members = storeManager.query()
+                            .enabledState( true )
+                            .getOrderedConcreteStoresInGroup( store.getPackageType(), store.getName() );
+                }
+                catch ( final IndyDataException e )
+                {
+                    throw new IndyWorkflowException( "Failed to lookup concrete members of: %s. Reason: %s", e, store,
+                            e.getMessage() );
+                }
+
+                final List<ConcreteResource> concreteResources = new ArrayList<ConcreteResource>();
+
+                for ( ArtifactStore member : members )
+                {
+                    if ( ! PathMaskChecker.checkListingMask( member, path ) )
+                    {
+                        continue;
+                    }
+                    concreteResources.add(new ConcreteResource( LocationUtils.toLocation( member ), path ));
+                }
+
+                final List<ListingResult> results = transfers.listAll( new VirtualResource( concreteResources ), eventMetadata );
 
                 for ( final ListingResult lr : results )
                 {
