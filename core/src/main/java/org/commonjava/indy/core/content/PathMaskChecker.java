@@ -19,7 +19,11 @@ import org.commonjava.indy.model.core.ArtifactStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PathMaskChecker
 {
@@ -71,13 +75,34 @@ public class PathMaskChecker
             return true;
         }
 
-        for ( String pattern : maskPatterns )
+        // if the pattern contains the metadata path, let's try to extract the groupId to filter the repos.
+        List<String> metadataPatterns = maskPatterns.stream()
+                .filter(pattern -> pattern.endsWith("maven-metadata.xml"))
+                .collect( Collectors.toList() );
+
+        if ( metadataPatterns.isEmpty() )
         {
-            if ( isRegexPattern( pattern ) )
+            for ( String pattern : maskPatterns )
             {
-                // if there is a regexp pattern we cannot check presence of directory listing, because we would have to
-                // check only the beginning of the regexp and that's impossible, so we have to assume that the path is
-                // present
+                if ( isRegexPattern( pattern ) )
+                {
+                    // if there is a regexp pattern we cannot check presence of directory listing, because we would have to
+                    // check only the beginning of the regexp and that's impossible, so we have to assume that the path is
+                    // present
+                    return true;
+                }
+            }
+        }
+        else
+        {
+            boolean matches = metadataPatterns.stream()
+                    .map(pattern -> extractGroupIdPath(pattern))
+                    .filter( Objects::nonNull )
+                    .anyMatch(groupIdPath -> path.startsWith( groupIdPath ) || groupIdPath.startsWith( path ) );
+
+            if ( matches )
+            {
+                logger.trace( "Checking mask in: {}, pattern with groupId path. - MATCH.", store.getName() );
                 return true;
             }
         }
@@ -94,6 +119,20 @@ public class PathMaskChecker
         logger.debug( "Listing for path {} not enabled by path mask {} of repo {}", path, maskPatterns, store.getKey() );
 
         return false;
+    }
+
+    public static String extractGroupIdPath(String metadataPath)
+    {
+        if (metadataPath == null || !metadataPath.endsWith("maven-metadata.xml"))
+        {
+            return null;
+        }
+
+        // Need at least groupId/artifactId/filename
+        String[] parts = metadataPath.split("/");
+        if (parts.length < 3) return null;
+
+        return String.join("/", Arrays.copyOf(parts, parts.length - 2)) + "/";
     }
 
     public static boolean checkMavenMetadataMask( final ArtifactStore store, final String path )
