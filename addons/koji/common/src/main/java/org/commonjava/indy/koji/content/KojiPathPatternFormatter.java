@@ -82,17 +82,15 @@ public class KojiPathPatternFormatter
             if ( pattern != null )
             {
                 patterns.add( pattern );
+
+                String meta = getMetaString( ar ); // Add metadata.xml of the koji archive to path mask patterns
+                if ( meta != null )
+                {
+                    patterns.add( meta );
+                }
             }
         }
 
-        if ( !patterns.isEmpty() )
-        {
-            String meta = getMetaString( artifactRef ); // Add metadata.xml to path mask patterns
-            if ( meta != null )
-            {
-                patterns.add( meta );
-            }
-        }
         return patterns;
     }
 
