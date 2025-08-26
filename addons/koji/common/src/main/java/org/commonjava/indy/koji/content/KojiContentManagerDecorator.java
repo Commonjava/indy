@@ -567,6 +567,8 @@ public abstract class KojiContentManagerDecorator
                                                                                + buildRepo.getMetadata( NVR ) );
 
                 storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
+                // Use repo service API to append the member of group instead of to override during target group update.
+                storeDataManager.addConstituentToGroup( targetGroup.getKey(), buildRepo.getKey() );
             }
             catch ( IndyDataException e )
             {

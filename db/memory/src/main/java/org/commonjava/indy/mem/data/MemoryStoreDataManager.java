@@ -180,4 +180,8 @@ public class MemoryStoreDataManager
         return stores.put( storeKey, store );
     }
 
+    @Override
+    public void addConstituentToGroup( StoreKey key, StoreKey member )
+    {
+    }
 }

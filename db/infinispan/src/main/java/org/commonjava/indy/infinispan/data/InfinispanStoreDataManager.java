@@ -344,4 +344,9 @@ public class InfinispanStoreDataManager
             keys.add( store.getKey() );
         }
     }
+
+    @Override
+    public void addConstituentToGroup( StoreKey key, StoreKey member )
+    {
+    }
 }

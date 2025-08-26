@@ -177,6 +177,8 @@ public interface StoreDataManager
 
     Set<Group> filterAffectedGroups( Set<Group> affectedGroups );
 
+    void addConstituentToGroup( StoreKey key, StoreKey member );
+
     class ContextualTask
     {
         private String threadName;

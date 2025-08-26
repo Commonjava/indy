@@ -56,7 +56,6 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
@@ -492,4 +491,16 @@ public class ServiceStoreDataManager
         logger.debug( "Do nothing here. Delegate to repository service for further operations." );
     }
 
+    @Override
+    public void addConstituentToGroup( StoreKey key, StoreKey member )
+    {
+        try
+        {
+            client.module( IndyStoresClientModule.class ).addConstituentToGroup( key, member );
+        }
+        catch ( IndyClientException e )
+        {
+            logger.error( "Failed to add member {} into Group {}, due to: {}", member, key, e.getMessage() );
+        }
+    }
 }
