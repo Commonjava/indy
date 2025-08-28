@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.infinispan.data;
 
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
@@ -347,6 +348,7 @@ public class InfinispanStoreDataManager
 
     @Override
     public void addConstituentToGroup( StoreKey key, StoreKey member )
+            throws IndyWorkflowException
     {
     }
 }

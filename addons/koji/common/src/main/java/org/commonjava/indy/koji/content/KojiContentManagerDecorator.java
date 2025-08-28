@@ -566,15 +566,13 @@ public abstract class KojiContentManagerDecorator
                                                                        "Adding remote repository for Koji build: "
                                                                                + buildRepo.getMetadata( NVR ) );
 
-                storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
+                // storeDataManager.storeArtifactStore( targetGroup, changeSummary, false, true, new EventMetadata() );
                 // Use repo service API to append the member of group instead of to override during target group update.
                 storeDataManager.addConstituentToGroup( targetGroup.getKey(), buildRepo.getKey() );
             }
-            catch ( IndyDataException e )
+            catch ( IndyWorkflowException e )
             {
-                wfEx.set( new IndyWorkflowException( "Cannot store target-group: %s changes for: %s. Error: %s", e,
-                                                        targetGroup.getName(), buildRepo.getMetadata( NVR ),
-                                                        e.getMessage() ) );
+                wfEx.set( e );
                 return null;
             }
 

@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.db.service;
 
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
@@ -493,6 +494,7 @@ public class ServiceStoreDataManager
 
     @Override
     public void addConstituentToGroup( StoreKey key, StoreKey member )
+            throws IndyWorkflowException
     {
         try
         {
@@ -500,7 +502,8 @@ public class ServiceStoreDataManager
         }
         catch ( IndyClientException e )
         {
-            logger.error( "Failed to add member {} into Group {}, due to: {}", member, key, e.getMessage() );
+            throw new IndyWorkflowException( "Failed to add member %s into Group %s, Error: %s", e, member, key,
+                                             e.getMessage() );
         }
     }
 }

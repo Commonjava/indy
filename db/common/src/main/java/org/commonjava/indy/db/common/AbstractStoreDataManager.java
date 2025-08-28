@@ -18,6 +18,7 @@ package org.commonjava.indy.db.common;
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.cdi.util.weft.Locker;
 import org.commonjava.cdi.util.weft.NamedThreadFactory;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.change.event.ArtifactStoreUpdateType;
 import org.commonjava.indy.conf.IndyConfiguration;
@@ -683,5 +684,6 @@ public abstract class AbstractStoreDataManager
     }
 
     @Override
-    public abstract void addConstituentToGroup( StoreKey key, StoreKey member );
+    public abstract void addConstituentToGroup( StoreKey key, StoreKey member )
+            throws IndyWorkflowException;
 }

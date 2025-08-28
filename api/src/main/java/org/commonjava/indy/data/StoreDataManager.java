@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.data;
 
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
@@ -177,7 +178,8 @@ public interface StoreDataManager
 
     Set<Group> filterAffectedGroups( Set<Group> affectedGroups );
 
-    void addConstituentToGroup( StoreKey key, StoreKey member );
+    void addConstituentToGroup( StoreKey key, StoreKey member )
+            throws IndyWorkflowException;
 
     class ContextualTask
     {
