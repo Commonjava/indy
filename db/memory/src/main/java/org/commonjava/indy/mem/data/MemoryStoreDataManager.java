@@ -16,6 +16,7 @@
 package org.commonjava.indy.mem.data;
 
 import org.commonjava.cdi.util.weft.NamedThreadFactory;
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.NoOpStoreEventDispatcher;
@@ -29,7 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.Alternative;
 import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -180,4 +180,9 @@ public class MemoryStoreDataManager
         return stores.put( storeKey, store );
     }
 
+    @Override
+    public void addConstituentToGroup( StoreKey key, StoreKey member )
+            throws IndyWorkflowException
+    {
+    }
 }

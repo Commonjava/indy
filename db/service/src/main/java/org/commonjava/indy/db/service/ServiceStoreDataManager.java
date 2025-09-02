@@ -15,6 +15,7 @@
  */
 package org.commonjava.indy.db.service;
 
+import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.audit.ChangeSummary;
 import org.commonjava.indy.client.core.Indy;
 import org.commonjava.indy.client.core.IndyClientException;
@@ -56,7 +57,6 @@ import java.util.stream.Stream;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.indy.db.common.StoreUpdateAction.STORE;
 import static org.commonjava.indy.model.core.ArtifactStore.METADATA_CHANGELOG;
 import static org.commonjava.indy.model.core.StoreType.hosted;
 
@@ -492,4 +492,18 @@ public class ServiceStoreDataManager
         logger.debug( "Do nothing here. Delegate to repository service for further operations." );
     }
 
+    @Override
+    public void addConstituentToGroup( StoreKey key, StoreKey member )
+            throws IndyWorkflowException
+    {
+        try
+        {
+            client.module( IndyStoresClientModule.class ).addConstituentToGroup( key, member );
+        }
+        catch ( IndyClientException e )
+        {
+            throw new IndyWorkflowException( "Failed to add member %s into Group %s, Error: %s", e, member, key,
+                                             e.getMessage() );
+        }
+    }
 }
