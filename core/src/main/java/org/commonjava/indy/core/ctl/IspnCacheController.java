@@ -17,6 +17,7 @@ package org.commonjava.indy.core.ctl;
 
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
+import org.commonjava.indy.subsys.infinispan.BasicCacheHandle;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.infinispan.Cache;
 import org.infinispan.manager.EmbeddedCacheManager;
@@ -46,14 +47,11 @@ public class IspnCacheController
     @Inject
     private IndyObjectMapper mapper;
 
-    private EmbeddedCacheManager cacheManager;
-
     private Map<String, String> string2keyMapper;
 
     @PostConstruct
     private void setUp()
     {
-        cacheManager = cacheProducer.getCacheManager();
         string2keyMapper = new HashMap<>();
         string2keyMapper.put( "content-index", "org.commonjava.indy.content.index.ISPFieldStringKey2StringMapper" );
         string2keyMapper.put( "default", "org.commonjava.indy.pkg.maven.content.StoreKey2StringMapper" );
@@ -66,7 +64,7 @@ public class IspnCacheController
             throw new IndyWorkflowException( "Can not clean cache, name: " + name );
         }
 
-        Cache<Object, Object> cache = cacheManager.getCache( name );
+        BasicCacheHandle cache = cacheProducer.getBasicCache( name );
         if ( cache == null )
         {
             throw new IndyWorkflowException( "Cache not found, name: " + name );
@@ -77,7 +75,7 @@ public class IspnCacheController
     // only work for some caches for debugging
     public String export( String cacheName, String key ) throws Exception
     {
-        Cache<Object, Object> cache = cacheManager.getCache( cacheName );
+        BasicCacheHandle cache = cacheProducer.getBasicCache( cacheName );
         if ( cache == null )
         {
             throw new IndyWorkflowException( "Cache not found, name: " + cacheName );
@@ -99,7 +97,7 @@ public class IspnCacheController
         }
         else
         {
-            return mapper.writeValueAsString( cache.entrySet() );
+            return mapper.writeValueAsString( cache.getCache().entrySet() );
         }
     }
 
