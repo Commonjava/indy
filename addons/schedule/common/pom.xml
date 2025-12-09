@@ -33,9 +33,8 @@
       <artifactId>indy-schedule-model-java</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.datastax.cassandra</groupId>
+      <groupId>org.apache.cassandra</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
-      <version>${datastaxVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.cassandraunit</groupId>

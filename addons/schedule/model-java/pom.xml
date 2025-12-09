@@ -28,9 +28,9 @@
   <name>Indy :: Add-Ons :: Schedule :: Java Domain Model</name>
 
   <dependencies>
-    <!--Datastax Java Driver-->
+    <!--Apache Cassandra Java Driver (matches path-mapped-storage)-->
     <dependency>
-      <groupId>com.datastax.cassandra</groupId>
+      <groupId>org.apache.cassandra</groupId>
       <artifactId>cassandra-driver-mapping</artifactId>
     </dependency>
   </dependencies>
