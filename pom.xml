@@ -96,7 +96,7 @@
     <httpclientVersion>4.5.13</httpclientVersion>
     <otelInstrumentationVersion>1.19.0-alpha</otelInstrumentationVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
-    <datastaxVersion>3.11.3</datastaxVersion>
+    <cassandraVersion>3.12.1</cassandraVersion>
     <pathmappedStorageVersion>3.0</pathmappedStorageVersion>
     <o11yphantVersion>1.9.2</o11yphantVersion>
     <swaggerVersion>1.6.6</swaggerVersion>
@@ -1379,6 +1379,15 @@
         <version>${logbackContribVersion}</version>
       </dependency>
 
+      <!-- Managing vulnerable versions of netty from cassandra to avoid CVE -->
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-bom</artifactId>
+        <version>4.1.118.Final</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
       <!-- o11yphant dependencies -->
       <dependency>
         <groupId>org.commonjava.util</groupId>
@@ -1475,16 +1484,16 @@
         <version>${pathmappedStorageVersion}</version>
       </dependency>
 
-      <!--Datastax Java Driver-->
+      <!--Apache Cassandra Java Driver (matches path-mapped-storage)-->
       <dependency>
-        <groupId>com.datastax.cassandra</groupId>
+        <groupId>org.apache.cassandra</groupId>
         <artifactId>cassandra-driver-core</artifactId>
-        <version>${datastaxVersion}</version>
+        <version>${cassandraVersion}</version>
       </dependency>
       <dependency>
-        <groupId>com.datastax.cassandra</groupId>
+        <groupId>org.apache.cassandra</groupId>
         <artifactId>cassandra-driver-mapping</artifactId>
-        <version>${datastaxVersion}</version>
+        <version>${cassandraVersion}</version>
       </dependency>
 
       <dependency>
