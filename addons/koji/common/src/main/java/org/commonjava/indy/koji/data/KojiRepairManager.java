@@ -635,6 +635,128 @@ public class KojiRepairManager
         return repairMetadataTimeout( request, user, false );
     }
 
+    public KojiMultiRepairResult repairAllVol( final String user, boolean isDryRun )
+            throws KojiRepairException, IndyWorkflowException
+    {
+        KojiMultiRepairResult result = new KojiMultiRepairResult();
+
+        if ( opLock.tryLock() )
+        {
+            try
+            {
+                List<RemoteRepository> kojiRemotes = getAllKojiRemotes();
+
+                final String newStorageRoot = config.getStorageRootUrl();
+                if ( newStorageRoot == null || newStorageRoot.trim().isEmpty() )
+                {
+                    throw new KojiRepairException( "Storage root URL is not configured." );
+                }
+
+                DrainingExecutorCompletionService<KojiRepairResult> repairService =
+                        new DrainingExecutorCompletionService<>( repairExecutor );
+
+                detectOverloadVoid( () -> kojiRemotes.forEach( r -> repairService.submit( () -> {
+                    logger.info( "Attempting to repair volume URL in Koji remote: {}", r.getKey() );
+
+                    try
+                    {
+                        return repairRepositoryVol( r, user, isDryRun, newStorageRoot );
+                    }
+                    catch ( KojiRepairException e )
+                    {
+                        logger.error( "Failed to execute repair for: " + r.getKey(), e );
+                    }
+
+                    return null;
+                } ) ) );
+
+                List<KojiRepairResult> results = new ArrayList<>();
+                try
+                {
+                    repairService.drain( r -> {
+                        if ( r != null )
+                        {
+                            results.add( r );
+                        }
+                    } );
+                }
+                catch ( InterruptedException | ExecutionException e )
+                {
+                    logger.error( "Failed to repair volume URLs.", e );
+                }
+
+                result.setResults( results );
+            }
+            catch ( IndyDataException e )
+            {
+                throw new KojiRepairException( "Failed to list Koji remote repositories for repair. Reason: %s", e, e.getMessage() );
+            }
+            finally
+            {
+                opLock.unlock();
+            }
+        }
+        else
+        {
+            throw new KojiRepairException( "Koji repair manager is busy." );
+        }
+
+        return result;
+    }
+
+    private KojiRepairResult repairRepositoryVol( RemoteRepository repository, String user, boolean isDryRun, String newStorageRoot )
+            throws KojiRepairException
+    {
+        StoreKey storeKey = repository.getKey();
+        KojiRepairRequest request = new KojiRepairRequest( storeKey, isDryRun );
+        KojiRepairResult ret = new KojiRepairResult( request );
+
+        String oldUrl = repository.getUrl();
+
+        // Find /brewroot/ and replace everything before it with the new storage root
+        int brewrootIndex = oldUrl.indexOf( "/brewroot/" );
+        if ( brewrootIndex == -1 )
+        {
+            String error = String.format( "Repository URL does not contain '/brewroot/': %s", oldUrl );
+            logger.warn( error );
+            return ret.withError( error );
+        }
+
+        // Get the part after /brewroot (e.g., /vol/... or /packages/...)
+        String suffix = oldUrl.substring( brewrootIndex + "/brewroot".length() );
+        String newUrl = newStorageRoot + suffix;
+
+        boolean changed = !oldUrl.equals( newUrl );
+        if ( changed )
+        {
+            KojiRepairResult.RepairResult repairResult = new KojiRepairResult.RepairResult( storeKey );
+            repairResult.withPropertyChange( "url", oldUrl, newUrl );
+            ret.withResult( repairResult );
+
+            if ( !isDryRun )
+            {
+                try
+                {
+                    repository.setUrl( newUrl );
+                    ChangeSummary changeSummary = new ChangeSummary( user, "Repair " + storeKey + " volume URL to use new storage root" );
+                    boolean fireEvents = false;
+                    boolean skipIfExists = false;
+                    storeManager.storeArtifactStore( repository, changeSummary, skipIfExists, fireEvents, new EventMetadata() );
+                }
+                catch ( IndyDataException e )
+                {
+                    throw new KojiRepairException( "Failed to repair store: %s. Reason: %s", e, storeKey, e.getMessage() );
+                }
+            }
+        }
+        else
+        {
+            ret.withNoChange( storeKey );
+        }
+
+        return ret;
+    }
+
 
     private List<RemoteRepository> getAllKojiRemotes()
             throws IndyDataException

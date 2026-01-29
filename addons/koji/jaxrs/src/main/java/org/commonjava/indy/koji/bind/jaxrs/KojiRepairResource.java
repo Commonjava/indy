@@ -208,4 +208,33 @@ public class KojiRepairResource
         return null;
     }
 
+    @ApiOperation(
+            "Repair koji repository remote url /vol for all koji remote repositories by replacing the storage root URL." )
+    @ApiImplicitParam( name = "isDryRun", paramType = "query",
+                       value = "boolean value to specify if this request is a dry run request", defaultValue = "false",
+                       dataType = "java.lang.Boolean" )
+    @ApiResponse( code = 200, message = "Operation finished (consult response content for success/failure).",
+                  response = KojiMultiRepairResult.class )
+    @POST
+    @Path( "/vol/all" )
+    @Consumes( ApplicationContent.application_json )
+    public KojiMultiRepairResult repairAllVolumes( final @Context HttpServletRequest servletRequest,
+                                                   final @QueryParam( "isDryRun" ) Boolean isDryRun,
+                                                   final @Context SecurityContext securityContext )
+    {
+        String user = securityManager.getUser( securityContext, servletRequest );
+        final boolean dryRun = isDryRun == null ? false : isDryRun;
+        try
+        {
+            return repairManager.repairAllVol( user, dryRun );
+        }
+        catch ( KojiRepairException | IndyWorkflowException e )
+        {
+            logger.error( e.getMessage(), e );
+            responseHelper.throwError( e );
+        }
+
+        return null;
+    }
+
 }
