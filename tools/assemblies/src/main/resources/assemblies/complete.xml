@@ -63,7 +63,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:dataset:*</include>
+        <include>*:*:tar.gz:dataset:*</include>
       </includes>
       <outputDirectory>var/lib/indy/data</outputDirectory>
       <unpack>true</unpack>
@@ -73,7 +73,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:docset:*</include>
+        <include>*:*:tar.gz:docset:*</include>
       </includes>
       <outputDirectory>usr/share/doc/indy</outputDirectory>
       <unpack>true</unpack>
@@ -83,7 +83,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:binset:*</include>
+        <include>*:*:tar.gz:binset:*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
       <unpack>true</unpack>
@@ -93,7 +93,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:confset:*</include>
+        <include>*:*:tar.gz:confset:*</include>
       </includes>
       <outputDirectory>etc/indy</outputDirectory>
       <unpack>true</unpack>
@@ -103,7 +103,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:uiset:*</include>
+        <include>*:*:tar.gz:uiset:*</include>
       </includes>
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>
@@ -113,7 +113,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:reactui:*</include>
+        <include>*:*:tar.gz:reactui:*</include>
       </includes>
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>

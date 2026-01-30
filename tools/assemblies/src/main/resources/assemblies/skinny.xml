@@ -63,7 +63,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:binset:*</include>
+        <include>*:*:tar.gz:binset:*</include>
       </includes>
       <outputDirectory>bin</outputDirectory>
       <unpack>true</unpack>
@@ -73,7 +73,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:uiset:*</include>
+        <include>*:*:tar.gz:uiset:*</include>
       </includes>
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>
@@ -83,7 +83,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:reactui:*</include>
+        <include>*:*:tar.gz:reactui:*</include>
       </includes>
       <outputDirectory>var/lib/indy/ui</outputDirectory>
       <unpack>true</unpack>
