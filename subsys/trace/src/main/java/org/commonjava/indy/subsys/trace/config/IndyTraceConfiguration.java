@@ -108,6 +108,11 @@ public class IndyTraceConfiguration
         return enabled;
     }
 
+    public void setEnabled( boolean enabled )
+    {
+        this.enabled = enabled;
+    }
+
     @Override
     public boolean isConsoleTransport()
     {

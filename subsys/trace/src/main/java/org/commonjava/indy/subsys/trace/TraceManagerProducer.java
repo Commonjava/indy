@@ -56,8 +56,23 @@ public class TraceManagerProducer
     @PostConstruct
     public void init()
     {
-        logger.info( "Initializing Opentelemetry trace plugin" );
-        O11yphantTracePlugin plugin = new OtelTracePlugin( config, config );
+        logger.info( "Initializing OpenTelemetry trace plugin" );
+        O11yphantTracePlugin plugin;
+
+        try
+        {
+            plugin = new OtelTracePlugin( config, config );
+        }
+        catch ( Exception | Error e )
+        {
+            logger.warn( "Failed to initialize OpenTelemetry trace plugin. " +
+                        "This is likely due to OpenTelemetry collector being unavailable or a library version mismatch. " +
+                        "Tracing will be disabled. Error: {}", e.getMessage(), e );
+
+            // Disable tracing and recreate plugin in disabled mode
+            config.setEnabled( false );
+            plugin = new OtelTracePlugin( config, config );
+        }
 
         traceManager = new TraceManager( plugin, new SpanFieldsDecorator( getRootSpanFields() ), config );
         traceThreadContextualizer = traceManager.getTraceThreadContextualizer();
