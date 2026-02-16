@@ -23,18 +23,11 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:dataset:*</include>
+        <include>*:*:tar.gz:dataset:*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>
     </dependencySet>
   </dependencySets>
-  
-  <fileSets>
-    <fileSet>
-      <directory>${project.build.directory}/var/lib/indy/data</directory>
-      <outputDirectory>/</outputDirectory>
-    </fileSet>
-  </fileSets>
-  
+
 </assembly>
