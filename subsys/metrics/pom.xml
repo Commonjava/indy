@@ -32,6 +32,10 @@
       <artifactId>o11yphant-metrics-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.commonjava.util</groupId>
+      <artifactId>o11yphant-metrics-core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
     </dependency>
