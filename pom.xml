@@ -108,7 +108,7 @@
     <indyModelVersion>1.5</indyModelVersion>
     <indyClientVersion>3.4.4</indyClientVersion>
     <atlasVersion>1.1.4</atlasVersion>
-    <galleyVersion>1.20</galleyVersion>
+    <galleyVersion>1.22-SNAPSHOT</galleyVersion>
     <weftVersion>1.24</weftVersion>
     <webdavVersion>3.2.1</webdavVersion>
     <!-- TODO: partyline is still needed for standalone mode, may be removed in future -->
@@ -1427,6 +1427,11 @@
       <dependency>
         <groupId>org.commonjava.util</groupId>
         <artifactId>o11yphant-metrics-common</artifactId>
+        <version>${o11yphantVersion}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.commonjava.util</groupId>
+        <artifactId>o11yphant-metrics-core</artifactId>
         <version>${o11yphantVersion}</version>
       </dependency>
 
