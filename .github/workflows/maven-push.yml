@@ -30,17 +30,17 @@ jobs:
       SKIP_NPM_CONFIG: false
       NPMREGISTRY: https://registry.npmjs.org
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
     - name: Set up JDK 11 for x64
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
         architecture: x64
         java-version: |
           11
 
-    - uses: s4u/maven-settings-action@v3.1.0
+    - uses: s4u/maven-settings-action@v4.0.0
       with:
         servers: |
           [{
@@ -56,7 +56,7 @@ jobs:
 #      run: mvn help:effective-settings -B -V -DskipTests=true -DskipNpmConfig=false deploy -e --global-toolchains .github/workflows/toolchains.xml
 
     - name: Checkout tools repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: Commonjava/commonjava-images
         path: commonjava-images
