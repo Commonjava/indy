@@ -145,7 +145,7 @@
     <gogs-waitFor>Gogs: Go Git Service</gogs-waitFor>
     <keycloak-waitFor>WFLYSRV0025</keycloak-waitFor>
 
-    <version.plugin.jacoco>0.8.3</version.plugin.jacoco>
+    <version.plugin.jacoco>0.8.14</version.plugin.jacoco>
     <jacoco.report.dir>${project.build.directory}</jacoco.report.dir>
     <junit.report.dir>${project.build.directory}/surefire-reports</junit.report.dir>
     <failsafe.report.dir>${project.build.directory}/failsafe-reports</failsafe.report.dir>
