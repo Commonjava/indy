@@ -19,7 +19,28 @@
 
 name: maven push
 
-on: [push]
+on:
+  push:
+    paths:
+      - 'addons/**'
+      - 'api/**'
+      - 'bin/**'
+      - 'bindings/**'
+      - 'boot/**'
+      - 'core/**'
+      - 'db/**'
+      - 'deployments/**'
+      - 'embedder/**'
+      - 'filers/**'
+      - 'ftests/**'
+      - 'rest/**'
+      - 'scripts/**'
+      - 'subsys/**'
+      - 'test/**'
+      - 'tools/**'
+      - 'pom.xml'
+      - 'toolchains.xml'
+
 
 jobs:
   build:
