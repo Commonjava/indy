@@ -10,9 +10,15 @@ updates:
       interval: "weekly"
     ignore:
       - dependency-name: "*"
-        update-types:
-          - "version-update:semver-major"
-          - "version-update:semver-minor"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+
+  - package-ecosystem: "npm" # See documentation for possible values
+    directory: "/addons/content-browse" # Location of package manifests
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: "github-actions" # Also update Github actions
     directory: "/"
