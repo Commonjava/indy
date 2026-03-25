@@ -21,6 +21,8 @@ name: maven push
 
 on:
   push:
+    branches:
+      - 'master'
     paths:
       - 'addons/**'
       - 'api/**'
