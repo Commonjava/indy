@@ -27,7 +27,6 @@ import org.commonjava.indy.core.content.group.GroupRepositoryFilterManager;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.model.core.StoreType;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -123,7 +122,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public Transfer retrieveFirst( final List<? extends ArtifactStore> stores, final String path,
                                    final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -149,7 +147,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public List<Transfer> retrieveAll( final List<? extends ArtifactStore> stores, final String path,
                                        final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -204,7 +201,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -338,7 +334,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public Transfer store( final ArtifactStore store, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -391,7 +386,6 @@ public class DefaultContentManager
         return txfr;
     }
 
-    @Measure
     protected void clearNFCEntries( final KeyedLocation kl, final String path, EventMetadata eventMetadata )
     {
         try
@@ -411,7 +405,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public Transfer store( final List<? extends ArtifactStore> stores, final StoreKey topKey, final String path, final InputStream stream,
                            final TransferOperation op, final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -453,7 +446,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public boolean delete( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -561,7 +553,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public List<StoreResource> list( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -622,7 +613,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public List<StoreResource> list( final List<? extends ArtifactStore> stores, final String path )
             throws IndyWorkflowException
     {
@@ -704,7 +694,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public HttpExchangeMetadata getHttpMetadata( final Transfer txfr )
             throws IndyWorkflowException
     {
@@ -713,7 +702,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     public HttpExchangeMetadata getHttpMetadata( final StoreKey key, final String path )
             throws IndyWorkflowException
     {
@@ -731,7 +719,6 @@ public class DefaultContentManager
     }
 
     @Override
-    @Measure
     // TODO: to add content generation handling here, for things like merged metadata, checksum files, etc.
     public boolean exists(ArtifactStore store, String path)
         throws IndyWorkflowException

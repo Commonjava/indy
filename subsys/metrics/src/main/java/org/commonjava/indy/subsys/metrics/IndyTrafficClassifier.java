@@ -26,12 +26,11 @@ import org.commonjava.indy.pkg.PackageTypeConstants;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.SpecialPathInfo;
 import org.commonjava.maven.galley.spi.io.SpecialPathManager;
-import org.commonjava.o11yphant.metrics.AbstractTrafficClassifier;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,8 +58,10 @@ import static org.commonjava.indy.subsys.metrics.IndyTrafficClassifierConstants.
 
 @ApplicationScoped
 public class IndyTrafficClassifier
-                extends AbstractTrafficClassifier
 {
+    protected static final Set<String> MODIFY_METHODS =
+                    new HashSet<>( Arrays.asList( "PUT", "POST", "DELETE", "PATCH" ) );
+
     private static final Set<String> FOLO_RECORD_ENDPOINTS = new HashSet<>( asList( "record", "report" ) );
 
     private static final Set<String> DEPRECATED_CONTENT_ENDPOINTS =

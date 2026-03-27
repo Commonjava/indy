@@ -22,7 +22,6 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.NoHostAvailableException;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
@@ -154,7 +153,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public void addMissing( final ConcreteResource resource )
     {
         if (isCacheDisabled(resource))
@@ -183,7 +181,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public boolean isMissing( final ConcreteResource resource )
     {
         if ( inMemoryCache.get( resource ) != null )
@@ -213,7 +210,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public void clearMissing( final Location location )
     {
         StoreKey key = ( (KeyedLocation) location ).getKey();
@@ -242,7 +238,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public void clearMissing( final ConcreteResource resource )
     {
         StoreKey key = getResourceKey( resource );
@@ -252,7 +247,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public void clearAllMissing()
     {
         session.execute( "TRUNCATE " + keyspace + ".nfc;" );
@@ -260,14 +254,12 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public Map<Location, Set<String>> getAllMissing()
     {
         return Collections.emptyMap(); // not support
     }
 
     @Override
-    @Measure
     public Set<String> getMissing( final Location location )
     {
         logger.debug( "[NFC] getMissing for {}", location );
@@ -291,7 +283,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public Map<Location, Set<String>> getAllMissing( int pageIndex, int pageSize )
     {
         return getAllMissing();
@@ -305,14 +296,12 @@ public class CassandraNotFoundCache
      * @return
      */
     @Override
-    @Measure
     public Set<String> getMissing( Location location, int pageIndex, int pageSize )
     {
         return getMissing( location );
     }
 
     @Override
-    @Measure
     public long getSize( StoreKey storeKey )
     {
         BoundStatement bound = preparedCountByStore.bind( storeKey.toString() );
@@ -321,7 +310,6 @@ public class CassandraNotFoundCache
     }
 
     @Override
-    @Measure
     public long getSize()
     {
         return 0; // not support

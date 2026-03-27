@@ -24,9 +24,7 @@ import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.action.StartupAction;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.atlas.maven.ident.ref.ProjectRef;
-import org.commonjava.o11yphant.metrics.api.MetricRegistry;
 import org.commonjava.util.jhttpc.auth.MemoryPasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordManager;
 import org.commonjava.util.jhttpc.auth.PasswordType;
@@ -56,12 +54,6 @@ public class KojijiProvider
     private PasswordManager kojiPasswordManager;
 
     private Locker<ProjectRef> versionMetadataLocks;
-
-    @Inject
-    private IndyMetricsConfig indyMetricsConfig;
-
-    @Inject
-    private MetricRegistry metricRegistry;
 
     @Inject
     @WeftManaged
@@ -117,14 +109,7 @@ public class KojijiProvider
 
         try
         {
-            if ( indyMetricsConfig.isKojiMetricEnabled() )
-            {
-                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor, metricRegistry );
-            }
-            else
-            {
-                kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
-            }
+            kojiClient = new KojiClient( config, kojiPasswordManager, kojiExecutor );
         }
         catch ( KojiClientException e )
         {

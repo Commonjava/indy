@@ -68,10 +68,6 @@
       <artifactId>indy-subsys-trace</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-otel</artifactId>
-    </dependency>
-    <dependency>
       <groupId>io.opentelemetry.instrumentation</groupId>
       <artifactId>opentelemetry-kafka-clients-2.6</artifactId>
     </dependency>

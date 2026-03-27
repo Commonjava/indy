@@ -38,8 +38,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.atlas.maven.ident.util.SnapshotUtils;
 import org.commonjava.atlas.maven.ident.version.part.SnapshotPart;
-import org.commonjava.o11yphant.metrics.api.Timer;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Location;
@@ -70,9 +68,6 @@ public class MavenContentsFilteringTransferDecorator
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
-    @Inject
-    private DefaultMetricsManager metricsManager;
-
     @Override
     public OverriddenBooleanValue decorateExists( final Transfer transfer, final EventMetadata metadata )
     {
@@ -96,7 +91,7 @@ public class MavenContentsFilteringTransferDecorator
         if ( loc instanceof HttpLocation && ( !allowsSnapshots || !allowsReleases ) && transfer.getFullPath()
                                                                                                .endsWith( "maven-metadata.xml" ) )
         {
-            return new MetadataFilteringOutputStream( stream, allowsSnapshots, allowsReleases, transfer, metricsManager );
+            return new MetadataFilteringOutputStream( stream, allowsSnapshots, allowsReleases, transfer );
         }
         else
         {
@@ -186,8 +181,6 @@ public class MavenContentsFilteringTransferDecorator
     private static class MetadataFilteringOutputStream
             extends IdempotentCloseOutputStream
     {
-        private static final String TIMER = "io.maven.metadata.out.filter";
-
         private final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
         private static final String LATEST = "<latest>([^<]+)</latest>";
@@ -206,17 +199,13 @@ public class MavenContentsFilteringTransferDecorator
 
         private Transfer transfer;
 
-        private DefaultMetricsManager metricsManager;
-
         private MetadataFilteringOutputStream( final OutputStream stream, final boolean allowsSnapshots,
-                                               final boolean allowsReleases, Transfer transfer,
-                                               final DefaultMetricsManager metricsManager )
+                                               final boolean allowsReleases, Transfer transfer )
         {
             super( stream );
             this.allowsSnapshots = allowsSnapshots;
             this.allowsReleases = allowsReleases;
             this.transfer = transfer;
-            this.metricsManager = metricsManager;
         }
 
         private String filterMetadata()
@@ -227,7 +216,6 @@ public class MavenContentsFilteringTransferDecorator
                 return "";
             }
 
-            Timer.Context timer = metricsManager == null ? null : metricsManager.startTimer( TIMER );
             try
             {
                 // filter versions from GA metadata
@@ -267,13 +255,6 @@ public class MavenContentsFilteringTransferDecorator
                 logger.error( "Error: Can not filtering {} as it is not a valid maven-metadata.xml.",
                               transfer.getPath() );
                 return buffer.toString();
-            }
-            finally
-            {
-                if ( timer != null )
-                {
-                    metricsManager.stopTimer( TIMER );
-                }
             }
         }
 

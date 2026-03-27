@@ -17,22 +17,17 @@ package org.commonjava.indy.bind.jaxrs.metrics;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
-import org.commonjava.o11yphant.metrics.jaxrs.PrometheusDeploymentProvider;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.core.Application;
 
 @ApplicationScoped
 public class IndyPrometheusDeploymentProvider
         extends IndyDeploymentProvider
 {
-    @Inject
-    private PrometheusDeploymentProvider prometheusDeploymentProvider;
-
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
-        return prometheusDeploymentProvider.getDeploymentInfo( contextRoot );
+        return null;
     }
 }

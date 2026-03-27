@@ -29,8 +29,6 @@ import org.commonjava.indy.bind.jaxrs.util.DeploymentInfoUtils;
 import org.commonjava.indy.bind.jaxrs.util.RequestScopeListener;
 import org.commonjava.indy.conf.UIConfiguration;
 import org.commonjava.indy.stats.IndyVersioning;
-import org.commonjava.o11yphant.metrics.GoldenSignalsFilter;
-import org.commonjava.o11yphant.trace.servlet.TraceFilter;
 import org.jboss.resteasy.plugins.server.servlet.HttpServlet30Dispatcher;
 import org.jboss.resteasy.spi.ResteasyDeployment;
 import org.slf4j.Logger;
@@ -84,12 +82,6 @@ public class IndyDeployment
     private ApiVersioningFilter apiVersioningFilter;
 
     @Inject
-    private TraceFilter traceFilter;
-
-    @Inject
-    private GoldenSignalsFilter goldenSignalsFilter;
-
-    @Inject
     private IndyVersioning versioning;
 
     private Set<Class<? extends IndyResources>> resourceClasses;
@@ -105,7 +97,6 @@ public class IndyDeployment
     public IndyDeployment( final Set<Class<? extends IndyResources>> resourceClasses,
                            final Set<Class<? extends RestProvider>> restProviders,
                            final Set<IndyDeploymentProvider> deploymentProviders, final UIServlet ui,
-                           final TraceFilter traceFilter,
                            final ResourceManagementFilter resourceManagementFilter, final IndyVersioning versioning )
     {
         this.resourceClasses = resourceClasses;
@@ -113,7 +104,6 @@ public class IndyDeployment
         this.ui = ui;
         this.resourceManagementFilter = resourceManagementFilter;
         this.versioning = versioning;
-        this.traceFilter = traceFilter;
         this.apiVersioningFilter = new ApiVersioningFilter( versioning );
         this.providerClasses = Collections.emptySet();
         this.classes = getClasses();
@@ -174,19 +164,10 @@ public class IndyDeployment
                                  new ImmediateInstanceFactory<>(
                                          this.slashTolerationFilter ) );
 
-        final FilterInfo traceFilter =
-                        Servlets.filter( "O11yphant-Trace", TraceFilter.class,
-                                 new ImmediateInstanceFactory<>(
-                                         this.traceFilter ) );
-
         final FilterInfo threadContextFilter =
                 Servlets.filter( "ThreadContext Management", ThreadContextFilter.class,
                                  new ImmediateInstanceFactory<>(
                                          this.threadContextFilter ) );
-
-        final FilterInfo goldenSignalsFilter = Servlets.filter( "Golden-Signals", GoldenSignalsFilter.class,
-                                                                new ImmediateInstanceFactory<>(
-                                                                        this.goldenSignalsFilter ) );
 
         final FilterInfo resourceManagementFilter =
                 Servlets.filter( "Naming and Resource Management", ResourceManagementFilter.class,
@@ -212,29 +193,6 @@ public class IndyDeployment
                                                       .addFilter( threadContextFilter )
                                                       .addFilterUrlMapping( threadContextFilter.getName(),
                                                                             "/api/*", DispatcherType.REQUEST )
-
-                                                      .addFilter( traceFilter )
-                                                      .addFilterUrlMapping( traceFilter.getName(), "/api/*",
-                                                                            DispatcherType.REQUEST )
-
-                                                      .addFilter( goldenSignalsFilter )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/folo/*", DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/content/*", DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/promotion/*", DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/admin/stores/*",
-                                                                            DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/browse/*", DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/remote/*", DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/hosted/*", DispatcherType.REQUEST )
-                                                      .addFilterUrlMapping( goldenSignalsFilter.getName(),
-                                                                            "/api/group/*", DispatcherType.REQUEST )
 
                                                       .addFilter( resourceManagementFilter )
                                                       .addFilterUrlMapping( resourceManagementFilter.getName(),

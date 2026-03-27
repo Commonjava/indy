@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.filer.def;
 
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 
 public class IndyTimingProvider
@@ -23,23 +22,22 @@ public class IndyTimingProvider
 {
     private final String name;
 
-    private final DefaultMetricsManager metricsManager;
+    private long startNanos;
 
-    public IndyTimingProvider( final String name, final DefaultMetricsManager metricsManager )
+    public IndyTimingProvider( final String name )
     {
         this.name = name;
-        this.metricsManager = metricsManager;
     }
 
     @Override
     public void start( final String name )
     {
-        metricsManager.startTimer( name );
+        startNanos = System.nanoTime();
     }
 
     @Override
     public long stop()
     {
-        return metricsManager.stopTimer( name );
+        return System.nanoTime() - startNanos;
     }
 }

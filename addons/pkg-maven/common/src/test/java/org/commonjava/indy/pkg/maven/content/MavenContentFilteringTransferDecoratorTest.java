@@ -18,16 +18,13 @@ package org.commonjava.indy.pkg.maven.content;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.commonjava.indy.test.fixture.core.HttpTestFixture;
-import org.commonjava.maven.galley.config.TransportMetricConfig;
 import org.commonjava.maven.galley.event.EventMetadata;
 import org.commonjava.maven.galley.model.ConcreteResource;
-import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.proxy.NoOpProxySitesCache;
 import org.commonjava.maven.galley.transport.htcli.internal.HttpDownload;
 import org.commonjava.maven.galley.transport.htcli.model.SimpleHttpLocation;
-import org.commonjava.o11yphant.metrics.DefaultMetricRegistry;
 import org.hamcrest.CoreMatchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -39,7 +36,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.commonjava.o11yphant.metrics.util.MetricUtils.newDefaultMetricRegistry;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -48,33 +44,6 @@ public class MavenContentFilteringTransferDecoratorTest
 {
     @Rule
     public HttpTestFixture fixture = new HttpTestFixture( "test", new MavenContentsFilteringTransferDecorator() );
-
-    private static DefaultMetricRegistry metricRegistry = newDefaultMetricRegistry();
-
-    private static TransportMetricConfig metricConfig = new TransportMetricConfig()
-    {
-        @Override
-        public boolean isEnabled()
-        {
-            return true;
-        }
-
-        @Override
-        public String getNodePrefix()
-        {
-            return null;
-        }
-
-        @Override
-        public String getMetricUniqueName( Location location )
-        {
-            if ( location.getName().equals( "test" ) )
-            {
-                return location.getName();
-            }
-            return null;
-        }
-    };
 
     @Test
     public void metadataFilteringWhenSnapshotsNotAllowed() throws Exception

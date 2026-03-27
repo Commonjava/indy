@@ -27,7 +27,6 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.StoreContentAction;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
@@ -88,7 +87,6 @@ public class StoreContentListener
     /**
      * Handles store disable/enablement.
      */
-    @Measure
     public void onStoreEnablement( @Observes final ArtifactStoreEnablementEvent event )
     {
         logger.trace( "Got store-enablement event: {}", event );
@@ -99,7 +97,6 @@ public class StoreContentListener
         }
     }
 
-    @Measure
     public void onStoreDeletion( @Observes final ArtifactStoreDeletePreEvent event )
     {
         logger.trace( "Got store-delete event: {}", event );
@@ -107,7 +104,6 @@ public class StoreContentListener
         clearPaths( keys, allPath(), true );
     }
 
-    @Measure
     public void onStoreUpdate( @Observes final ArtifactStorePreUpdateEvent event )
     {
         logger.trace( "Got store-update event: {}", event );

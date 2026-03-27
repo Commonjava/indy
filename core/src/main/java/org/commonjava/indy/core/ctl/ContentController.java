@@ -23,7 +23,6 @@ import org.commonjava.indy.content.ContentManager;
 import org.commonjava.indy.content.StoreResource;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
@@ -185,7 +184,6 @@ public class ContentController
         return store( key, path, stream, new EventMetadata() );
     }
 
-    @Measure
     public Transfer store( final StoreKey key, final String path, final InputStream stream,
                            final EventMetadata eventMetadata )
         throws IndyWorkflowException

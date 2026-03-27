@@ -22,12 +22,10 @@ import org.commonjava.maven.galley.io.AbstractTransferDecorator;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
-import org.commonjava.o11yphant.metrics.api.Meter;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class IOLatencyDecorator
@@ -35,24 +33,16 @@ public class IOLatencyDecorator
 {
     private Function<String, TimingProvider> timerProvider;
 
-    private Function<String, Meter> meterProvider;
-
-    private BiConsumer<String, Double> cumulativeTimer;
-
-    public IOLatencyDecorator( final Function<String, TimingProvider> timerProvider,
-                               final Function<String, Meter> meterProvider,
-                               final BiConsumer<String, Double> cumulativeTimer )
+    public IOLatencyDecorator( final Function<String, TimingProvider> timerProvider )
     {
         this.timerProvider = timerProvider;
-        this.meterProvider = meterProvider;
-        this.cumulativeTimer = cumulativeTimer;
     }
 
     @Override
     public InputStream decorateRead( final InputStream stream, final Transfer transfer, final EventMetadata metadata )
             throws IOException
     {
-        return new TimingInputStream( new CountingInputStream( stream ), timerProvider, meterProvider, cumulativeTimer );
+        return new TimingInputStream( new CountingInputStream( stream ), timerProvider );
     }
 
     @Override
@@ -62,7 +52,7 @@ public class IOLatencyDecorator
     {
         if ( op == TransferOperation.UPLOAD )
         {
-            return new TimingOutputStream( new CountingOutputStream( stream ), timerProvider, meterProvider, cumulativeTimer );
+            return new TimingOutputStream( new CountingOutputStream( stream ), timerProvider );
         }
 
         return super.decorateWrite( stream, transfer, op, metadata );

@@ -29,18 +29,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-otel</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>

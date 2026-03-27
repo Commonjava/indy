@@ -19,16 +19,11 @@ import org.apache.commons.io.output.CountingOutputStream;
 import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.util.IdempotentCloseOutputStream;
-import org.commonjava.o11yphant.metrics.api.Meter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
-import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 
 public class TimingOutputStream
         extends IdempotentCloseOutputStream
@@ -36,29 +31,18 @@ public class TimingOutputStream
     private static final String RAW_IO_WRITE = "io.raw.write";
     private static final String RAW_IO_WRITE_TIMER = RAW_IO_WRITE + ".timer";
 
-    private static final String RAW_IO_WRITE_RATE = RAW_IO_WRITE + ".rate";
-
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
     private Long nanos;
 
     private Function<String, TimingProvider> timerProvider;
 
-    private Function<String, Meter> meterProvider;
-
     private TimingProvider timer;
 
-    private Meter meter;
-
-    private BiConsumer<String, Double> cumulativeConsumer;
-
-    public TimingOutputStream( final CountingOutputStream stream, Function<String, TimingProvider> timerProvider,
-                               Function<String, Meter> meterProvider, BiConsumer<String, Double> cumulativeConsumer )
+    public TimingOutputStream( final CountingOutputStream stream, Function<String, TimingProvider> timerProvider )
     {
         super( stream );
-        this.cumulativeConsumer = cumulativeConsumer;
         this.timerProvider = timerProvider == null ? ( s ) -> null : timerProvider;
-        this.meterProvider = meterProvider;
     }
 
     @Override
@@ -103,14 +87,6 @@ public class TimingOutputStream
                 logger.trace( "Stopping timer: {}", timer );
                 timer.stop();
             }
-
-            if ( meter != null )
-            {
-                logger.trace( "Marking meter: {}", meter );
-                meter.mark( (long) ( ( (CountingOutputStream) this.out ).getByteCount() / ( elapsed / NANOS_PER_SEC ) ) );
-            }
-
-            cumulativeConsumer.accept( RAW_IO_WRITE, elapsed / NANOS_PER_MILLISECOND );
         }
 
     }
@@ -121,8 +97,7 @@ public class TimingOutputStream
         {
             nanos = System.nanoTime();
             timer = timerProvider.apply( RAW_IO_WRITE_TIMER );
-            meter = meterProvider.apply( RAW_IO_WRITE_RATE );
-            logger.trace( "At nanos: {}, initialized timer: {} and meter: {}", nanos, timer, meter );
+            logger.trace( "At nanos: {}, initialized timer: {}", nanos, timer );
         }
     }
 
