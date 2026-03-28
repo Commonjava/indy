@@ -18,8 +18,6 @@ package org.commonjava.indy.subsys.trace.config;
 import org.commonjava.indy.conf.IndyConfigInfo;
 import org.commonjava.indy.conf.IndyConfiguration;
 import org.commonjava.indy.subsys.trace.TracerPlugin;
-import org.commonjava.o11yphant.otel.OtelConfiguration;
-import org.commonjava.o11yphant.trace.TracerConfiguration;
 import org.commonjava.propulsor.config.ConfigurationException;
 import org.commonjava.propulsor.config.annotation.SectionName;
 import org.commonjava.propulsor.config.section.MapSectionListener;
@@ -39,7 +37,7 @@ import java.util.stream.Stream;
 @ApplicationScoped
 public class IndyTraceConfiguration
         extends MapSectionListener
-        implements IndyConfigInfo, TracerConfiguration, OtelConfiguration
+        implements IndyConfigInfo
 {
     private static final TracerPlugin DEFAULT_TRACER = TracerPlugin.honeycomb;
 
@@ -70,6 +68,10 @@ public class IndyTraceConfiguration
 
     private static final Integer DEFAULT_BASE_SAMPLE_RATE = 100;
 
+    private static final Set<String> DEFAULT_FIELDS = Collections.emptySet();
+
+    private static final String DEFAULT_GRPC_URI = "http://localhost:4317";
+
     private boolean enabled;
 
     private TracerPlugin tracer;
@@ -96,13 +98,11 @@ public class IndyTraceConfiguration
     {
     }
 
-    @Override
     public Map<String, Integer> getSpanRates()
     {
         return spanRates;
     }
 
-    @Override
     public boolean isEnabled()
     {
         return enabled;
@@ -113,13 +113,11 @@ public class IndyTraceConfiguration
         this.enabled = enabled;
     }
 
-    @Override
     public boolean isConsoleTransport()
     {
         return consoleTransport;
     }
 
-    @Override
     public String getServiceName()
     {
         return "indy";
@@ -200,49 +198,41 @@ public class IndyTraceConfiguration
         return Thread.currentThread().getContextClassLoader().getResourceAsStream( "default-trace.conf" );
     }
 
-    @Override
     public Integer getBaseSampleRate()
     {
         return baseSampleRate == null ? DEFAULT_BASE_SAMPLE_RATE : baseSampleRate;
     }
 
-    @Override
     public Set<String> getFieldSet()
     {
         return fields == null ? DEFAULT_FIELDS : fields;
     }
 
-    @Override
     public String getEnvironmentMappings()
     {
         return environmentMappings;
     }
 
-    @Override
     public String getCPNames()
     {
         return cpNames;
     }
 
-    @Override
     public String getNodeId()
     {
         return indyConfiguration.getNodeId();
     }
 
-    @Override
     public Map<String, String> getGrpcHeaders()
     {
         return grpcHeaders;
     }
 
-    @Override
     public Map<String, String> getResources()
     {
         return grpcResources;
     }
 
-    @Override
     public String getGrpcEndpointUri()
     {
         return grpcUri == null ? DEFAULT_GRPC_URI : grpcUri;

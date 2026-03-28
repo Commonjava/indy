@@ -59,7 +59,6 @@ import org.commonjava.maven.galley.maven.util.ArtifactPathUtils;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.infinispan.Cache;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.annotation.ClientCacheEntryExpired;
@@ -266,7 +265,6 @@ public class KojiMavenMetadataProvider
     }
 
     @Override
-    @Measure
     public Metadata getMetadata( StoreKey targetKey, String path )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -378,7 +376,6 @@ public class KojiMavenMetadataProvider
 
     }
 
-    @Measure
     private Metadata executeKojiMetadataLookup(ProjectRef ga, String path )
             throws KojiClientException, IndyWorkflowException
     {

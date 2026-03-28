@@ -16,11 +16,6 @@
 package org.commonjava.indy.subsys.metrics.conf;
 
 import org.commonjava.indy.conf.IndyConfigInfo;
-import org.commonjava.o11yphant.metrics.conf.ConsoleConfig;
-import org.commonjava.o11yphant.metrics.conf.ELKConfig;
-import org.commonjava.o11yphant.metrics.conf.GraphiteConfig;
-import org.commonjava.o11yphant.metrics.conf.MetricsConfig;
-import org.commonjava.o11yphant.metrics.conf.PrometheusConfig;
 import org.commonjava.propulsor.config.annotation.ConfigName;
 import org.commonjava.propulsor.config.annotation.SectionName;
 
@@ -33,7 +28,7 @@ import static org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig.SECTION;
 @SectionName( SECTION )
 @ApplicationScoped
 public class IndyMetricsConfig
-                implements IndyConfigInfo, MetricsConfig
+                implements IndyConfigInfo
 {
     public static final String SECTION = "metrics";
 
@@ -235,13 +230,11 @@ public class IndyMetricsConfig
         this.meterRatio = meterRatio;
     }
 
-    @Override
     public int getMeterRatio()
     {
         return meterRatio == null ? DEFAULT_METER_RATIO : meterRatio;
     }
 
-    @Override
     public String getReporter()
     {
         return reporter;
@@ -342,52 +335,6 @@ public class IndyMetricsConfig
     public String getIspnGauges()
     {
         return ispnGauges;
-    }
-
-    @Override
-    public ConsoleConfig getConsoleConfig()
-    {
-        ConsoleConfig ret = new ConsoleConfig();
-        ret.setConsolePeriodInSeconds( consolePeriod );
-        return ret;
-    }
-
-    @Override
-    public GraphiteConfig getGraphiteConfig()
-    {
-        GraphiteConfig ret = new GraphiteConfig();
-        ret.setGraphiteHostName( graphiteHostName );
-        ret.setGraphitePort( graphitePort );
-        ret.setGraphitePeriodInSeconds( graphiteSimplePeriod );
-        ret.setGraphitePrefix( graphitePrefix );
-        ret.setGraphiteJVMPeriodInSeconds( graphiteJVMPeriod );
-        ret.setGraphiteHealthcheckPeriodInSeconds( graphiteHealthcheckPeriod );
-        return ret;
-    }
-
-    @Override
-    public ELKConfig getELKConfig()
-    {
-        ELKConfig ret = new ELKConfig();
-        ret.setElkHosts( elkHosts );
-        ret.setElkIndex( elkIndex );
-        ret.setElkPeriodInSeconds( elkSimplePeriod );
-        ret.setElkJVMPeriodInSeconds( elkJVMPeriod );
-        ret.setElkPrefix( elkPrefix );
-        ret.setElkHealthCheckPeriodInSeconds( elkHealthCheckPeriod );
-        return ret;
-    }
-
-    public PrometheusConfig getPrometheusConfig()
-    {
-        PrometheusConfig ret = new PrometheusConfig();
-        ret.setNodeLabel( prometheusNodeLabel );
-        if ( prometheusExpressedMetrics != null )
-        {
-            ret.setExpressedMetrics( Arrays.asList( prometheusExpressedMetrics.split( "," ) ) );
-        }
-
-        return ret;
     }
 
     public String getDefaultConfigFileName()

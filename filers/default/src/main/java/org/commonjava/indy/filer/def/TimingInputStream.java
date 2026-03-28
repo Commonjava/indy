@@ -19,14 +19,9 @@ import org.apache.commons.io.input.CountingInputStream;
 import org.commonjava.indy.util.RequestContextHelper;
 import org.commonjava.maven.galley.spi.metrics.TimingProvider;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
-import org.commonjava.o11yphant.metrics.api.Meter;
 
 import java.io.IOException;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
-
-import static org.commonjava.indy.IndyContentConstants.NANOS_PER_MILLISECOND;
-import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
 
 public class TimingInputStream
         extends IdempotentCloseInputStream
@@ -34,28 +29,16 @@ public class TimingInputStream
     private static final String RAW_IO_READ = "io.raw.read";
     private static final String RAW_IO_READ_TIMER = RAW_IO_READ + ".timer";
 
-    private static final String RAW_IO_READ_RATE = RAW_IO_READ + ".rate";
-
     private Long nanos;
 
     private Function<String, TimingProvider> timerProvider;
 
-    private final Function<String, Meter> meterProvider;
-
-    private BiConsumer<String, Double> cumulativeTimer;
-
     private TimingProvider timer;
 
-    private Meter meter;
-
-    public TimingInputStream( final CountingInputStream stream, final Function<String, TimingProvider> timerProvider,
-                              final Function<String, Meter> meterProvider,
-                              final BiConsumer<String, Double> cumulativeTimer )
+    public TimingInputStream( final CountingInputStream stream, final Function<String, TimingProvider> timerProvider )
     {
         super( stream );
         this.timerProvider = timerProvider == null ? ( s ) -> null : timerProvider;
-        this.meterProvider = meterProvider;
-        this.cumulativeTimer = cumulativeTimer;
     }
 
     @Override
@@ -97,13 +80,6 @@ public class TimingInputStream
             {
                 timer.stop();
             }
-
-            if ( meter != null )
-            {
-                meter.mark( (long) ( ( (CountingInputStream) this.in ).getByteCount() / ( elapsed / NANOS_PER_SEC ) ) );
-            }
-
-            cumulativeTimer.accept( RAW_IO_READ, elapsed / NANOS_PER_MILLISECOND );
         }
     }
 
@@ -113,7 +89,6 @@ public class TimingInputStream
         {
             nanos = System.nanoTime();
             timer = timerProvider.apply( RAW_IO_READ_TIMER );
-            meter = meterProvider.apply( RAW_IO_READ_RATE );
         }
     }
 }

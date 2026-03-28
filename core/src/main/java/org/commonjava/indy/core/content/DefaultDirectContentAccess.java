@@ -23,7 +23,6 @@ import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.content.DownloadManager;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -43,8 +42,6 @@ import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.indy.model.core.StoreType.remote;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_METADATA_NAME;
 import static org.commonjava.indy.pkg.npm.model.NPMPackageTypeDescriptor.NPM_PKG_KEY;
-import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
-
 /**
  * Created by jdcasey on 5/2/16.
  */
@@ -84,9 +81,7 @@ public class DefaultDirectContentAccess
                 logger.trace( "Requesting retrieval of {} in {}", path, store );
 
                 Future<Transfer> future = contentAccessService.submit( () -> {
-                    addFieldToActiveSpan( "storekey", store.getKey().toString() );
-                    addFieldToActiveSpan( "path", path );
-                    addFieldToActiveSpan( "activity", "retrieveAllRaw" );
+
 
                     logger.trace( "Retrieving {} in {}", path, store );
                     Transfer txfr = retrieveRaw( store, path, eventMetadata );
@@ -128,7 +123,6 @@ public class DefaultDirectContentAccess
     }
 
     @Override
-    @Measure
     public Transfer retrieveRaw( final ArtifactStore store, String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -225,9 +219,7 @@ public class DefaultDirectContentAccess
             {
                 logger.trace( "Requesting listing of {} in {}", path, store );
                 svc.submit( ()->{
-                    addFieldToActiveSpan( "storekey", store.getKey().toString() );
-                    addFieldToActiveSpan( "path", path );
-                    addFieldToActiveSpan( "activity", "listRaw" );
+
 
                     logger.trace( "Starting listing of {} in {}", path, store );
                     List<StoreResource> listRaw = listRaw( store, path, eventMetadata );

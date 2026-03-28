@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.pkg.npm.content;
 
-import org.commonjava.o11yphant.metrics.api.Timer;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
 import org.commonjava.maven.galley.event.EventMetadata;
@@ -46,9 +44,6 @@ public class NPMPackageMaskingTransferDecorator
                 extends AbstractTransferDecorator
 {
     private final Logger logger = LoggerFactory.getLogger( this.getClass() );
-
-    @Inject
-    private DefaultMetricsManager metricsManager;
 
     public NPMPackageMaskingTransferDecorator()
     {
@@ -87,21 +82,17 @@ public class NPMPackageMaskingTransferDecorator
         StoreKey key = keyedLocation.getKey();
         String contextURL = UrlUtils.buildUrl( baseURI, key.getType().name(), key.getName() );
         logger.debug( "Use contextURL: {}", contextURL );
-        return new PackageMaskingInputStream( stream, contextURL, metricsManager );
+        return new PackageMaskingInputStream( stream, contextURL );
     }
 
     private static class PackageMaskingInputStream
             extends IdempotentCloseInputStream
     {
-        private static final String TIMER = "io.npm.metadata.in.filter";
-
         final Logger logger = LoggerFactory.getLogger( this.getClass() );
 
         int position;
 
         private String contextURL;
-
-        private DefaultMetricsManager metricsManager;
 
         private byte[] bytes;
 
@@ -109,12 +100,10 @@ public class NPMPackageMaskingTransferDecorator
 
         private static final int SIZE = 1024;
 
-        private PackageMaskingInputStream( final InputStream stream, final String contextURL,
-                                           final DefaultMetricsManager metricsManager )
+        private PackageMaskingInputStream( final InputStream stream, final String contextURL )
         {
             super( stream );
             this.contextURL = contextURL;
-            this.metricsManager = metricsManager;
         }
 
         @Override
@@ -160,36 +149,25 @@ public class NPMPackageMaskingTransferDecorator
 
         private void mask( String contextURL ) throws IOException
         {
-            Timer.Context timer = metricsManager == null ? null : metricsManager.startTimer( TIMER );
-            try
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            int read;
             {
-                ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                int read;
+                byte[] buffer = new byte[SIZE];
+                while ( ( read = super.read(buffer, 0, buffer.length) ) >= 0 )
                 {
-                    byte[] buffer = new byte[SIZE];
-                    while ( ( read = super.read(buffer, 0, buffer.length) ) >= 0 )
-                    {
-                        bos.write( buffer, 0, read );
-                    }
-                }
-                byte[] rawBytes = bos.toByteArray();
-                String raw = new String( rawBytes, UTF_8 );
-
-                logger.trace( "Mask for raw:\n{}", raw );
-
-                String s = updatePackageJson( raw, contextURL );
-
-                logger.trace( "Masked:\n{}", s );
-                bytes = s.getBytes();
-                masked = true;
-            }
-            finally
-            {
-                if ( timer != null )
-                {
-                    metricsManager.stopTimer( TIMER );
+                    bos.write( buffer, 0, read );
                 }
             }
+            byte[] rawBytes = bos.toByteArray();
+            String raw = new String( rawBytes, UTF_8 );
+
+            logger.trace( "Mask for raw:\n{}", raw );
+
+            String s = updatePackageJson( raw, contextURL );
+
+            logger.trace( "Masked:\n{}", s );
+            bytes = s.getBytes();
+            masked = true;
         }
     }
 

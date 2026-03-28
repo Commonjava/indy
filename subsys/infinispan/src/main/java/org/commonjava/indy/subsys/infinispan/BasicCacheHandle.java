@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.subsys.infinispan;
 
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.infinispan.Cache;
 import org.infinispan.commons.api.BasicCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,22 +23,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
-
 public class BasicCacheHandle<K,V>
 {
     private String name;
 
     protected BasicCache<K,V> cache;
-
-    protected DefaultMetricsManager metricsManager;
-
-    private String metricPrefix;
-
-    public String getMetricPrefix()
-    {
-        return metricPrefix;
-    }
 
     private boolean stopped;
 
@@ -53,17 +40,10 @@ public class BasicCacheHandle<K,V>
     {
     }
 
-    protected BasicCacheHandle( String named, BasicCache<K, V> cache, DefaultMetricsManager metricsManager, String metricPrefix )
+    protected BasicCacheHandle( String named, BasicCache<K, V> cache )
     {
         this.name = named;
         this.cache = cache;
-        this.metricsManager = metricsManager;
-        this.metricPrefix = metricPrefix;
-    }
-
-    public BasicCacheHandle( String named, BasicCache<K, V> cache )
-    {
-        this( named, cache, null, null );
     }
 
     public String getName()
@@ -81,11 +61,6 @@ public class BasicCacheHandle<K,V>
     protected <R> R doExecute( String metricName, Function<BasicCache<K, V>, R> operation )
     {
         Supplier<R> execution = executionFor ( operation);
-        if ( metricsManager != null )
-        {
-            return metricsManager.wrapWithStandardMetrics( execution, () -> getMetricName( metricName ) );
-        }
-
         return execution.get();
     }
 
@@ -166,11 +141,6 @@ public class BasicCacheHandle<K,V>
             cache.clear();
             return null;
         } );
-    }
-
-    protected String getMetricName( String opName )
-    {
-        return name( metricPrefix, opName );
     }
 
 //    public Set<K> cacheKeySetByFilter( Predicate<K> filter )

@@ -93,7 +93,7 @@ public class PackageMetadataGeneratorTest
         final ExpiringMemoryNotFoundCache nfc = new ExpiringMemoryNotFoundCache( config );
 
         WeftExecutorService rescanService =
-                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false,null, null );
+                        new PoolWeftExecutorService( "test-rescan-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false);
 
         final LocationExpander locations = new IndyLocationExpander( stores );
         final PackageMetadataMerger merger = new PackageMetadataMerger(  );
@@ -102,7 +102,7 @@ public class PackageMetadataGeneratorTest
         final DownloadManager
                         downloads = new DefaultDownloadManager( stores, core.getTransferManager(), locations, null, nfc, rescanService );
         WeftExecutorService contentAccessService =
-                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false, null, null );
+                        new PoolWeftExecutorService( "test-content-access-executor", (ThreadPoolExecutor) Executors.newCachedThreadPool(), 2, 10f, false);
         DefaultDirectContentAccess contentAccess = new DefaultDirectContentAccess( downloads, contentAccessService );
 
         final GroupMergeHelper helper = new GroupMergeHelper( downloads );

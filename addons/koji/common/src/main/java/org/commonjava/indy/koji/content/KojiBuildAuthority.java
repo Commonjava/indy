@@ -28,7 +28,6 @@ import org.commonjava.indy.content.DirectContentAccess;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.koji.conf.IndyKojiConfig;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
@@ -137,7 +136,6 @@ public class KojiBuildAuthority
         return isAuthorized( path, eventMetadata, ref, build, session, new HashMap<>() );
     }
 
-    @Measure
     public boolean isAuthorized( String path, EventMetadata eventMetadata, ProjectRef ref, KojiBuildInfo build,
                                  KojiSessionInfo session, Map<Integer, KojiBuildArchiveCollection> seenBuildArchives )
             throws KojiClientException

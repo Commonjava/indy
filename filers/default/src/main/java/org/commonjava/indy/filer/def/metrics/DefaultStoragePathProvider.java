@@ -16,24 +16,20 @@
 package org.commonjava.indy.filer.def.metrics;
 
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
-import org.commonjava.o11yphant.metrics.system.StoragePathProvider;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.File;
 
 /**
- * Used to provide storage path in {@link org.commonjava.o11yphant.metrics.system.SystemGaugesSet} to monitor
- * storage space usage
+ * Used to provide storage path to monitor storage space usage.
  */
 @ApplicationScoped
 public class DefaultStoragePathProvider
-        implements StoragePathProvider
 {
     @Inject
     private DefaultStorageProviderConfiguration storageConfig;
 
-    @Override
     public File getStoragePath()
     {
         return storageConfig != null ? storageConfig.getStorageRootDirectory() : null;

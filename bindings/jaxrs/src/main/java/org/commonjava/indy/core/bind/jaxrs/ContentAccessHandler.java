@@ -26,8 +26,6 @@ import org.commonjava.indy.core.bind.jaxrs.util.RequestUtils;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferCountingInputStream;
 import org.commonjava.indy.core.bind.jaxrs.util.TransferStreamingOutput;
 import org.commonjava.indy.core.ctl.ContentController;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.BatchDeleteRequest;
 import org.commonjava.indy.model.core.PackageTypes;
 import org.commonjava.indy.model.core.StoreKey;
@@ -92,12 +90,6 @@ public class ContentAccessHandler
     protected JaxRsRequestHelper jaxRsRequestHelper;
 
     @Inject
-    protected DefaultMetricsManager metricsManager;
-
-    @Inject
-    protected IndyMetricsConfig metricsConfig;
-
-    @Inject
     protected SpecialPathManager specialPathManager;
 
     @Inject
@@ -144,7 +136,7 @@ public class ContentAccessHandler
         try
         {
             TransferCountingInputStream streamingInputStream =
-                    new TransferCountingInputStream( request.getInputStream(), metricsManager, metricsConfig );
+                    new TransferCountingInputStream( request.getInputStream() );
 
             transfer = contentController.store( sk, path, streamingInputStream, eventMetadata );
 
@@ -519,7 +511,7 @@ public class ContentAccessHandler
                         // open the stream here to prevent deletion while waiting for the transfer back to the user to start...
                         InputStream in = item.openInputStream( true, eventMetadata );
                         final ResponseBuilder builder = Response.ok(
-                                new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
+                                new TransferStreamingOutput( in ) );
 
                         responseHelper.setInfoHeaders( builder, item, sk, path, true, contentController.getContentType( path ),
                                         contentController.getHttpMetadata( item ) );

@@ -15,15 +15,12 @@
  */
 package org.commonjava.indy.subsys.template.fixture;
 
-import org.commonjava.o11yphant.metrics.system.StoragePathProvider;
-
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 
 @ApplicationScoped
-public class MockStoragePathProvider implements StoragePathProvider
+public class MockStoragePathProvider
 {
-    @Override
     public File getStoragePath()
     {
         return null;

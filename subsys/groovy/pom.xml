@@ -47,10 +47,6 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.commonjava.util</groupId>
-      <artifactId>o11yphant-trace-api</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.jboss.weld.se</groupId>
       <artifactId>weld-se-shaded</artifactId>
     </dependency>

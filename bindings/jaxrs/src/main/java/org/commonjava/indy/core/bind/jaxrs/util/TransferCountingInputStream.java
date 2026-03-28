@@ -16,9 +16,6 @@
 package org.commonjava.indy.core.bind.jaxrs.util;
 
 import org.apache.commons.io.input.CountingInputStream;
-import org.commonjava.o11yphant.metrics.api.Meter;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.maven.galley.util.IdempotentCloseInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,59 +23,27 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static org.commonjava.indy.IndyContentConstants.NANOS_PER_SEC;
-import static org.commonjava.o11yphant.metrics.MetricsConstants.METER;
-import static org.commonjava.o11yphant.metrics.util.NameUtils.getDefaultName;
-import static org.commonjava.o11yphant.metrics.util.NameUtils.getName;
-
 public class TransferCountingInputStream
         extends IdempotentCloseInputStream
 {
 
-    private static final String TRANSFER_UPLOAD_METRIC_NAME = "indy.transferred.content.upload";
-
-    private DefaultMetricsManager metricsManager;
-
-    private IndyMetricsConfig metricsConfig;
-
     private long size;
 
-    protected TransferCountingInputStream( final InputStream stream )
+    public TransferCountingInputStream( final InputStream stream )
     {
         super( new CountingInputStream( stream ) );
-    }
-
-    public TransferCountingInputStream( final InputStream stream, final DefaultMetricsManager metricsManager,
-                                        final IndyMetricsConfig metricsConfig )
-    {
-        this( stream );
-        this.metricsManager = metricsManager;
-        this.metricsConfig = metricsConfig;
     }
 
     @Override
     public void close()
             throws IOException
     {
-        long start = System.nanoTime();
         try
         {
             CountingInputStream stream = (CountingInputStream) this.in;
             Logger logger = LoggerFactory.getLogger( getClass() );
             size = stream.getByteCount();
             logger.trace( "Reads: {} bytes", size );
-
-            if ( metricsConfig != null && metricsManager != null )
-            {
-                String name = getName( metricsConfig.getNodePrefix(), TRANSFER_UPLOAD_METRIC_NAME,
-                                       getDefaultName( TransferCountingInputStream.class, "read" ), METER );
-
-                long end = System.nanoTime();
-                double elapsed = (end-start)/NANOS_PER_SEC;
-
-                Meter meter = metricsManager.getMeter( name );
-                meter.mark( Math.round( stream.getByteCount() / elapsed ) );
-            }
         }
         finally
         {

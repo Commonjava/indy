@@ -363,7 +363,7 @@ public class NPMContentAccessHandler
                         InputStream in = openInputStreamSafe( item, eventMetadata );
 
                         final Response.ResponseBuilder builder =
-                                Response.ok( new TransferStreamingOutput( in, metricsManager, metricsConfig ) );
+                                Response.ok( new TransferStreamingOutput( in ) );
 
                         responseHelper.setInfoHeaders( builder, item, sk, path, false, getNPMContentType( path ),
                                         contentController.getHttpMetadata( item ) );

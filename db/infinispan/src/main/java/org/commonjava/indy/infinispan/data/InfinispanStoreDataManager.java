@@ -27,7 +27,6 @@ import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.subsys.infinispan.CacheHandle;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,14 +132,12 @@ public class InfinispanStoreDataManager
     }
 
     @Override
-    @Measure
     public Set<ArtifactStore> getAllArtifactStores()
     {
         return stores.executeCache( c -> new HashSet<>( c.values() ), "getAllStores" );
     }
 
     @Override
-    @Measure
     public Map<StoreKey, ArtifactStore> getArtifactStoresByKey()
     {
         return stores.executeCache( c -> {
@@ -170,7 +167,6 @@ public class InfinispanStoreDataManager
     }
 
     @Override
-    @Measure
     public Stream<StoreKey> streamArtifactStoreKeys()
     {
         return stores.executeCache( c->c.keySet().stream() );

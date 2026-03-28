@@ -32,7 +32,7 @@ public class TransferInputStreamTest
             throws IOException
     {
         ByteArrayInputStream bStream = new ByteArrayInputStream( testString.getBytes() );
-        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream, null, null );
+        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream );
         tStream.read();
         tStream.close();
 
@@ -44,7 +44,7 @@ public class TransferInputStreamTest
             throws IOException
     {
         ByteArrayInputStream bStream = new ByteArrayInputStream( testString.getBytes() );
-        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream, null, null );
+        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream );
         byte[] b = new byte[5];
         tStream.read( b );
         tStream.close();
@@ -58,7 +58,7 @@ public class TransferInputStreamTest
             throws IOException
     {
         ByteArrayInputStream bStream = new ByteArrayInputStream( testString.getBytes() );
-        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream, null, null );
+        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream );
         byte[] b = new byte[8];
         b[0] = b[1] = b[2] = ' ';
         tStream.read( b, 3, 5 );
@@ -72,7 +72,7 @@ public class TransferInputStreamTest
             throws IOException
     {
         ByteArrayInputStream bStream = new ByteArrayInputStream( testString.getBytes() );
-        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream, null, null );
+        TransferCountingInputStream tStream = new TransferCountingInputStream( bStream );
         byte[] b = new byte[testString.length()];
         tStream.read( b );
         tStream.close();

@@ -20,8 +20,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentDigester;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.util.HttpUtils;
 import org.commonjava.indy.util.ApplicationContent;
@@ -60,12 +58,6 @@ public class ResponseHelper
     private ObjectMapper mapper;
 
     @Inject
-    private DefaultMetricsManager metricsManager;
-
-    @Inject
-    private IndyMetricsConfig metricsConfig;
-    
-    @Inject
     ContentDigester contentDigester;
 
     public Response formatRedirect( final URI uri )
@@ -91,7 +83,7 @@ public class ResponseHelper
         else
         {
             builder = Response.created( location )
-                              .entity( new DTOStreamingOutput( mapper, dto, metricsManager, metricsConfig ) )
+                              .entity( new DTOStreamingOutput( mapper, dto ) )
                               .type( ApplicationContent.application_json );
         }
 
@@ -121,7 +113,7 @@ public class ResponseHelper
             return Response.noContent().build();
         }
 
-        ResponseBuilder builder = Response.ok( new DTOStreamingOutput( mapper, dto, metricsManager, metricsConfig ),
+        ResponseBuilder builder = Response.ok( new DTOStreamingOutput( mapper, dto ),
                                                ApplicationContent.application_json );
 
         if ( builderModifier != null )
@@ -185,8 +177,8 @@ public class ResponseHelper
                 }
             }
         }
-        
-        
+
+
 
         if ( item != null && item.exists() )
         {
@@ -216,8 +208,8 @@ public class ResponseHelper
 
             // Indy origin contains the storeKey of the repository where the content came from
             builder.header( ApplicationHeader.indy_origin.key(), LocationUtils.getKey( item ).toString() );
-            
-            
+
+
         }
         else
         {

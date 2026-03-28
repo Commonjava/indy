@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.subsys.infinispan.metrics;
 
-import org.commonjava.o11yphant.metrics.api.MetricSet;
-import org.commonjava.o11yphant.metrics.MetricSetProvider;
 import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.infinispan.CacheProducer;
 import org.slf4j.Logger;
@@ -29,12 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
-import static org.commonjava.o11yphant.metrics.util.NameUtils.name;
-
 @ApplicationScoped
 public class IspnRegistrySetProvider
-                implements MetricSetProvider
 {
     @Inject
     private IndyMetricsConfig metricsConfig;
@@ -47,43 +41,4 @@ public class IspnRegistrySetProvider
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-    @Override
-    public MetricSet getMetricSet()
-    {
-        logger.info( "Adding ISPN checks" );
-        String gauges = metricsConfig.getIspnGauges();
-        List<String> list = null;
-        if ( gauges != null )
-        {
-            list = Arrays.asList( gauges.trim().split( "," ) );
-        }
-
-        for ( IspnCacheRegistry cacheRegistry : cacheRegistrySet )
-        {
-            Set<String> caches = cacheRegistry.getCacheNames();
-            if ( caches != null )
-            {
-                caches.forEach( ( n ) -> cacheProducer.getCacheManager().getCache( n ) );
-            }
-        }
-        return new IspnCheckRegistrySet( cacheProducer.getCacheManager(), list );
-    }
-
-    @Override
-    public String getName()
-    {
-        return name( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN );
-    }
-
-    @Override
-    public boolean isEnabled()
-    {
-        return metricsConfig.isIspnMetricsEnabled();
-    }
-
-    @Override
-    public void reset()
-    {
-        getMetricSet().reset();
-    }
 }
