@@ -25,11 +25,6 @@ import org.commonjava.maven.galley.config.TransportManagerConfig;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginDefaults;
 import org.commonjava.maven.galley.maven.spi.defaults.MavenPluginImplications;
 import org.commonjava.maven.galley.transport.htcli.conf.GlobalHttpConfiguration;
-import org.commonjava.o11yphant.metrics.TrafficClassifier;
-import org.commonjava.o11yphant.metrics.sli.GoldenSignalsMetricSet;
-import org.commonjava.o11yphant.trace.TracerConfiguration;
-
-import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Default;
@@ -86,24 +81,6 @@ public class MockTestProvider
     public WeftConfig getWeftConfig()
     {
         return new DefaultWeftConfig();
-    }
-
-    @Produces
-    public TracerConfiguration getTracerConfiguration()
-    {
-        return null;
-    }
-
-    @Produces
-    public GoldenSignalsMetricSet getGoldenSignalsMetricSet()
-    {
-        return null;
-    }
-
-    @Produces
-    public TrafficClassifier getTrafficClassifier()
-    {
-        return null;
     }
 
     @Produces

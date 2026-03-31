@@ -58,7 +58,6 @@ import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.model.TypeMapping;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -100,7 +99,6 @@ import static org.commonjava.indy.core.ctl.PoolUtils.detectOverloadVoid;
 import static org.commonjava.maven.galley.io.SpecialPathConstants.HTTP_METADATA_EXT;
 import static org.commonjava.maven.galley.util.PathUtils.normalize;
 import static org.commonjava.maven.galley.util.PathUtils.parentPath;
-import static org.commonjava.o11yphant.trace.TraceManager.addFieldToActiveSpan;
 
 public class MavenMetadataGenerator
     extends AbstractMergedContentGenerator
@@ -209,7 +207,6 @@ public class MavenMetadataGenerator
     }
 
     @Override
-    @Measure
     public Transfer generateFileContent( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
         throws IndyWorkflowException
     {
@@ -377,7 +374,6 @@ public class MavenMetadataGenerator
      * @throws IndyWorkflowException
      */
     @Override
-    @Measure
     public Transfer generateGroupFileContent( final Group group, final List<ArtifactStore> members, final String path,
                                               final EventMetadata eventMetadata )
             throws IndyWorkflowException
@@ -642,10 +638,6 @@ public class MavenMetadataGenerator
     private Callable<MetadataResult> generateMissing( ArtifactStore store, String toMergePath )
     {
         return ()->{
-            addFieldToActiveSpan( "storekey", store.getKey().toString() );
-            addFieldToActiveSpan( "path", toMergePath );
-            addFieldToActiveSpan( "activity", "generateMissing" );
-
             try
             {
                 logger.trace( "Starting metadata generation: {}:{}", store.getKey(), toMergePath );
@@ -668,9 +660,6 @@ public class MavenMetadataGenerator
             }
             catch ( final Exception e )
             {
-                addFieldToActiveSpan( "error", e.getClass().getSimpleName() );
-                addFieldToActiveSpan( "error.message", e.getMessage() );
-
                 String msg = String.format( "EXCLUDING Failed generated metadata: %s:%s. Reason: %s", store.getKey(),
                                             toMergePath, e.getMessage() );
                 logger.error( msg, e );
@@ -707,10 +696,6 @@ public class MavenMetadataGenerator
     private Callable<MetadataResult> retrieveCached( final ArtifactStore store, final String toMergePath )
     {
         return ()->{
-            addFieldToActiveSpan( "storekey", store.getKey().toString() );
-            addFieldToActiveSpan( "path", toMergePath );
-            addFieldToActiveSpan( "activity", "retrieveCached" );
-
             Metadata memberMeta;
             memberMeta = getMetaFromCache( store.getKey(), toMergePath );
 
@@ -855,9 +840,6 @@ public class MavenMetadataGenerator
     private Callable<MetadataResult> downloadMissing( ArtifactStore store, String toMergePath )
     {
         return () -> {
-            addFieldToActiveSpan( "storekey", store.getKey().toString() );
-            addFieldToActiveSpan( "path", toMergePath );
-            addFieldToActiveSpan( "activity", "downloadMissing" );
             try
             {
                 logger.trace( "Starting metadata download: {}:{}", store.getKey(), toMergePath );

@@ -16,7 +16,6 @@
 package org.commonjava.indy.subsys.infinispan;
 
 import org.apache.commons.lang3.StringUtils;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
 import org.infinispan.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,14 +36,9 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
 {
     protected CacheHandle(){}
 
-    public CacheHandle( String named, Cache<K, V> cache, DefaultMetricsManager metricsManager, String metricPrefix )
-    {
-        super( named, cache, metricsManager, metricPrefix );
-    }
-
     public CacheHandle( String named, Cache<K, V> cache )
     {
-        this( named, cache, null, null );
+        super( named, cache );
     }
 
     /**
@@ -74,11 +68,6 @@ public class CacheHandle<K,V> extends BasicCacheHandle<K,V>
     protected <R> R doExecuteCache( String metricName, Function<Cache<K, V>, R> operation )
     {
         Supplier<R> execution = executionFor( operation );
-        if ( metricsManager != null )
-        {
-            return metricsManager.wrapWithStandardMetrics( execution, () -> getMetricName( metricName ) );
-        }
-
         return execution.get();
     }
 

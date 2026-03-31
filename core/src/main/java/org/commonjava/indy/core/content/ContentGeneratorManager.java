@@ -18,7 +18,6 @@ package org.commonjava.indy.core.content;
 import org.commonjava.indy.IndyWorkflowException;
 import org.commonjava.indy.content.ContentGenerator;
 import org.commonjava.indy.content.StoreResource;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.Group;
 import org.commonjava.indy.util.LocationUtils;
@@ -68,7 +67,6 @@ public class ContentGeneratorManager
         }
     }
 
-    @Measure
     public Transfer generateFileContentAnd( final ArtifactStore store, final String path,
                                             final EventMetadata eventMetadata, Consumer<Transfer> consumer )
                     throws IndyWorkflowException
@@ -87,7 +85,6 @@ public class ContentGeneratorManager
         return item;
     }
 
-    @Measure
     public Transfer generateGroupFileContent( Group group, List<ArtifactStore> members, String path,
                                               EventMetadata eventMetadata ) throws IndyWorkflowException
     {
@@ -111,7 +108,6 @@ public class ContentGeneratorManager
         return item;
     }
 
-    @Measure
     public void generateGroupFileContentAnd( Group group, List<ArtifactStore> members, String path,
                                              EventMetadata eventMetadata, Consumer<Transfer> consumer )
                     throws IndyWorkflowException
@@ -126,7 +122,6 @@ public class ContentGeneratorManager
         }
     }
 
-    @Measure
     public void handleContentStorage( ArtifactStore transferStore, String path, Transfer txfr,
                                       EventMetadata eventMetadata ) throws IndyWorkflowException
     {
@@ -137,7 +132,6 @@ public class ContentGeneratorManager
         }
     }
 
-    @Measure
     public void handleContentDeletion( ArtifactStore member, String path, EventMetadata eventMetadata )
                     throws IndyWorkflowException
     {
@@ -147,7 +141,6 @@ public class ContentGeneratorManager
         }
     }
 
-    @Measure
     public void generateGroupDirectoryContentAnd( Group group, List<ArtifactStore> members, String path,
                                                   EventMetadata eventMetadata, Consumer<List<StoreResource>> consumer )
                     throws IndyWorkflowException
@@ -163,7 +156,6 @@ public class ContentGeneratorManager
         }
     }
 
-    @Measure
     public void generateDirectoryContentAnd( ArtifactStore store, String path, List<StoreResource> listed,
                                              EventMetadata metadata, Consumer<List<StoreResource>> consumer )
                     throws IndyWorkflowException

@@ -72,13 +72,6 @@ public class DefaultStoreEventDispatcher
     @Inject
     private Event<ArtifactStoreEnablementEvent> enablementEvent;
 
-    //TODO: we found a bug of weft with o11yphant TraceManager, which could cause ConcurrentModificationException.
-    //      Before fixing it here will use a JUC ExecutorService instead.
-    //      The exception is something like:
-    //          java.util.ConcurrentModificationException
-    //            at java.base/java.util.HashMap.forEach(HashMap.java:1339)
-    //            at java.base/java.util.Collections$UnmodifiableMap.forEach(Collections.java:1505)
-    //            at org.commonjava.o11yphant.trace.TraceManager.lambda$startThreadRootSpan$1(TraceManager.java:117)
     private final ExecutorService executor =
                     Executors.newFixedThreadPool( CoreEventManagerConstants.DISPATCH_EXECUTOR_THREADS,
                                                   new NamedThreadFactory(

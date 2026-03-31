@@ -15,8 +15,6 @@
  */
 package org.commonjava.indy.subsys.kafka;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.kafkaclients.KafkaTelemetry;
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -24,8 +22,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.commonjava.indy.subsys.kafka.conf.KafkaConfig;
-import org.commonjava.indy.subsys.trace.config.IndyTraceConfiguration;
-import org.commonjava.o11yphant.otel.OtelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,9 +44,6 @@ public class IndyKafkaProducer
 
     @Inject
     private KafkaConfig config;
-
-    @Inject
-    IndyTraceConfiguration traceConfiguration;
 
     private Producer<String, Object> kafkaProducer;
 
@@ -79,13 +72,6 @@ public class IndyKafkaProducer
             props.setProperty( ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                                KafkaObjectMapperSerializer.class.getName() );
             kafkaProducer = new KafkaProducer<>( props );
-            if ( traceConfiguration.isEnabled() && config.isTracing() )
-            {
-                logger.info( "Enabling the opentelemetry for Kafka message producer." );
-                final OpenTelemetry otel = OtelUtil.getOpenTelemetry( traceConfiguration, traceConfiguration );
-                final KafkaTelemetry telemetry = KafkaTelemetry.create( otel );
-                kafkaProducer = telemetry.wrap( kafkaProducer );
-            }
         }
     }
 

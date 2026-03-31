@@ -23,8 +23,6 @@ import org.codehaus.plexus.interpolation.StringSearchInterpolator;
 import org.commonjava.indy.action.IndyLifecycleException;
 import org.commonjava.indy.action.ShutdownAction;
 import org.commonjava.indy.conf.IndyConfiguration;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.infinispan.config.ISPNClusterConfiguration;
 import org.commonjava.indy.subsys.infinispan.config.ISPNRemoteConfiguration;
 import org.infinispan.Cache;
@@ -74,8 +72,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
-import static org.commonjava.indy.subsys.infinispan.metrics.IspnCheckRegistrySet.INDY_METRIC_ISPN;
 import static org.infinispan.query.remote.client.ProtobufMetadataManagerConstants.PROTOBUF_METADATA_CACHE_NAME;
 
 /**
@@ -97,12 +93,6 @@ public class CacheProducer
 
     @Inject
     private IndyConfiguration indyConfiguration;
-
-    @Inject
-    private DefaultMetricsManager metricsManager;
-
-    @Inject
-    private IndyMetricsConfig metricsConfig;
 
     @Inject
     private ISPNClusterConfiguration clusterConfiguration;
@@ -288,7 +278,7 @@ public class CacheProducer
                     return null;
                 }
                 logger.info( "Get remote cache, name: {}", k );
-                return new RemoteCacheHandle( k, cache, metricsManager, getCacheMetricPrefix( k ) );
+                return new RemoteCacheHandle( k, cache );
             }
             return null;
         } );
@@ -397,13 +387,8 @@ public class CacheProducer
             {
                 cache = cacheManager.getCache( k );
             }
-            return new CacheHandle( k, cache, metricsManager, getCacheMetricPrefix( k ) );
+            return new CacheHandle( k, cache );
         } );
-    }
-
-    private String getCacheMetricPrefix( String named )
-    {
-        return metricsManager == null ? null : getSupername( metricsConfig.getNodePrefix(), INDY_METRIC_ISPN, named );
     }
 
     public synchronized Configuration getCacheConfiguration( String name )

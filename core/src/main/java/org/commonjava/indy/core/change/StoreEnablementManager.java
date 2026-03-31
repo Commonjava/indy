@@ -28,7 +28,6 @@ import org.commonjava.indy.core.expire.SchedulerEvent;
 import org.commonjava.indy.core.expire.SchedulerTriggerEvent;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.io.IndyObjectMapper;
@@ -67,7 +66,6 @@ public class StoreEnablementManager
     @Inject
     private InternalFeatureConfig internalFeatureConfig;
 
-    @Measure
     public void onStoreEnablementChange( @Observes ArtifactStoreEnablementEvent event )
     {
     }
@@ -76,7 +74,6 @@ public class StoreEnablementManager
     {
     }
 
-    @Measure
     public void onStoreError( @Observes IndyStoreErrorEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -130,7 +127,6 @@ public class StoreEnablementManager
         }
     }
 
-    @Measure
     public void onDisableTimeout( @Observes SchedulerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );
@@ -143,7 +139,6 @@ public class StoreEnablementManager
         }
     }
 
-    @Measure
     public void onDisableTimeout( @Observes ScheduleTriggerEvent evt )
     {
         Logger logger = LoggerFactory.getLogger( getClass() );

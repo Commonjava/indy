@@ -38,7 +38,6 @@ import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.util.ApplicationStatus;
 import org.commonjava.indy.util.ValuePipe;
 import org.commonjava.maven.galley.event.EventMetadata;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -98,13 +97,6 @@ public abstract class AbstractStoreDataManager
 
     protected static final String AFFECTED_BY_ASYNC_RUNNER_NAME = "store-affected-by-async-runner";
 
-    //TODO: we found a bug of weft with o11yphant TraceManager, which could cause ConcurrentModificationException.
-    //      Before fixing it here will use a JUC ExecutorService instead.
-    //      The exception is something like:
-    //          java.util.ConcurrentModificationException
-    //            at java.base/java.util.HashMap.forEach(HashMap.java:1339)
-    //            at java.base/java.util.Collections$UnmodifiableMap.forEach(Collections.java:1505)
-    //            at org.commonjava.o11yphant.trace.TraceManager.lambda$startThreadRootSpan$1(TraceManager.java:117)
     protected ExecutorService affectedByAsyncRunner = Executors.newFixedThreadPool( 32, new NamedThreadFactory(
                     AFFECTED_BY_ASYNC_RUNNER_NAME, new ThreadGroup( AFFECTED_BY_ASYNC_RUNNER_NAME ), true, 4 ) );
 
@@ -121,7 +113,6 @@ public abstract class AbstractStoreDataManager
     protected abstract ArtifactStore getArtifactStoreInternal( final StoreKey key );
 
     @Override
-    @Measure
     public ArtifactStore getArtifactStore( final StoreKey key )
             throws IndyDataException
     {
@@ -129,7 +120,6 @@ public abstract class AbstractStoreDataManager
     }
 
     @Override
-    @Measure
     public boolean storeArtifactStore( final ArtifactStore store, final ChangeSummary summary,
                                        final boolean skipIfExists, final boolean fireEvents,
                                        final EventMetadata eventMetadata )
@@ -218,7 +208,6 @@ public abstract class AbstractStoreDataManager
         refreshAffectedBy( store, null, DELETE );
     }
 
-    @Measure
     protected void refreshAffectedBy( final ArtifactStore store, final ArtifactStore original, StoreUpdateAction action )
     {
         if ( store == null )
@@ -301,7 +290,6 @@ public abstract class AbstractStoreDataManager
     protected abstract ArtifactStore removeArtifactStoreInternal( StoreKey key );
 
     @Override
-    @Measure
     public void deleteArtifactStore( final StoreKey key, final ChangeSummary summary,
                                      final EventMetadata eventMetadata )
             throws IndyDataException
@@ -371,12 +359,10 @@ public abstract class AbstractStoreDataManager
             throws IndyDataException;
 
     @Override
-    @Measure
     public abstract Set<ArtifactStore> getAllArtifactStores()
             throws IndyDataException;
 
     @Override
-    @Measure
     public Stream<ArtifactStore> streamArtifactStores()
             throws IndyDataException
     {
@@ -384,7 +370,6 @@ public abstract class AbstractStoreDataManager
     }
 
     @Override
-    @Measure
     public abstract Map<StoreKey, ArtifactStore> getArtifactStoresByKey();
 
     @Override

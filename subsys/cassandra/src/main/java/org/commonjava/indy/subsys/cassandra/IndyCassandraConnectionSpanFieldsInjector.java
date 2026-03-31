@@ -16,8 +16,6 @@
 package org.commonjava.indy.subsys.cassandra;
 
 import com.datastax.driver.core.Session;
-import org.commonjava.indy.subsys.cassandra.CassandraClient;
-import org.commonjava.o11yphant.trace.impl.CassandraConnectionSpanFieldsInjector;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -26,7 +24,6 @@ import java.util.Map;
 
 @ApplicationScoped
 public class IndyCassandraConnectionSpanFieldsInjector
-                extends CassandraConnectionSpanFieldsInjector
 {
 
     private final Map<String, Session> sessions;
@@ -37,7 +34,6 @@ public class IndyCassandraConnectionSpanFieldsInjector
         this.sessions = Collections.unmodifiableMap( cassandraClient.getSessions() );
     }
 
-    @Override
     protected Map<String, Session> getSessions()
     {
         return sessions;

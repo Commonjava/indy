@@ -17,22 +17,17 @@ package org.commonjava.indy.bind.jaxrs.metrics;
 
 import io.undertow.servlet.api.DeploymentInfo;
 import org.commonjava.indy.bind.jaxrs.IndyDeploymentProvider;
-import org.commonjava.o11yphant.metrics.jaxrs.HealthCheckDeploymentProvider;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import javax.ws.rs.core.Application;
 
 @ApplicationScoped
 public class IndyHealthCheckDeploymentProvider
                 extends IndyDeploymentProvider
 {
-    @Inject
-    private HealthCheckDeploymentProvider healthCheckDeploymentProvider;
-
     @Override
     public DeploymentInfo getDeploymentInfo( String contextRoot, Application application )
     {
-        return healthCheckDeploymentProvider.getDeploymentInfo( contextRoot );
+        return null;
     }
 }

@@ -24,11 +24,6 @@ import org.commonjava.indy.content.IndyChecksumAdvisor;
 import org.commonjava.indy.content.SpecialPathSetProducer;
 import org.commonjava.indy.filer.def.conf.DefaultStorageProviderConfiguration;
 import org.commonjava.maven.galley.cache.pathmapped.PathMappedCacheProviderConfig;
-import org.commonjava.o11yphant.metrics.api.Meter;
-import org.commonjava.o11yphant.metrics.api.MetricRegistry;
-import org.commonjava.o11yphant.metrics.api.Timer;
-import org.commonjava.o11yphant.metrics.DefaultMetricsManager;
-import org.commonjava.indy.subsys.metrics.conf.IndyMetricsConfig;
 import org.commonjava.indy.subsys.cassandra.CassandraClient;
 import org.commonjava.indy.subsys.cassandra.config.CassandraConfig;
 import org.commonjava.maven.galley.GalleyInitException;
@@ -57,7 +52,6 @@ import org.commonjava.maven.galley.transport.htcli.UploadMetadataGenTransferDeco
 import org.commonjava.storage.pathmapped.config.DefaultPathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.config.PathMappedStorageConfig;
 import org.commonjava.storage.pathmapped.pathdb.datastax.CassandraPathDB;
-import org.commonjava.storage.pathmapped.metrics.MeasuredPathDB;
 import org.commonjava.storage.pathmapped.spi.PathDB;
 import org.commonjava.storage.pathmapped.spi.PhysicalStore;
 import org.slf4j.Logger;
@@ -78,11 +72,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.commonjava.o11yphant.metrics.util.NameUtils.getSupername;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.CALCULATE_AND_WRITE;
 import static org.commonjava.maven.galley.io.checksum.ChecksummingDecoratorAdvisor.ChecksumAdvice.NO_DECORATE;
 import static org.commonjava.storage.pathmapped.pathdb.datastax.util.CassandraPathDBUtils.*;
@@ -124,15 +115,6 @@ public class DefaultGalleyStorageProvider
 
     @Inject
     private Instance<TransferDecorator> transferDecorators;
-
-    @Inject
-    private DefaultMetricsManager metricsManager;
-
-    @Inject
-    private MetricRegistry metricRegistry;
-
-    @Inject
-    private IndyMetricsConfig metricsConfig;
 
     @Inject
     private CassandraConfig cassandraConfig;
@@ -218,23 +200,6 @@ public class DefaultGalleyStorageProvider
             }
         }
 
-        if ( pathDB != null )
-        {
-            if ( metricsConfig.isPathDBMetricsEnabled() )
-            {
-                final String operations = metricsConfig.getPathDBMetricsOperations();
-                logger.info( "Create measured PathDB, operations: {}", operations );
-                pathDB = new MeasuredPathDB( pathDB, metricsManager, getSupername( "pathDB" ) )
-                {
-                    @Override
-                    protected boolean isMetricEnabled( String metricName )
-                    {
-                        return isBlank( operations ) || operations.contains( metricName );
-                    }
-                };
-            }
-        }
-
         File legacyBaseDir = config.getLegacyStorageBasedir();
         PhysicalStore physicalStore = new LegacyReadonlyPhysicalStore( storeRoot, legacyBaseDir );
 
@@ -284,7 +249,7 @@ public class DefaultGalleyStorageProvider
     private void setupTransferDecoratorPipeline()
     {
         List<TransferDecorator> decorators = new ArrayList<>();
-        decorators.add( new IOLatencyDecorator( timerProviderFunction(), meterProvider(), cumulativeTimer() ));
+        decorators.add( new IOLatencyDecorator( timerProviderFunction() ));
         decorators.add( new NoCacheTransferDecorator( specialPathManager ) );
         decorators.add( new UploadMetadataGenTransferDecorator( specialPathManager, timerProviderFunction() ) );
         for ( TransferDecorator decorator : transferDecorators )
@@ -297,22 +262,7 @@ public class DefaultGalleyStorageProvider
 
     private Function<String, TimingProvider> timerProviderFunction()
     {
-        return name-> new IndyTimingProvider( name, metricsManager );
-    }
-
-    private BiConsumer<String, Double> cumulativeTimer()
-    {
-        return (name, elapsed) -> metricsManager.accumulate( name, elapsed );
-    }
-
-    private Function<String, Meter> meterProvider()
-    {
-        return ( name ) -> metricsManager.getMeter( name );
-    }
-
-    private Function<String, Timer.Context> timerProvider()
-    {
-        return ( name ) -> metricsManager.startTimer( name );
+        return name-> new IndyTimingProvider( name );
     }
 
     private ChecksummingTransferDecorator getChecksummingTransferDecorator()

@@ -43,7 +43,6 @@ import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Transfer;
 import org.commonjava.maven.galley.model.TransferOperation;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -129,7 +128,6 @@ public abstract class KojiContentManagerDecorator
     private KojiPathPatternFormatter pathFormatter;
 
     @Override
-    @Measure
     public boolean exists( ArtifactStore store, String path )
             throws IndyWorkflowException
     {
@@ -165,7 +163,6 @@ public abstract class KojiContentManagerDecorator
     }
 
     @Override
-    @Measure
     public Transfer retrieve( final ArtifactStore store, final String path, final EventMetadata eventMetadata )
             throws IndyWorkflowException
     {
@@ -251,7 +248,6 @@ public abstract class KojiContentManagerDecorator
         return result;
     }
 
-    @Measure
     private <T> T findKojiBuildAnd( ArtifactStore store, String path, EventMetadata eventMetadata, T defValue, KojiBuildAction<T> action )
             throws IndyWorkflowException
     {

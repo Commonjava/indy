@@ -27,7 +27,6 @@ import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.core.StoreType;
 import org.commonjava.indy.pkg.maven.model.MavenPackageTypeDescriptor;
 import org.commonjava.indy.util.UrlInfo;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,21 +146,18 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 //    }
 
     @Override
-    @Measure
     public List<T> getAll()
             throws IndyDataException
     {
         return stream().collect( Collectors.toList() );
     }
 
-    @Measure
     private Stream<T> stream()
             throws IndyDataException
     {
         return stream( store -> true );
     }
 
-    @Measure
     private Stream<T> stream( Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
@@ -204,7 +200,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public List<T> getAll( Predicate<ArtifactStore> filter )
             throws IndyDataException
     {
@@ -212,7 +207,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public List<T> getAllByDefaultPackageTypes()
             throws IndyDataException
     {
@@ -227,7 +221,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public T getByName( String name )
             throws IndyDataException
     {
@@ -242,28 +235,24 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
 //    }
 
     @Override
-    @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey )
     {
         return getGroupsContaining( storeKey, Boolean.TRUE );
     }
 
     @Override
-    @Measure
     public Set<Group> getGroupsContaining( StoreKey storeKey, Boolean enabled )
     {
         return getAllGroups( storeKey.getPackageType(), enabled ).stream().filter( g -> g.getConstituents().contains( storeKey ) ).collect( Collectors.toSet() );
     }
 
     @Override
-    @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url )
     {
         return getRemoteRepositoryByUrl( packageType, url, Boolean.TRUE );
     }
 
     @Override
-    @Measure
     public List<RemoteRepository> getRemoteRepositoryByUrl( String packageType, String url, Boolean enabled )
     {
         /*
@@ -363,7 +352,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName )
                     throws IndyDataException
     {
@@ -371,7 +359,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public List<ArtifactStore> getOrderedConcreteStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
             throws IndyDataException
     {
@@ -387,7 +374,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName )
                     throws IndyDataException
     {
@@ -395,7 +381,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public List<ArtifactStore> getOrderedStoresInGroup( final String packageType, final String groupName, final Boolean enabled )
             throws IndyDataException
     {
@@ -403,7 +388,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public Set<Group> getGroupsAffectedBy( StoreKey... keys )
             throws IndyDataException
     {
@@ -411,7 +395,6 @@ public class DefaultArtifactStoreQuery<T extends ArtifactStore>
     }
 
     @Override
-    @Measure
     public Set<Group> getGroupsAffectedBy( Collection<StoreKey> keys )
             throws IndyDataException
     {

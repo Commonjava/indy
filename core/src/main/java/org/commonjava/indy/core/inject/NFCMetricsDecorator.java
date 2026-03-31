@@ -15,7 +15,6 @@
  */
 package org.commonjava.indy.core.inject;
 
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.maven.galley.model.ConcreteResource;
 import org.commonjava.maven.galley.model.Location;
 import org.commonjava.maven.galley.spi.nfc.NotFoundCache;
@@ -36,49 +35,42 @@ public abstract class NFCMetricsDecorator
     @Inject
     private NotFoundCache delegate;
 
-    @Measure
     @Override
     public void addMissing( final ConcreteResource resource )
     {
         delegate.addMissing( resource );
     }
 
-    @Measure
     @Override
     public boolean isMissing( final ConcreteResource resource )
     {
         return delegate.isMissing( resource );
     }
 
-    @Measure
     @Override
     public void clearMissing( final Location location )
     {
         delegate.clearMissing( location );
     }
 
-    @Measure
     @Override
     public void clearMissing( final ConcreteResource resource )
     {
         delegate.clearMissing( resource );
     }
 
-    @Measure
     @Override
     public void clearAllMissing()
     {
         delegate.clearAllMissing();
     }
 
-    @Measure
     @Override
     public Map<Location, Set<String>> getAllMissing()
     {
         return delegate.getAllMissing();
     }
 
-    @Measure
     @Override
     public Set<String> getMissing( final Location location )
     {

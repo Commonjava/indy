@@ -23,7 +23,6 @@ import org.commonjava.indy.content.browse.model.ContentBrowseResult;
 import org.commonjava.indy.data.IndyDataException;
 import org.commonjava.indy.data.StoreDataManager;
 import org.commonjava.indy.util.RequestContextHelper;
-import org.commonjava.o11yphant.metrics.annotation.Measure;
 import org.commonjava.indy.model.core.ArtifactStore;
 import org.commonjava.indy.model.core.StoreKey;
 import org.commonjava.indy.model.galley.KeyedLocation;
@@ -70,7 +69,6 @@ public class ContentBrowseController
         this.contentManager = contentManager;
     }
 
-    @Measure
     public ContentBrowseResult browseContent( final StoreKey storeKey, final String path, final String browseBaseUri,
                                               final String contentBaseUri, final UriFormatter uriFormatter,
                                               EventMetadata eventMetadata )
