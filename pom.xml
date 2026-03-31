@@ -105,7 +105,7 @@
 
     <!-- commonjava/redhat projects -->
     <indyModelVersion>1.5</indyModelVersion>
-    <indyClientVersion>3.4.4</indyClientVersion>
+    <indyClientVersion>3.4.5</indyClientVersion>
     <atlasVersion>1.2.2</atlasVersion>
     <galleyVersion>1.22</galleyVersion>
     <weftVersion>1.26</weftVersion>
