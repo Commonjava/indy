@@ -84,7 +84,7 @@
     <xnioVersion>3.8.2.Final</xnioVersion>
     <keycloakVersion>17.0.1</keycloakVersion>
     <bouncycastleVersion>1.70</bouncycastleVersion>
-    <bytemanVersion>4.0.20</bytemanVersion>
+    <bytemanVersion>4.0.26</bytemanVersion>
     <kafkaVersion>3.1.2</kafkaVersion>
     <slf4jVersion>2.0.7</slf4jVersion>
     <logbackVersion>1.5.25</logbackVersion>
