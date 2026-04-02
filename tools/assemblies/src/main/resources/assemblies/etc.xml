@@ -23,7 +23,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <scope>provided</scope>
       <includes>
-        <include>*:tar.gz:confset:*</include>
+        <include>*:*:tar.gz:confset:*</include>
       </includes>
       <outputDirectory>/</outputDirectory>
       <unpack>true</unpack>
