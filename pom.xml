@@ -77,7 +77,7 @@
     <protostreamVersion>4.3.7.Final</protostreamVersion>
     <gsonVersion>2.9.1</gsonVersion>
     <hibernateVersion>5.10.13.Final</hibernateVersion>
-    <resteasyVersion>3.0.12.Final</resteasyVersion>
+    <resteasyVersion>3.0.26.Final</resteasyVersion>
     <jaxrsVersion>3.0.12.Final</jaxrsVersion>
     <asyncServletVersion>3.0.19.Final</asyncServletVersion>
     <undertowVersion>2.2.39.Final</undertowVersion>
