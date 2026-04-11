@@ -92,7 +92,7 @@
     <weldVersion>3.1.9.Final</weldVersion>
     <jacksonVersion>2.18.6</jacksonVersion>
     <jgroupsVersion>4.0.24.Final</jgroupsVersion>
-    <httpcoreVersion>4.4.9</httpcoreVersion>
+    <httpcoreVersion>4.4.16</httpcoreVersion>
     <httpclientVersion>4.5.13</httpclientVersion>
     <otelInstrumentationVersion>1.19.0-alpha</otelInstrumentationVersion>
     <cassandraUnitVersion>3.7.1.0</cassandraUnitVersion>
