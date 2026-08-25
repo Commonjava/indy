@@ -229,23 +229,10 @@ public class IndyKojiConfig
     }
 
     @Override
-    public String getKrbPassword()
-    {
-        return null;
-    }
-
-    @Override
     public String getKrbPrincipal()
     {
         return null;
     }
-
-    @Override
-    public String getKrbService()
-    {
-        return null;
-    }
-    // TODO: END: Implement kerberos support...
 
     public Integer getMaxConnections()
     {
