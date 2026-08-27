@@ -188,7 +188,7 @@ docker.containers.koji-hub.ports.443/tcp.port=${docker.containers.koji-hub.ports
         </plugin>
         <plugin>
           <artifactId>maven-failsafe-plugin</artifactId>
-          <version>2.19</version>
+          <version>2.19.1</version>
           <executions>
             <execution>
               <id>functional-tests</id>
