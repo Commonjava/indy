@@ -112,7 +112,7 @@ jobs:
 
     - name: Push To quay.io
       id: push-to-quay
-      uses: redhat-actions/push-to-registry@v2
+      uses: redhat-actions/push-to-registry@v3
       with:
         image: ${{ steps.buildah-build.outputs.image }}
         tags: ${{ steps.buildah-build.outputs.tags }}
